@@ -1,0 +1,25 @@
+.form-control {
+    background-clip: padding-box;
+    border: solid #567097;
+    border-radius: 4px;
+    color: #1b222c;
+    display: block;
+    padding: 6px 8px;
+}
+
+.btn.btn-primary{
+    border-color: #1d652f !important;
+    background-color: #1d652f !important;
+    border-radius: 99px;
+    font-weight: 600;
+    font-size: 17px;
+
+    &.hover {
+        border-color: #1d652f !important;
+        background-color: #1d652f !important;
+    }
+}
+
+.forgot-password {
+    color: #1d652f !important;
+}

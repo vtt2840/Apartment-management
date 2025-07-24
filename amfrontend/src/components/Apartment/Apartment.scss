@@ -1,0 +1,23 @@
+.container {
+    .table-striped>tbody>tr:nth-child(odd)>td, 
+    .table-striped>tbody>tr:nth-child(odd)>th {
+        background-color: rgb(235, 248, 244); 
+    }
+    .addnewaccount{
+        padding-left: 15px;
+        padding-right: 15px;
+        cursor: pointer;
+    }
+    .lockaccount{
+        padding-left: 15px;
+        padding-right: 15px;
+        cursor: pointer;
+    }
+}
+.modal-user{
+    .content-body{
+        .redC{
+            color: red;
+        }
+    }
+}

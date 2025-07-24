@@ -1,0 +1,20 @@
+.container{
+    .content-left{
+        padding: 50px;
+
+        .img-fluid{
+            border-radius: 30px;
+            box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+        }
+    }
+    .content-right{
+        padding: 50px;
+
+        .content-right-top{
+            text-align: justify;
+            text-justify: inter-word;
+            font-weight: 450;
+            
+        }
+    }
+}
