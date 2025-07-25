@@ -6,10 +6,12 @@ import { useState } from 'react';
 import logo from '../../static/logo.jpeg';
 import { loginSuccess } from '../../store/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import SendEmailModal from './SendEmailModal';
 
 const Login = (props) => {
     let navigate = useNavigate();
     const dispatch = useDispatch();
+    const [showModal, setShowModal] = useState(false);
 
     const [formData, setFormData] = useState({
         email:"",
@@ -54,6 +56,16 @@ const Login = (props) => {
         }
     }
 
+    const handleSendEmail = () => {
+        setShowModal(true);
+    }
+    const handleSubmitEmail = (email) =>{
+        //proceed send email to reset pasword
+        setShowModal(false);
+        toast.success("Bấm vào đường link được gửi trong email để lấy lại mật khẩu!")
+    }
+
+
     return (
             <div className='container mt-5'>
                 <div className='row mx-auto'>
@@ -85,10 +97,15 @@ const Login = (props) => {
                             />
                             <button className='btn btn-primary' onClick={handleLogin}>Đăng nhập</button>  
                             <span className='text-center'>
-                                <a className='forgot-password' href='#'>Quên mật khẩu?</a>
+                                <a className='forgot-password' onClick={handleSendEmail}>Quên mật khẩu?</a>
                             </span>               
                     </div>
                 </div>
+                <SendEmailModal
+                    show={showModal}
+                    onClose={() => setShowModal(false)}
+                    onSubmit={handleSubmitEmail}
+                />
             </div>
 
     )
