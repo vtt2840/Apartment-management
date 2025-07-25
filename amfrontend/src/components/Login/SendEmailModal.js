@@ -2,7 +2,7 @@ import { Modal, Button } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
-const SendEmailModal = ({ show, onClose, onSubmit, apartmentCode }) => {
+const SendEmailModal = ({ show, onClose, onSubmit }) => {
     
     const [email, setEmail] = useState("");
 

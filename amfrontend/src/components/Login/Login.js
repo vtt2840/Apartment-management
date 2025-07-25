@@ -62,6 +62,7 @@ const Login = (props) => {
     const handleSubmitEmail = (email) =>{
         //proceed send email to reset pasword
         setShowModal(false);
+        //if not found email show toast "email không tồn tại"
         toast.success("Bấm vào đường link được gửi trong email để lấy lại mật khẩu!")
     }
 
