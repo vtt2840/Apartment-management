@@ -2,7 +2,7 @@ import './Apartment.scss';
 import React , {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { getAllApartments, addNewAccount } from '../../store/slices/apartmentSlice';
+import { getAllApartments, addNewAccount, deactiveAccount } from '../../store/slices/apartmentSlice';
 import CreateNewAccountModal from './CreateNewAccountModal';
 import LockAccountModal from './LockAccountModal';
 
@@ -40,14 +40,14 @@ const Apartment = (props) => {
         setShowAddModal(true);
     }
 
-    const handleSubmitNewAccount = (formData) => {
+    const handleSubmitNewAccount = async(formData) => {
         const data = {
             ...formData,
             apartment: selectedApartment.apartmentCode,
         };
 
-        dispatch(addNewAccount(data));
-        dispatch(getAllApartments());
+        await dispatch(addNewAccount(data));
+        await dispatch(getAllApartments());
         setShowAddModal(false);
     };
 
@@ -61,9 +61,9 @@ const Apartment = (props) => {
         setSelectedApartment(apartment);
         setShowLockModal(true);
     }
-    const handleSubmitLockAccount = (formData) => {
-        const data = { ...formData, apartment: selectedApartment.apartmentCode,};
-        dispatch(getAllApartments);
+    const handleSubmitLockAccount = async (formData) => {
+        await dispatch(deactiveAccount(formData));
+        await dispatch(getAllApartments());
         setShowLockModal(false);
     }
 

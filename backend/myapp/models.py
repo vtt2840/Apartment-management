@@ -76,7 +76,6 @@ class AccountManager(DjangoUserManager):
 
         return self._create_user(username, email, password, **extra_fields)
     
-
 class Account(AbstractUser):
     pkid = models.BigAutoField(primary_key=True, editable=False)
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -130,7 +129,7 @@ class Resident(models.Model):
 class Member(models.Model):
     memberId = models.AutoField(primary_key=True)
     resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
-    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
+    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, related_name='member')
     isOwner = models.BooleanField(default=False)
 
     class Meta:

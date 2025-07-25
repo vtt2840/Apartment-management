@@ -15,6 +15,14 @@ const createNewAccount = (data)=> {
     return axios.post('/addnewaccount/', data);
 }
 
+const accountByApartment = (data) => {
+    return axios.get('/accounts/by-apartment/', {params: {apartment_code: data}});
+}
+
+const lockAccount = (accountId) => {
+    return axios.post(`/lockaccount/${accountId}/`);
+}
+
 export {
-    loginUser, logoutUser, fetchAllApartments, createNewAccount
+    loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount
 }

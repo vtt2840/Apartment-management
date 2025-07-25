@@ -2,6 +2,7 @@ from rest_framework import serializers
 from ..models import Apartment, Member
 
 class ApartmentSerializer(serializers.ModelSerializer):
+    #add owner to show with apartment info
     owner = serializers.SerializerMethodField()
 
     class Meta:

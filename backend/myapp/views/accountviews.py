@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from ..serializers.accountserializers import CustomTokenObtainPairSerializer, CreateAccountSerializer
+from django.shortcuts import get_object_or_404, render
+from ..serializers.accountserializers import CustomTokenObtainPairSerializer, CreateAccountSerializer, DeactiveAccountSerializer, AccountSerializer
 from rest_framework.response import Response
 from rest_framework import status, generics
 import logging
@@ -103,3 +103,28 @@ class CreateAccountAPIView(generics.CreateAPIView):
     serializer_class = CreateAccountSerializer
     permission_classes = (AllowAny,)
 
+#lock account
+class DeactivateAccount(APIView):
+    def post(self, request, user_id):
+        print(user_id)
+        serializer = DeactiveAccountSerializer(data={'account_id': user_id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status': 'success', 'message': f'Account {user_id} deactivated'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+#find account by apartmentcode    
+class AccountByApartment(APIView):
+    def get(self, request):
+        apartment_code = request.GET.get('apartment_code')
+
+        if not apartment_code:
+            return Response({'error': 'Missing apartment_code'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            account = Account.objects.get(apartment__apartmentCode=apartment_code, is_active=True)
+        except Account.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AccountSerializer(account)
+        return Response(serializer.data)
