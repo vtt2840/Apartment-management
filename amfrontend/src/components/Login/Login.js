@@ -1,7 +1,7 @@
 import './Login.scss';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { loginUser } from '../../services/userService'
+import { loginUser, resetpassword } from '../../services/userService'
 import { useState } from 'react';
 import logo from '../../static/logo.jpeg';
 import { loginSuccess } from '../../store/slices/authSlice';
@@ -59,11 +59,21 @@ const Login = (props) => {
     const handleSendEmail = () => {
         setShowModal(true);
     }
-    const handleSubmitEmail = (email) =>{
+    const handleSubmitEmail = async(email) =>{
         //proceed send email to reset pasword
-        setShowModal(false);
-        //if not found email show toast "email không tồn tại"
-        toast.success("Bấm vào đường link được gửi trong email để lấy lại mật khẩu!")
+        
+        //if not found email show toast "email không tồn tại
+        try {
+            await resetpassword(email);
+            setShowModal(false);
+            toast.success('Vui lòng kiểm tra email để đặt lại mật khẩu.');
+        } catch (error) {
+            if (error.response?.data?.email) {
+                toast.error(`Lỗi: ${error.response.data.email}`);
+            } else {
+                toast.error('Có lỗi xảy ra. Hãy thử lại.');
+            }
+        }
     }
 
 

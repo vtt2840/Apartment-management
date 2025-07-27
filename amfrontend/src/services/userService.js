@@ -16,13 +16,20 @@ const createNewAccount = (data)=> {
 }
 
 const accountByApartment = (data) => {
-    return axios.get('/accounts/by-apartment/', {params: {apartment_code: data}});
+    return axios.post('/accounts/by-apartment/', {apartment_code: data});
 }
 
 const lockAccount = (accountId) => {
     return axios.post(`/lockaccount/${accountId}/`);
 }
 
+const resetpassword = (email) => {
+    return axios.post('/resetpassword/', {email: email});
+}
+
+const resetconfirm = (uid, token, password) => {
+    return axios.post('/password-reset-confirm/', { uid: uid, token: token, new_password: password});
+}
 export {
-    loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount
+    loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm
 }

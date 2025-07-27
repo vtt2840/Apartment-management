@@ -1,5 +1,6 @@
 from django.urls import path
-from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefreshAPIView, LogoutAPIView, CreateAccountAPIView, DeactivateAccount, AccountByApartment)
+from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefreshAPIView, LogoutAPIView, CreateAccountAPIView, 
+                                 DeactivateAccount, AccountByApartment, PasswordResetConfirm, ResetPassword)
 from .views.apartmentviews import ApartmentListAPIView
 
 urlpatterns = [
@@ -11,4 +12,7 @@ urlpatterns = [
     path('addnewaccount/', CreateAccountAPIView.as_view(), name='add-new-account'),
     path('lockaccount/<int:user_id>/', DeactivateAccount.as_view(), name='lock-account'),
     path('accounts/by-apartment/', AccountByApartment.as_view(), name='account-by-apartment'),
+    path('resetpassword/', ResetPassword.as_view(), name='reset-password'),
+    path('password-reset-confirm/', PasswordResetConfirm.as_view(), name='password-reset-confirm'),
+
 ]

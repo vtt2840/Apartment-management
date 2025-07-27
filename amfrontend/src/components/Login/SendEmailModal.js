@@ -10,7 +10,7 @@ const SendEmailModal = ({ show, onClose, onSubmit }) => {
         if (show) {
             setEmail('');
         }
-    }, [show, apartmentCode]);
+    }, [show]);
 
     const defaultValidInput = {
         isValidEmail: true,

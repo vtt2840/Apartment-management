@@ -1,5 +1,7 @@
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from ..serializers.accountserializers import CustomTokenObtainPairSerializer, CreateAccountSerializer, DeactiveAccountSerializer, AccountSerializer
+from ..serializers.accountserializers import (CustomTokenObtainPairSerializer, CreateAccountSerializer, DeactiveAccountSerializer, 
+                                                AccountSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer)
 from rest_framework.response import Response
 from rest_framework import status, generics
 import logging
@@ -10,6 +12,15 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from ..models import Account
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth.views import PasswordResetView
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 
 logger = logging.getLogger(__name__)
@@ -115,8 +126,8 @@ class DeactivateAccount(APIView):
     
 #find account by apartmentcode    
 class AccountByApartment(APIView):
-    def get(self, request):
-        apartment_code = request.GET.get('apartment_code')
+    def post(self, request):
+        apartment_code = request.data.get('apartment_code')
 
         if not apartment_code:
             return Response({'error': 'Missing apartment_code'}, status=status.HTTP_400_BAD_REQUEST)
@@ -128,3 +139,22 @@ class AccountByApartment(APIView):
 
         serializer = AccountSerializer(account)
         return Response(serializer.data)
+
+#reset password
+class ResetPassword(APIView):
+    def post(self, request):
+        serializer = PasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Email đặt lại mật khẩu đã được gửi.'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#confirm password
+class PasswordResetConfirm(APIView):
+    def post(self, request):
+        print("POST DATA:", request.data) 
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Password reset successful.'}, status=200)
+        return Response(serializer.errors, status=400)

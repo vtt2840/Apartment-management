@@ -5,6 +5,12 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from ..models import Role, Account, Apartment, Resident, Member
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .apartmentserializers import ApartmentSerializer
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.core.mail import send_mail
+from django.conf import settings
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,8 +74,6 @@ class CreateAccountSerializer(UserCreateSerializer):
         apartment.save()
         return user
     
-    
-
 #custom account serializer
 class CustomAccountSerializer(UserSerializer):
     role = RoleSerializer()
@@ -101,7 +105,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     
 #deactive account serializer
 class DeactiveAccountSerializer(serializers.Serializer):
-
     account_id = serializers.IntegerField()
 
     def validate_account_id(self, value):
@@ -132,3 +135,55 @@ class DeactiveAccountSerializer(serializers.Serializer):
         apartment.save()
 
         return account
+
+#password reset serializer
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not Account.objects.filter(email=value, is_active=True).exists():
+            raise serializers.ValidationError("Email không tồn tại.")
+        return value
+
+    def save(self):
+        email = self.validated_data['email']
+        user = Account.objects.get(email=email)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        reset_link = f"{settings.FRONTEND_RESET_URL}?uid={uid}&token={token}"
+
+        send_mail(
+            'Đặt lại mật khẩu',
+            f'Nhấn vào link để đặt lại mật khẩu: {reset_link}',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
+#password confirm
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+
+
+    def validate(self, attrs):
+        try:
+            uid = urlsafe_base64_decode(attrs['uid']).decode()
+            user = Account.objects.get(pk=uid)
+        except (Account.DoesNotExist, ValueError, TypeError, UnicodeDecodeError):
+            raise serializers.ValidationError({'uid': 'Invalid UID'})
+
+        if not default_token_generator.check_token(user, attrs['token']):
+            raise serializers.ValidationError({'token': 'Invalid or expired token'})
+
+        attrs['user'] = user
+        return attrs
+
+    def save(self):
+        user = self.validated_data['user']
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
+        return user

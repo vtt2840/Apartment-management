@@ -14,11 +14,14 @@ import account_icon from '../../static/account-icon.png'
 import { logoutUser } from '../../services/userService';
 import { logout } from '../../store/slices/authSlice';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 const Navigation = (props) => {
     let navigate = useNavigate();
     let location = useLocation();
     const dispatch = useDispatch();
+    
+    const isAuthenticated = useSelector(state => state.auth.role);
 
     const [username, setUsername] = useState('');
 
@@ -36,7 +39,7 @@ const Navigation = (props) => {
         }
     };
 
-    if(location.pathname !== '/login'){
+    if(isAuthenticated){
     return (
         <>
         <div className="nav-header">
