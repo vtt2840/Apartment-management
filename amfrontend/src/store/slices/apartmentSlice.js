@@ -3,9 +3,9 @@ import { fetchAllApartments, createNewAccount , lockAccount, addAccountExist, up
 
 export const getAllApartments = createAsyncThunk(
   'apartment/getAllApartments',
-  async (_, {rejectWithValue}) => {
+  async (data, {rejectWithValue}) => {
     try {
-      const res = await fetchAllApartments();
+      const res = await fetchAllApartments(data);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);

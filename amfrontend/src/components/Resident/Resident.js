@@ -10,6 +10,7 @@ import RegisterTempModal from './RegisterTempModal';
 import CancelRegisterTempModal from './CancelRegisterTempModal';
 import EditResidentModal from './EditResidentModal';
 import SearchResidentModal from './SearchResidentModal';
+import ReactPaginate from 'react-paginate';
 
 const Resident = (props) => {
     const dispatch = useDispatch();
@@ -25,33 +26,53 @@ const Resident = (props) => {
     const [showCancelRegisterTempModal, setShowCancelRegisterTempModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
-    
-    const expandedResidents = residentList.flatMap((item) =>
-        item.apartment
-        .filter(item => showLeftResidents || (item.isMember === true))
-        .map((apt) => ({
-            ...item,
-            apartmentCode: apt.apartmentCode,
-            isOwner: apt.isOwner,
-            isMember: apt.isMember
-        }))
-    );
+    const [currentPage, setCurrentPage] = useState(1);
+    const [paginatedData, setPaginatedData] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [rawResidents, setRawResidents] = useState([]);
 
-    const sortedResidents = [...expandedResidents].sort((a, b) =>
-        a.apartmentCode.localeCompare(b.apartmentCode)
-    );
 
-    const filteredLeftResidents = residentList.filter(resident =>  resident.apartment?.some(item => item.isMember !== false && item.apartmentCode === selectedApartmentCode));
-
-    useEffect(()=>{
-        dispatch(getAllResidents())   ;   
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await dispatch(getAllResidents(currentPage));
+                setRawResidents(res.payload.results);
+            } catch (err) {
+                toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+            }
+        };
+        fetchData();
     }, [dispatch]);
 
-    useEffect(()=>{
-        if(error) {
-            toast.error(error.message)
-        }
-    }, [error]);
+    useEffect(() => {
+        const expandedResidents = rawResidents.flatMap((item) =>
+            item.apartment
+                .filter((apt) => showLeftResidents || apt.isMember === true)
+                .map((apt) => ({
+                    ...item,
+                    apartmentCode: apt.apartmentCode,
+                    isOwner: apt.isOwner,
+                    isMember: apt.isMember
+                }))
+        );
+
+        const sortedResidents = [...expandedResidents].sort((a, b) =>
+            a.apartmentCode.localeCompare(b.apartmentCode) || a.residentId - b.residentId
+        );
+
+        const pageSize = 10;
+        const start = (currentPage - 1) * pageSize;
+        const paginated = sortedResidents.slice(start, start + pageSize);
+
+        setPaginatedData(paginated);
+        setTotalPages(Math.ceil(sortedResidents.length / pageSize));
+    }, [rawResidents, currentPage, showLeftResidents]);
+
+    const handlePageChange = (selectedItem) => {
+        setCurrentPage(selectedItem.selected + 1); 
+    };    
+
+    const filteredLeftResidents = Array.isArray(residentList) ? residentList.filter(resident => resident.apartment?.some(item => item.isMember !== false && item.apartmentCode === selectedApartmentCode)): [];
 
     //add new resident
     const handleAddResident = () => {
@@ -218,10 +239,10 @@ const Resident = (props) => {
             </thead>
             <tbody>
                 <>
-                    {role === 'admin' && sortedResidents && sortedResidents.length > 0 &&(
-                    sortedResidents.map((item, index) => (
+                    {role === 'admin' && paginatedData && paginatedData.length > 0 &&(
+                    paginatedData.map((item, index) => (
                         <tr key={`row-${index}`}>
-                        <td>{index + 1}</td>
+                        <td>{(currentPage - 1) * 10 + index + 1}</td>
                         <td className='text-center'>{item.apartmentCode}</td>
                         <td>{item.fullName}</td>
                         <td>{item.email}</td>
@@ -306,6 +327,28 @@ const Resident = (props) => {
             onClose={() => setShowEditModal(false)}
             onSubmit={handleSubmitEditResident}
             resident={selectedResident}
+        />
+        <ReactPaginate
+            nextLabel="Sau >"
+            onPageChange={handlePageChange}
+            pageRangeDisplayed={3}
+            marginPagesDisplayed={2}
+            pageCount={totalPages}
+            previousLabel="< Trước"
+            pageClassName="page-item"
+            pageLinkClassName="page-link"
+            previousClassName="page-item"
+            previousLinkClassName="page-link"
+            nextClassName="page-item"
+            nextLinkClassName="page-link"
+            breakLabel="..."
+            breakClassName="page-item"
+            breakLinkClassName="page-link"
+            containerClassName="pagination"
+            activeClassName="active"
+            renderOnZeroPageCount={null}
+            forcePage={currentPage - 1}
+            className={'pagination justify-content-center'}
         />
         </>
     )

@@ -28,7 +28,7 @@ const SearchApartmentModal = () => {
     const handleClose = () => setShow(false);
 
     return (
-        <div className="container my-3">
+        <>
         <div className="input-group mb-3">
             <input
             type="text"
@@ -50,7 +50,8 @@ const SearchApartmentModal = () => {
             {apartments.length === 0 ? (
                 <p>Không tìm thấy cư dân nào.</p>
             ) : (
-                <Table striped bordered hover>
+                <div className="container">
+                <table className="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                     <th className='text-center' scope="col">STT</th>
@@ -75,7 +76,8 @@ const SearchApartmentModal = () => {
                     </tr>
                     ))}
                 </tbody>
-                </Table>
+                </table>
+                </div>
             )}
             </Modal.Body>
             <Modal.Footer>
@@ -84,7 +86,7 @@ const SearchApartmentModal = () => {
             </Button>
             </Modal.Footer>
         </Modal>
-        </div>
+        </>
     );
     };
 

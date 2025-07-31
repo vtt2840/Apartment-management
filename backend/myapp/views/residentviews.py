@@ -11,7 +11,7 @@ from django.contrib.postgres.search import TrigramSimilarity
 
 #get all residents
 class ResidentListAPIView(generics.ListAPIView):
-    queryset = Resident.objects.all()
+    queryset = Resident.objects.all().order_by('member__apartment__apartmentCode', 'residentId')
     serializer_class = ResidentSerializer
     permission_classes = [IsAuthenticated,]
 

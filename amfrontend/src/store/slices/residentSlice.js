@@ -3,9 +3,9 @@ import { createNewResident, fetchAllResidents, deleteResident, temporaryResidenc
 
 export const getAllResidents = createAsyncThunk(
   'resident/getAllResidents',
-  async (_, {rejectWithValue}) => {
+  async (data, {rejectWithValue}) => {
     try {
-      const res = await fetchAllResidents();
+      const res = await fetchAllResidents(data);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);

@@ -8,36 +8,46 @@ import LockAccountModal from './LockAccountModal';
 import EditApartmentModal from './EditApartmentModal';
 import SearchApartmentModal from './SearchApartmentModal';
 import { checkAccountExists } from '../../services/userService';
+import ReactPaginate from "react-paginate";
 
 const Apartment = (props) => {
     const dispatch = useDispatch();
-    const {apartmentList, loading, error} = useSelector((state) => state.apartment);
+    const role = useSelector(state => state.auth.role);
+    const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
 
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showLockModal, setShowLockModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
-    const role = useSelector(state => state.auth.role);
-    const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
-    
-    //const filteredApartments = role === 'resident' ? apartmentList.filter(item => item.apartmentCode === selectedApartmentCode) : apartmentList;
+    const [currentPage, setCurrentPage] = useState(1);
+    const [paginatedData, setPaginatedData] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
 
-    const filteredApartments = Array.isArray(apartmentList)
-    ? (role === 'resident'
-        ? apartmentList.filter(item => item.apartmentCode === selectedApartmentCode)
-        : apartmentList)
-    : [];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await dispatch(getAllApartments(currentPage));
+                const rawData = res.payload.results;
 
-    useEffect(()=>{
-        dispatch(getAllApartments())   ;   
-    }, [dispatch]);
+                const filtered = Array.isArray(rawData)
+                    ? (role === 'resident'
+                        ? rawData.filter(item => item.apartmentCode === selectedApartmentCode)
+                        : rawData)
+                    : [];
 
-    useEffect(()=>{
-        if(error) {
-            toast.error(error.message)
-        }
-    }, [error]);
+                setPaginatedData(filtered);
+                setTotalPages(Math.ceil(res.payload.count / 10));
+            } catch (err) {
+                toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+            }
+        };
+        fetchData();
+    }, [currentPage, dispatch, role, selectedApartmentCode]);
+
+    const handlePageChange = (selectedItem) => {
+        setCurrentPage(selectedItem.selected + 1); 
+    };
 
     
     //add new account if apartment.status == inactive
@@ -161,39 +171,36 @@ const Apartment = (props) => {
             </thead>
             <tbody>
                 <>
-                    {filteredApartments
-                    .map((item, index) => {
-                        return (
-                            <tr key={`row-${index}`}>
-                                <td className='text-center'>{index+1}</td>
-                                <td className='text-center'>{item.apartmentCode}</td>
-                                <td>{item.owner ? item.owner.fullName : ''}</td>
-                                <td>{item.owner ? item.owner.email : ''}</td>
-                                <td className='text-center'>{item.floor}</td>
-                                <td className='text-center'>{item.area}</td>
-                                <td>{item.status === 'active' ? 'Đã bán' : 'Chưa bán'}</td>
-                                {role === 'admin' && (<td className='text-center'>
-                                        <>
-                                        <span
-                                            title='Thêm tài khoản mới cho căn hộ'
-                                            className='addnewaccount'
-                                            onClick={()=> hanldeAddNewAccount(item)}
-                                        ><i className='fa fa-plus'></i></span>
-                                        <span
-                                            title='Khóa tài khoản căn hộ'
-                                            className='lockaccount'
-                                            onClick={()=> handleLockAccount(item)}
-                                        ><i className='fa fa-lock'></i></span>
-                                        <span
-                                            title='Chỉnh sửa thông tin căn hộ'
-                                            className='editapartment'
-                                            onClick={()=> handleEditApartment(item)}
-                                        ><i className='fa fa-edit'></i></span>
-                                        </>
-                                </td>)}
-                            </tr>
-                        )
-                    })}
+                    {paginatedData.map((item, index) => (
+                        <tr key={`row-${index}`}>
+                            <td className='text-center'>{(currentPage - 1) * 10 + index + 1}</td>
+                            <td className='text-center'>{item.apartmentCode}</td>
+                            <td>{item.owner ? item.owner.fullName : ''}</td>
+                            <td>{item.owner ? item.owner.email : ''}</td>
+                            <td className='text-center'>{item.floor}</td>
+                            <td className='text-center'>{item.area}</td>
+                            <td>{item.status === 'active' ? 'Đã bán' : 'Chưa bán'}</td>
+                            {role === 'admin' && (<td className='text-center'>
+                                <>
+                                    <span
+                                        title='Thêm tài khoản mới cho căn hộ'
+                                        className='addnewaccount'
+                                        onClick={()=> hanldeAddNewAccount(item)}
+                                    ><i className='fa fa-plus'></i></span>
+                                    <span
+                                        title='Khóa tài khoản căn hộ'
+                                        className='lockaccount'
+                                        onClick={()=> handleLockAccount(item)}
+                                    ><i className='fa fa-lock'></i></span>
+                                    <span
+                                        title='Chỉnh sửa thông tin căn hộ'
+                                        className='editapartment'
+                                        onClick={()=> handleEditApartment(item)}
+                                    ><i className='fa fa-edit'></i></span>
+                                    </>
+                            </td>)}
+                        </tr>
+                    ))}
                 </>
             </tbody>
         </table>
@@ -216,6 +223,29 @@ const Apartment = (props) => {
             apartment={selectedApartment}
         />
         </div>
+        <ReactPaginate
+            nextLabel="Sau >"
+            onPageChange={handlePageChange}
+            pageRangeDisplayed={3}
+            marginPagesDisplayed={2}
+            pageCount={totalPages}
+            previousLabel="< Trước"
+            pageClassName="page-item"
+            pageLinkClassName="page-link"
+            previousClassName="page-item"
+            previousLinkClassName="page-link"
+            nextClassName="page-item"
+            nextLinkClassName="page-link"
+            breakLabel="..."
+            breakClassName="page-item"
+            breakLinkClassName="page-link"
+            containerClassName="pagination"
+            activeClassName="active"
+            renderOnZeroPageCount={null}
+            forcePage={currentPage - 1}
+            className={'pagination justify-content-center'}
+        />
+
         </>
     )
 }

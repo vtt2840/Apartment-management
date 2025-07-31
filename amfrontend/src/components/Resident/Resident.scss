@@ -32,9 +32,19 @@
 .btn{
     font-weight: 600 !important;
 }
-
-
 .redC{
     color: red;
 }
     
+
+.page-link{
+    color: #1e6b41 !important;
+}
+.page-item.active .page-link {
+  background-color: rgb(235, 248, 244) !important; 
+  border-color: rgb(235, 248, 244) !important;
+  color: #000 !important;         
+}
+.pagination{
+    padding: 30px;
+}

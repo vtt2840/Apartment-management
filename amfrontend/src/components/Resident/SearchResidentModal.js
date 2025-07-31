@@ -42,7 +42,7 @@ const SearchResidentModal = () => {
     const handleClose = () => setShow(false);
 
     return (
-        <div className="container">
+        <>
         <div className="input-group">
             <input
             type="text"
@@ -64,7 +64,8 @@ const SearchResidentModal = () => {
             {sortedResidents.length === 0 ? (
                 <p>Không tìm thấy cư dân nào.</p>
             ) : (
-                <Table striped bordered hover>
+                <div className="container">
+                <table className="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
                     <th className='text-center' scope="col">STT</th>
@@ -95,7 +96,8 @@ const SearchResidentModal = () => {
                     </tr>
                     ))}
                 </tbody>
-                </Table>
+                </table>
+                </div>
             )}
             </Modal.Body>
             <Modal.Footer>
@@ -104,7 +106,7 @@ const SearchResidentModal = () => {
             </Button>
             </Modal.Footer>
         </Modal>
-        </div>
+        </>
     );
     };
 

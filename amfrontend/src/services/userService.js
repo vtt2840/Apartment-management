@@ -9,9 +9,10 @@ const logoutUser = () => {
 }
 
 //apartment and account
-const fetchAllApartments = () => {
-    return axios.get('/apartments/');
-}
+const fetchAllApartments = (page = 1) => {
+    return axios.get(`/apartments/?page=${page}`);
+};
+
 const updateApartment = (data) => {
     return axios.put('/updateapartment/', data);
 }
@@ -50,8 +51,9 @@ const resetconfirm = (uid, token, password) => {
 }
 
 //resident
-const fetchAllResidents = () => {
-    return axios.get('/residents/');
+
+const fetchAllResidents = (page = 1) => {
+    return axios.get(`/residents/?page=${page}`);
 }
 
 const createNewResident = (data) => {
