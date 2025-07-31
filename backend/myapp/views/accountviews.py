@@ -1,7 +1,6 @@
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
 from ..serializers.accountserializers import (CustomTokenObtainPairSerializer, CreateAccountSerializer, DeactiveAccountSerializer, 
-                                                AccountSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer)
+                                                AccountSerializer, PasswordResetSerializer, PasswordResetConfirmSerializer, AccountByApartmentSerializer,
+                                                CheckAccountSerializer)
 from rest_framework.response import Response
 from rest_framework import status, generics
 import logging
@@ -12,16 +11,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from ..models import Account
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth.views import PasswordResetView
 from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
-
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +43,6 @@ def set_auth_cookies(res: Response, access_token: str, refresh_token: Optional[s
     #set the logged in cookie
     res.set_cookie("logged_in", "true", **logged_in_cookie_settings)
 
-
 #custom token obtain pair api view 
 class CustomTokenObtainPairAPIView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -70,19 +63,23 @@ class CustomTokenObtainPairAPIView(TokenObtainPairView):
                 res.data["message"] = "Login falied"
                 logger.error("Access or refresh token not provided in response data")
         return res
-    
 
 #custom token refresh api view
 class CustomTokenRefreshAPIView(TokenRefreshView):
     def post(self, request: Request, *args: Dict, **kwargs: Dict):
+        data = request.data.copy()
+
         #get refresh token from cookies
         refresh_token = request.COOKIES.get("refresh")
 
         if refresh_token:
-            request.data["refresh"] = refresh_token
+            data["refresh"] = refresh_token
+
+        request._full_data = data  
+        request._data = data      
 
         res = super().post(request, *args, **kwargs)
-
+        
         if res.status_code == status.HTTP_200_OK:
             access_token = res.data.get("access")
             refresh_token = res.data.get("refresh")
@@ -98,6 +95,7 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
 
 #logout api view
 class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated,]
     def post(self, request: Request, *args: Dict, **kwargs: Dict):
         #create a response object
         res = Response(status=status.HTTP_204_NO_CONTENT)
@@ -112,36 +110,51 @@ class LogoutAPIView(APIView):
 class CreateAccountAPIView(generics.CreateAPIView):
     queryset = Account.objects.all()
     serializer_class = CreateAccountSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated,]
 
 #lock account
 class DeactivateAccount(APIView):
-    def post(self, request, user_id):
-        print(user_id)
-        serializer = DeactiveAccountSerializer(data={'account_id': user_id})
+    permission_classes = [IsAuthenticated,]
+    def post(self, request):
+        serializer = DeactiveAccountSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'status': 'success', 'message': f'Account {user_id} deactivated'}, status=status.HTTP_200_OK)
+            return Response({'status': 'success', 'message': 'Account deactivated'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 #find account by apartmentcode    
 class AccountByApartment(APIView):
+    permission_classes = [IsAuthenticated,]
+
     def post(self, request):
-        apartment_code = request.data.get('apartment_code')
+        serializer = AccountByApartmentSerializer(data=request.data)
+        if serializer.is_valid():
+            account = serializer.get_account()
+            return Response(AccountSerializer(account).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+#check account exists
+class CheckAccount(APIView):
+    permission_classes = [IsAuthenticated,]
 
-        if not apartment_code:
-            return Response({'error': 'Missing apartment_code'}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        serializer = CheckAccountSerializer(data=request.data)
+        if not serializer.is_valid():
+            error_code = serializer.errors.get('non_field_errors')[0].code
+            if error_code == "not_found":
+                return Response({'detail': 'Account not found'}, status=status.HTTP_404_NOT_FOUND)
+            elif error_code == "invalid_password":
+                return Response({'detail': 'Wrong password'}, status=status.HTTP_400_BAD_REQUEST)
+            elif error_code == "email_taken":
+                return Response({'detail': 'Email taken'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            account = Account.objects.get(apartment__apartmentCode=apartment_code, is_active=True)
-        except Account.DoesNotExist:
-            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = AccountSerializer(account)
-        return Response(serializer.data)
-
+        account = serializer.get_account()
+        return Response({'pkid': account.pkid}, status=status.HTTP_200_OK)
+        
 #reset password
 class ResetPassword(APIView):
+    permission_classes = [AllowAny,]
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
         if serializer.is_valid():
@@ -151,8 +164,8 @@ class ResetPassword(APIView):
 
 #confirm password
 class PasswordResetConfirm(APIView):
+    permission_classes = [AllowAny,]
     def post(self, request):
-        print("POST DATA:", request.data) 
         serializer = PasswordResetConfirmSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

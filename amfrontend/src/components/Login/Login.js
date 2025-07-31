@@ -21,23 +21,18 @@ const Login = (props) => {
     const handleLogin = async () => {
         try {
             const response = await loginUser(formData);
-
-            console.log(response.data);
-
-            const email = response.data.user.email;
-            const role = response.data.user.role;
-            const apartment = response.data.user.apartment;
+            const user = response.data.user;
 
             const userData = {
-                email,
-                role,
-                apartment
+                email: user.email,
+                role: user.role,
+                apartments: user.apartments || [],
+                selectedApartment: user.apartments?.[0]?.apartmentCode || null
             };
 
             dispatch(loginSuccess(userData));
             localStorage.setItem('auth', JSON.stringify(userData));
 
-            console.log("Login success:", response.data.message);
             toast.success("Đăng nhập thành công!");
             navigate('/');
         } catch (err) {

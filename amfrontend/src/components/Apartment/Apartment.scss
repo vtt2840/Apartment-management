@@ -1,4 +1,5 @@
 .container {
+    font-size: 14px;
     .table-striped>tbody>tr:nth-child(odd)>td, 
     .table-striped>tbody>tr:nth-child(odd)>th {
         background-color: rgb(235, 248, 244); 
@@ -9,6 +10,11 @@
         cursor: pointer;
     }
     .lockaccount{
+        padding-left: 15px;
+        padding-right: 15px;
+        cursor: pointer;
+    }
+    .editapartment{
         padding-left: 15px;
         padding-right: 15px;
         cursor: pointer;

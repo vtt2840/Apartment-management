@@ -3,31 +3,14 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.core import validators
 import uuid
-
-class Apartment(models.Model):
-    class Status(models.TextChoices):
-        active = 'active'
-        inactive = 'inactive'
-
-    apartmentCode = models.CharField(max_length=10, unique=True, primary_key=True)
-    floor = models.PositiveIntegerField()
-    area = models.PositiveIntegerField()
-    status = models.CharField(max_length=10, choices=Status.choices)
-
-    class Meta:
-        ordering = ['apartmentCode']
-    
-    def __str__(self):
-        return self.apartmentCode
 
 class Role(models.Model):
     class Name(models.TextChoices):
         admin = 'admin'
         resident = 'resident'
     role_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50, choices=Name.choices)
+    name = models.CharField(max_length=50, choices=Name.choices, default='resident')
     description = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
@@ -84,7 +67,6 @@ class Account(AbstractUser):
     )
     username = models.CharField(verbose_name="Username", max_length=60,)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
-    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, null=True, blank=True)
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "role"]
@@ -96,18 +78,31 @@ class Account(AbstractUser):
     
     def __str__(self) -> str:
         return self.email
+    
+class Apartment(models.Model):
+    class Status(models.TextChoices):
+        active = 'active'
+        inactive = 'inactive'
 
-    def clean(self):
-        super().clean()
-        if self.role.name == "resident" and not self.apartment:
-            raise ValidationError("Tài khoản cư dân phải gắn với 1 căn hộ")
-        if self.role.name == "admin" and self.apartment:
-            raise ValidationError("Tài khoản admin không được gắn với căn hộ nào")
+    apartmentCode = models.CharField(max_length=10, unique=True, primary_key=True)
+    floor = models.PositiveIntegerField()
+    area = models.PositiveIntegerField()
+    status = models.CharField(max_length=10, choices=Status.choices, default='active')
+
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering = ['apartmentCode']
+    
+    def __str__(self):
+        return self.apartmentCode
         
 class Resident(models.Model):
     class Status(models.TextChoices):
         living = 'living'
-        moved = 'moved'
+        left = 'left'
+        temporaryresidence = 'temporaryresidence'
+        temporaryabsence = 'temporaryabsence'
 
     class Gender(models.TextChoices):
         male = 'male'
@@ -116,11 +111,12 @@ class Resident(models.Model):
     residentId = models.AutoField(primary_key=True)
     fullName = models.CharField(max_length=100)
     dateOfBirth = models.DateField(null=True)
-    phoneNumber = models.CharField(max_length=10, null=True)
-    email = models.EmailField(unique=True)
-    gender = models.CharField(max_length=6, choices=Gender.choices, null=True)
-    idNumber = models.CharField(max_length=12, unique=True, null=True)
-    status = models.CharField(max_length=6, choices=Status.choices)
+    phoneNumber = models.CharField(max_length=10, null=True, blank=True)
+    hometown = models.CharField(max_length=20, null=True)
+    email = models.CharField(null=True, blank=True)
+    gender = models.CharField(max_length=6, choices=Gender.choices, null=True, default='male')
+    idNumber = models.CharField(max_length=12, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default='living')
     apartmentCode = models.ManyToManyField(Apartment, through='Member')
 
     def __str__(self):
@@ -131,6 +127,7 @@ class Member(models.Model):
     resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, related_name='member')
     isOwner = models.BooleanField(default=False)
+    isMember = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('resident', 'apartment') 
@@ -139,4 +136,38 @@ class Member(models.Model):
     def __str__(self):
         return f"{self.resident.fullName} ({self.resident.email}) - {self.apartment.apartmentCode}"
     
+class TemporaryResidence(models.Model):
+    residenceId = models.AutoField(primary_key=True)
+    resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
+    startDate = models.DateField()
+    endDate = models.DateField()
+    reason = models.CharField(max_length=200)
 
+    def __str__(self):
+        return f"{self.resident}: stay from {self.startDate} to {self.endDate} for {self.reason}"
+
+class TemporaryAbsence(models.Model):
+    absenceId = models.AutoField(primary_key=True)
+    resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
+    startDate = models.DateField()
+    endDate = models.DateField()
+    reason = models.CharField(max_length=200)
+    destination = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f"{self.resident}: absent from {self.startDate} to {self.endDate} for {self.reason} in {self.destination}"
+
+class Vehicle(models.Model):
+    class Type(models.TextChoices):
+        car = 'car'
+        motorbike = 'motorbike'
+        bike = 'bike'
+        other = 'other'
+
+    vehicleId = models.AutoField(primary_key=True)
+    licensePlate = models.CharField(max_length=10, unique=True)
+    vehicleType = models.CharField(max_length=10, choices=Type.choices, default='car')
+    brand = models.CharField(max_length=20)
+    color = models.CharField(max_length=20)
+    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
+    resident = models.ForeignKey(Resident, on_delete=models.CASCADE)

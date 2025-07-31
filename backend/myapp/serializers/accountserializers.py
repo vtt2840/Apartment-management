@@ -14,70 +14,84 @@ from django.conf import settings
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
-        models = Role
+        model = Role
         fields = ["role_id", "name"]
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    apartment_code = serializers.CharField(source='apartment.apartmentCode', read_only=True)
+    apartment_codes = serializers.SerializerMethodField()
 
     class Meta:
         model = Account
-        fields = ['pkid', 'username', 'email', 'apartment_code']
+        fields = ['pkid', 'username', 'email', 'apartment_codes']
+
+    def get_apartment_codes(self, obj):
+        return [apt.apartmentCode for apt in obj.apartment_set.all()]
 
 #get the user model
 Account = get_user_model()
 
 #create account serializer
-class CreateAccountSerializer(UserCreateSerializer):
+class CreateAccountSerializer(serializers.ModelSerializer):
+    apartment_code = serializers.CharField(write_only=True)
 
-    class Meta(UserCreateSerializer.Meta):
+    class Meta:
         model = Account
-        fields = ("id", "email", "username", "password", "apartment")
+        fields = ("id", "email", "username", "password", "apartment_code")
         extra_kwargs = {
             "password": {"write_only": True},
         }
 
     def create(self, validated_data):
         role = Role.objects.get(pk=2)  # role resident
-        
-        apartmentcode = validated_data.pop("apartment")
 
-        apartment = Apartment.objects.get(apartmentCode=apartmentcode)
-        if apartment.status == "active":
+        apartment_code = validated_data.pop("apartment_code", None)
+        
+
+        if not apartment_code:
+            raise serializers.ValidationError("Thiếu mã căn hộ.")
+
+        apartment = Apartment.objects.get(apartmentCode=apartment_code)
+        if apartment.account:
             raise serializers.ValidationError("Căn hộ đã có tài khoản!")
-        
-        
+
         #create new resident
-        resident = Resident.objects.create(
-            fullName=validated_data["username"],
+        resident, created = Resident.objects.get_or_create(
             email=validated_data["email"],
-            status="living"
+            defaults={
+                "fullName": validated_data["username"],
+                "status": "living"
+            }
         )
+
+        if not created and resident.status == 'left':
+            resident.status = 'living'
+            resident.save()
 
         #create new member
         Member.objects.create(
             resident=resident,
             apartment=apartment,
-            isOwner=True
+            isOwner=True,
+            isMember=True
         )
 
-        user = Account.objects.create_user(
+        account = Account.objects.create_user(
             email=validated_data["email"],
             username=validated_data["username"],
             password=validated_data["password"],
-            apartment=apartment,
             role=role,
         )
         
+        apartment.account = account
         apartment.status = "active" #update status active
         apartment.save()
-        return user
+        return account
     
 #custom account serializer
 class CustomAccountSerializer(UserSerializer):
     role = RoleSerializer()
-    apartmentCode = ApartmentSerializer()
+    apartments = ApartmentSerializer(source='apartment_set', many=True)
 
     class Meta(UserSerializer.Meta):
         model = Account
@@ -86,7 +100,7 @@ class CustomAccountSerializer(UserSerializer):
             "email",
             "username",
             "role",
-            "apartmentCode",
+            "apartments",
         ]
 
 #custom token obtain pair seriazlizer
@@ -99,42 +113,52 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "email": user.email,
             "username": user.username,
             "role": user.role.name,
-            "apartment": user.apartment.apartmentCode if user.apartment else None
+            "apartments": [
+                {"apartmentCode": apt.apartmentCode}
+                for apt in user.apartment_set.all()
+            ]
         }
         return data
     
 #deactive account serializer
+# tìm số lượng căn hộ gắn với tài khoản, check số lượng > 1 thì gỡ bỏ tài khoản khỏi căn hộ chọn khóa
 class DeactiveAccountSerializer(serializers.Serializer):
     account_id = serializers.IntegerField()
+    apartment_code = serializers.CharField()
 
     def validate_account_id(self, value):
         try:
             self.account = Account.objects.get(pkid=value)
         except Account.DoesNotExist:
-            raise serializers.ValidationError("User does not exist.")
+            raise serializers.ValidationError("Account does not exist.")
         return value
 
     def save(self, **kwargs):
-        account = self.account
-        apartment = account.apartment
-
-        #lock account
-        account.is_active = False
-        account.save()
-
-        # update resident.status = 'moved'
-        residents = Resident.objects.filter(member__apartment=apartment)
-        residents.update(status='moved')
+        account = self.account     
+        apartments = Apartment.objects.filter(account=account)  
+        apartmentCode = self.validated_data['apartment_code']
+        apartment = Apartment.objects.get(pk=apartmentCode) 
+        
+        print(len(apartments), apartment)
+        if len(apartments) > 1: #account assigned to >1 apartment
+            # update resident.status = 'left' except owner
+            Resident.objects.filter(member__apartment=apartment, member__isOwner=0).update(status='left')
+        else: 
+            # update resident.status = 'left' 
+            Resident.objects.filter(member__apartment=apartment).update(status='left')
+            #lock account 
+            account.is_active = False
+            account.save()
 
         # delete all members belong to apartment
-        Member.objects.filter(apartment=apartment).delete()
-
-
+        Member.objects.filter(apartment=apartment).update(isOwner=0, isMember=0)
         # update apartment.status='inactive'
         apartment.status = Apartment.Status.inactive
+        apartment.account = None
         apartment.save()
 
         return account
+   
 
 #password reset serializer
 class PasswordResetSerializer(serializers.Serializer):
@@ -187,3 +211,50 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.set_password(new_password)
         user.save()
         return user
+    
+#find account by apartment
+class AccountByApartmentSerializer(serializers.Serializer):
+    apartment_code = serializers.CharField()
+
+    def validate_apartment_code(self, value):
+        try:
+            apartment = Apartment.objects.get(apartmentCode=value)
+        except Apartment.DoesNotExist:
+            raise serializers.ValidationError("Apartment not found")
+
+        if not apartment.account or not apartment.account.is_active:
+            raise serializers.ValidationError("Account not found or inactive")
+
+        self.account = apartment.account 
+        return value
+
+    def get_account(self):
+        return self.account
+    
+#check account exist
+class CheckAccountSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    
+    def validate(self, attrs):
+        email = attrs.get('email')
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        try:
+            account = Account.objects.get(email=email, username=username)
+        except Account.DoesNotExist:
+            if Account.objects.filter(email=email).exists():
+                raise serializers.ValidationError("Email taken", code="email_taken")
+            raise serializers.ValidationError("Account not found", code="not_found")
+
+        if not account.check_password(password):
+            raise serializers.ValidationError("Wrong password", code="invalid_password")
+
+        self.account = account 
+        return attrs
+
+    def get_account(self):
+        return self.account

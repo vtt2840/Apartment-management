@@ -4,6 +4,7 @@ import Home from '../components/Home/Home';
 import PrivateRoute from './PrivateRoutes';
 import Apartment from '../components/Apartment/Apartment';
 import ResetPasswordPage from '../components/Login/ResetPasswordPage';
+import Resident from '../components/Resident/Resident';
 
 const AppRoutes = (props) => {
     return(
@@ -13,6 +14,7 @@ const AppRoutes = (props) => {
             <Route path="/reset-password" element={<ResetPasswordPage/>} />
             <Route path="/" element={<PrivateRoute><Home/></PrivateRoute>}/>
             <Route path="/apartments" element={<PrivateRoute><Apartment/></PrivateRoute>}/>
+            <Route path="/residents" element={<PrivateRoute><Resident/></PrivateRoute>}/>
         </Routes>
         </>
     )

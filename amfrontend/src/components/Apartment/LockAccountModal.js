@@ -1,15 +1,16 @@
 import { Modal, Button } from 'react-bootstrap';
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
 import dangericon from '../../static/danger-icon.png';
-import { lockAccount, accountByApartment } from '../../services/userService';
+import { accountByApartment } from '../../services/userService';
 
 const LockAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
     
     const handleSubmit = async() => {
         const res = await accountByApartment(apartmentCode);
-        console.log(res.data.pkid);
-        onSubmit(res.data.pkid);
+        const data = {
+            apartment_code: apartmentCode,
+            account_id: res.data.pkid
+        }
+        onSubmit(data);
     };
 
     return (

@@ -1,11 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchAllApartments, createNewAccount , lockAccount} from '../../services/userService';
+import { fetchAllApartments, createNewAccount , lockAccount, addAccountExist, updateApartment} from '../../services/userService';
 
 export const getAllApartments = createAsyncThunk(
   'apartment/getAllApartments',
   async (_, {rejectWithValue}) => {
     try {
       const res = await fetchAllApartments();
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response.data);
+    }
+  }
+);
+
+export const editApartment = createAsyncThunk(
+  'apartment/editApartments',
+  async (data, {rejectWithValue}) => {
+    try {
+      const res = await updateApartment(data);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response.data);
@@ -25,6 +37,18 @@ export const addNewAccount = createAsyncThunk(
     }
 );
 
+export const assignAccount = createAsyncThunk(
+  'apartment/assignAccount',
+    async(data, {rejectWithValue}) => {
+      try{
+        const res = await addAccountExist(data);
+        return res.data;
+      }catch(err){
+        return rejectWithValue(err.response.data);
+      }
+    }
+)
+
 export const deactiveAccount = createAsyncThunk(
   'apartment/deactiveAccount',
     async(data, {rejectWithValue}) => {
@@ -36,7 +60,6 @@ export const deactiveAccount = createAsyncThunk(
       }
     }
 )
-
 
 const apartmentSlice = createSlice({
   name: 'apartment',
@@ -62,13 +85,28 @@ const apartmentSlice = createSlice({
         state.error = action.payload;
       })
 
+      // edit apartment 
+      .addCase(editApartment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editApartment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.apartmentList = action.payload;
+      })
+      .addCase(editApartment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // add new account
       .addCase(addNewAccount.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(addNewAccount.fulfilled, (state) => {
+      .addCase(addNewAccount.fulfilled, (state, action) => {
         state.loading = false;
+        state.apartmentList.push(action.payload);
       })
       .addCase(addNewAccount.rejected, (state, action) => {
         state.loading = false;
@@ -80,8 +118,9 @@ const apartmentSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deactiveAccount.fulfilled, (state) => {
+      .addCase(deactiveAccount.fulfilled, (state, action) => {
         state.loading = false;
+        state.apartmentList.push(action.payload);
       })
       .addCase(deactiveAccount.rejected, (state, action) => {
         state.loading = false;

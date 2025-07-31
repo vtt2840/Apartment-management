@@ -1,5 +1,6 @@
 import axios from '../setup/axios';
 
+//login, logout
 const loginUser = (data) => {
     return axios.post("/login/", data);
 }
@@ -7,20 +8,37 @@ const logoutUser = () => {
     return axios.post('/logout/');
 }
 
+//apartment and account
 const fetchAllApartments = () => {
     return axios.get('/apartments/');
+}
+const updateApartment = (data) => {
+    return axios.put('/updateapartment/', data);
 }
 
 const createNewAccount = (data)=> {
     return axios.post('/addnewaccount/', data);
 }
 
+const searchApartments = (keyword) => {
+  return axios.get(`/search-apartments/?q=${encodeURIComponent(keyword)}/`);
+  
+};
+
 const accountByApartment = (data) => {
     return axios.post('/accounts/by-apartment/', {apartment_code: data});
 }
 
-const lockAccount = (accountId) => {
-    return axios.post(`/lockaccount/${accountId}/`);
+const addAccountExist = (data) => {
+    return axios.put('/addaccountapartment/', data);
+}
+
+const checkAccountExists = (data) => {
+    return axios.post('/account/checkaccountexists/', data);
+}
+
+const lockAccount = (data) => {
+    return axios.post(`/lockaccount/`, data);
 }
 
 const resetpassword = (email) => {
@@ -30,6 +48,41 @@ const resetpassword = (email) => {
 const resetconfirm = (uid, token, password) => {
     return axios.post('/password-reset-confirm/', { uid: uid, token: token, new_password: password});
 }
+
+//resident
+const fetchAllResidents = () => {
+    return axios.get('/residents/');
+}
+
+const createNewResident = (data) => {
+    return axios.post('/addnewresident/', data);
+}
+
+const deleteResident = (data) => {
+    return axios.post('/deleteresident/', data);
+}
+const updateResident = (data) => {
+    return axios.put('/updateresident/', data);
+}
+const searchResidents = (keyword) => {
+  return axios.get(`/search-residents/?q=${encodeURIComponent(keyword)}/`);
+  
+};
+
+//temporaryregister
+const temporaryResidence = (data) => {
+    return axios.post('/registertempresidence/', data);
+}
+const temporaryAbsence = (data) => {
+    return axios.post('/registertempabsence/', data);
+}
+const cancelTemporaryStatus = (data) => {
+    return axios.post('/canceltempstatus/', data);
+}
+
+
 export {
-    loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm
+    loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
+    fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
+    updateApartment, searchResidents, searchApartments
 }

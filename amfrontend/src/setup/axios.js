@@ -2,8 +2,9 @@ import axios from "axios";
 import { logout } from "../store/slices/authSlice";
 import store from "../store";
 
+
 const instance = axios.create({
-    baseURL:'http://localhost:8000'
+    baseURL:'http://localhost:8000',
 });
 
 //send cookie in all requests
@@ -19,11 +20,9 @@ instance.interceptors.response.use(
             originalRequest._retry = true;
             try {
                 //call refresh
-                await axios.post("/refresh/", null, {
-                    withCredentials: true
-                });
+                await instance.post("/refresh/");
                 //return old request
-                return axios(originalRequest);
+                return instance(originalRequest);
             } catch (refreshError) {
                 console.error("Refresh token failed");
                 store.dispatch(logout());

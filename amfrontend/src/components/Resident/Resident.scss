@@ -1,0 +1,40 @@
+.container {
+    font-size: 15px;
+
+    .table-striped>tbody>tr:nth-child(odd)>td, 
+    .table-striped>tbody>tr:nth-child(odd)>th {
+        background-color: rgb(235, 248, 244); 
+    }
+    .editresident{
+        padding-left: 5px;
+        padding-right: 10px;
+        cursor: pointer;
+    }
+    .deleteresident{
+        padding-left: 10px;
+        padding-right: 5px;
+        cursor: pointer;
+    }
+    .registertemp{
+        cursor: pointer;
+    }
+}
+.modal-user{
+    .content-body{
+        .redC{
+            color: red;
+        }
+    }
+}
+.img{
+  cursor: pointer;
+}
+.btn{
+    font-weight: 600 !important;
+}
+
+
+.redC{
+    color: red;
+}
+    

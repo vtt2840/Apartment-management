@@ -2,9 +2,12 @@ import './Apartment.scss';
 import React , {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { getAllApartments, addNewAccount, deactiveAccount } from '../../store/slices/apartmentSlice';
+import { getAllApartments, addNewAccount, deactiveAccount, assignAccount, editApartment } from '../../store/slices/apartmentSlice';
 import CreateNewAccountModal from './CreateNewAccountModal';
 import LockAccountModal from './LockAccountModal';
+import EditApartmentModal from './EditApartmentModal';
+import SearchApartmentModal from './SearchApartmentModal';
+import { checkAccountExists } from '../../services/userService';
 
 const Apartment = (props) => {
     const dispatch = useDispatch();
@@ -13,11 +16,18 @@ const Apartment = (props) => {
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showLockModal, setShowLockModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
 
     const role = useSelector(state => state.auth.role);
-    const apartmentCode = useSelector(state => state.auth.apartment);
+    const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
     
-    const filteredApartments = role === 'resident' ? apartmentList.filter(item => item.apartmentCode === apartmentCode) : apartmentList;
+    //const filteredApartments = role === 'resident' ? apartmentList.filter(item => item.apartmentCode === selectedApartmentCode) : apartmentList;
+
+    const filteredApartments = Array.isArray(apartmentList)
+    ? (role === 'resident'
+        ? apartmentList.filter(item => item.apartmentCode === selectedApartmentCode)
+        : apartmentList)
+    : [];
 
     useEffect(()=>{
         dispatch(getAllApartments())   ;   
@@ -40,17 +50,61 @@ const Apartment = (props) => {
         setShowAddModal(true);
     }
 
+    const checkAccount = async (formData) => {
+        try {
+            const res = await checkAccountExists(formData);
+            if (res.status === 200) {
+                return res.data.pkid;
+            }
+        } catch (err) {
+            let temp = 'not found'; //new account
+            if (err.response?.status === 400) {
+                const detail = err.response?.data?.detail;
+                if (detail === "Wrong password") {
+                    toast.error("Vui lòng kiểm tra lại mật khẩu!");
+                    return false;
+                }
+                if (detail === "Email taken") {
+                    toast.error("Kiểm tra lại chủ hộ nếu muốn đăng ký tài khoản đã tồn tại cho căn hộ mới!");
+                    return false;
+                }
+            }
+            if (err.response?.status === 404) {
+                return temp; 
+            }
+            toast.error("Lỗi hệ thống, vui lòng thử lại sau!");
+            return false;
+        }
+    };
+
     const handleSubmitNewAccount = async(formData) => {
         const data = {
             ...formData,
-            apartment: selectedApartment.apartmentCode,
+            apartment_code: selectedApartment.apartmentCode,
         };
-
-        await dispatch(addNewAccount(data));
-        await dispatch(getAllApartments());
-        setShowAddModal(false);
+        try{
+            const accountId = await checkAccount(formData); 
+            const olddata = {
+                email: formData.email,
+                apartmentCode: selectedApartment.apartmentCode,
+                account_id: accountId,
+            };
+            if(accountId && accountId !== 'not found'){
+                await dispatch(assignAccount(olddata));
+                //await dispatch(getAllApartments());
+                toast.success("Thêm tài khoản vào căn hộ thành công!");
+                setShowAddModal(false);
+            } 
+            if(accountId === 'not found'){
+                await dispatch(addNewAccount(data));
+                await dispatch(getAllApartments());
+                toast.success("Tạo tài khoản mới thành công!");
+                setShowAddModal(false);
+            }
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }        
     };
-
 
     //lock account to turn apartment.status to inactive, so that admin can add new account and the old account cant be used to login
     const handleLockAccount = (apartment)=> {
@@ -61,43 +115,64 @@ const Apartment = (props) => {
         setSelectedApartment(apartment);
         setShowLockModal(true);
     }
-    const handleSubmitLockAccount = async (formData) => {
-        await dispatch(deactiveAccount(formData));
-        await dispatch(getAllApartments());
-        setShowLockModal(false);
+    const handleSubmitLockAccount = async (data) => {
+        try{
+            await dispatch(deactiveAccount(data));
+            await dispatch(getAllApartments());
+            toast.success("Khóa tài khoản thành công!");
+            setShowLockModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    }
+
+    const handleEditApartment = (apartment) => {
+        setSelectedApartment(apartment);
+        setShowEditModal(true);
+    }
+
+    const handleSubmitEditApartment = async(formData) => {
+         try{
+            await dispatch(editApartment(formData));
+            await dispatch(getAllApartments());
+            toast.success("Chỉnh sửa thông tin căn hộ thành công!");
+            setShowEditModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
     }
 
     return (
         <>
-        <div className='container mt-3'>
-        <h4>Search</h4>
+        <div className='container mt-4'>
+        {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchApartmentModal/></div>)}
         <table className="table table-bordered table-striped table-hover">
             <thead>
                 <tr>
-                    <th scope="col">STT</th>
-                    <th scope="col">Mã căn hộ</th>
-                    <th scope="col">Chủ hộ</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Tầng</th>
-                    <th scope="col">Diện tích(m2)</th>
-                    <th scope="col">Trạng thái</th>
-                    {role === 'admin' && (<th>Hành động</th>)}
+                    <th className='text-center' scope="col">STT</th>
+                    <th className='text-center' scope="col">Mã căn hộ</th>
+                    <th className='text-center' scope="col">Chủ hộ</th>
+                    <th className='text-center' scope="col">Email</th>
+                    <th className='text-center' scope="col">Tầng</th>
+                    <th className='text-center' scope="col">Diện tích (m2)</th>
+                    <th className='text-center' scope="col">Trạng thái</th>
+                    {role === 'admin' && (<th className='text-center'>Hành động</th>)}
                 </tr>
             </thead>
             <tbody>
                 <>
-                    {filteredApartments.map((item, index) => {
+                    {filteredApartments
+                    .map((item, index) => {
                         return (
                             <tr key={`row-${index}`}>
-                                <td>{index+1}</td>
-                                <td>{item.apartmentCode}</td>
-                                <td>{item.owner ? item.owner.fullName : '---'}</td>
-                                <td>{item.owner ? item.owner.email : '---'}</td>
-                                <td>{item.floor}</td>
-                                <td>{item.area}</td>
+                                <td className='text-center'>{index+1}</td>
+                                <td className='text-center'>{item.apartmentCode}</td>
+                                <td>{item.owner ? item.owner.fullName : ''}</td>
+                                <td>{item.owner ? item.owner.email : ''}</td>
+                                <td className='text-center'>{item.floor}</td>
+                                <td className='text-center'>{item.area}</td>
                                 <td>{item.status === 'active' ? 'Đã bán' : 'Chưa bán'}</td>
-                                <td>
-                                    {role === 'admin' && (
+                                {role === 'admin' && (<td className='text-center'>
                                         <>
                                         <span
                                             title='Thêm tài khoản mới cho căn hộ'
@@ -109,9 +184,13 @@ const Apartment = (props) => {
                                             className='lockaccount'
                                             onClick={()=> handleLockAccount(item)}
                                         ><i className='fa fa-lock'></i></span>
+                                        <span
+                                            title='Chỉnh sửa thông tin căn hộ'
+                                            className='editapartment'
+                                            onClick={()=> handleEditApartment(item)}
+                                        ><i className='fa fa-edit'></i></span>
                                         </>
-                                    )}
-                                </td>
+                                </td>)}
                             </tr>
                         )
                     })}
@@ -129,6 +208,12 @@ const Apartment = (props) => {
             onClose={() => setShowLockModal(false)}
             onSubmit={handleSubmitLockAccount}
             apartmentCode={selectedApartment?.apartmentCode}
+        />
+        <EditApartmentModal
+            show={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            onSubmit={handleSubmitEditApartment}
+            apartment={selectedApartment}
         />
         </div>
         </>

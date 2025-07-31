@@ -20,7 +20,7 @@ body {
       color: rgb(52, 50, 50) !important;
       margin-right: 20px;
       margin-left: 10px;
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 580;
   
       &:hover {
@@ -34,14 +34,36 @@ body {
   }
 }
 
-.dropdown-menu .dropdown-item {
-  color: black !important;
-}
-
-.dropdown-menu .dropdown-item:hover {
-  color: #1e6b41 !important;
-  background-color: transparent; 
-}
 .img{
   margin-left: 30px;
+}
+
+.name{
+  color: #1e6b41;
+  font-weight: 600;
+}
+
+.dropdown-toggle {
+  color: #1e6b41 !important;
+  background-color: white !important;
+  border-color: white !important;
+  font-weight: 600 !important;
+}
+.dropdown-menu {
+  min-width: 5rem !important;
+}
+.dropdown-item {
+  font-size: 16px !important;
+  width: 80% !important;
+
+  &:hover {
+      background-color: white !important;
+      color: #1e6b41 !important;
+    }
+
+    &.active,
+    &.active:hover {
+      background-color: white !important;
+      color: #1e6b41 !important;
+    }
 }

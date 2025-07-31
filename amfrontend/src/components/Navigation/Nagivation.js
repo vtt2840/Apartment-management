@@ -12,24 +12,30 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import account_icon from '../../static/account-icon.png'
 import { logoutUser } from '../../services/userService';
-import { logout } from '../../store/slices/authSlice';
-import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { logout, setSelectedApartment } from '../../store/slices/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Navigation = (props) => {
     let navigate = useNavigate();
-    let location = useLocation();
     const dispatch = useDispatch();
+
     
     const isAuthenticated = useSelector(state => state.auth.role);
+    const role = useSelector(state => state.auth.role);
+    const apartments = useSelector(state => state.auth.apartments);
+    
+    const selectedApartment = useSelector(state => state.auth.selectedApartment);//default selected apartment
 
-    const [username, setUsername] = useState('');
+    useEffect(() => {
+        if (apartments && apartments.length > 0 && !selectedApartment) {
+            dispatch(setSelectedApartment(apartments[0].apartmentCode));
+        }
+    }, [apartments, selectedApartment, dispatch]);
 
 
     const handleLogout = async () => {
         try {
             await logoutUser();
-            setUsername('');
             toast.success("Đăng xuất thành công!");
             dispatch(logout());
             navigate('/login');
@@ -64,14 +70,35 @@ const Navigation = (props) => {
                         style={{ width: '220px', maxWidth: '80vw' }}
                     >
                     <Offcanvas.Header closeButton>
-                        <Offcanvas.Title id="offcanvasNavbarLabel">Skylake</Offcanvas.Title>
+                        <Offcanvas.Title id="offcanvasNavbarLabel">
+                            {role === 'admin' ? (
+                                <div className='name'>Admin</div>
+                            ) : (
+                            <DropdownButton
+                                id="dropdown-apartment-selector"
+                                title={`Căn hộ ${selectedApartment}`}
+                                variant="secondary"
+                                onSelect={(apCode) => dispatch(setSelectedApartment(apCode))}
+                            >
+                                {apartments.map((ap) => (
+                                    <Dropdown.Item
+                                        key={ap.apartmentCode}
+                                        eventKey={ap.apartmentCode}
+                                        active={ap.apartmentCode === selectedApartment}
+                                    >
+                                        {ap.apartmentCode}
+                                    </Dropdown.Item>
+                                ))}
+                            </DropdownButton>
+                            )}
+                        </Offcanvas.Title>
                     </Offcanvas.Header>
                     <Offcanvas.Body>
                         <Nav className="justify-content-end flex-grow-1 pe-3">
                         <NavLink to="/" exact className="nav-link">Trang chủ</NavLink>
                         <NavLink to="/fee" exact className="nav-link">Khoản phí</NavLink>
                         <NavLink to="/apartments" exact className="nav-link">Căn hộ</NavLink>
-                        <NavLink to="/resident" exact className="nav-link">Cư dân</NavLink>
+                        <NavLink to="/residents" exact className="nav-link">Cư dân</NavLink>
                         <NavLink to="/vehicle" exact className="nav-link">Phương tiện</NavLink>
                         <NavDropdown title="Tài khoản" id="basic-nav-dropdown">
                             <NavDropdown.Item href="#action/3.0">Thông tin tài khoản</NavDropdown.Item>
@@ -92,11 +119,32 @@ const Navigation = (props) => {
                     <NavLink to="/" exact className="nav-link">Trang chủ</NavLink>
                     <NavLink to="/fee" exact className="nav-link">Khoản phí</NavLink>
                     <NavLink to="/apartments" exact className="nav-link">Căn hộ</NavLink>
-                    <NavLink to="/resident" exact className="nav-link">Cư dân</NavLink>
+                    <NavLink to="/residents" exact className="nav-link">Cư dân</NavLink>
                     <NavLink to="/vehicle" exact className="nav-link">Phương tiện</NavLink>
                 </Nav>
-                <Nav>
-                    <h5>{username}</h5>
+                <Nav className="d-flex align-items-center gap-2">
+                    <div className='name'>
+                        {role === 'admin' ? (
+                            <div className='name'>Admin</div>
+                        ) : (
+                        <DropdownButton
+                            id="dropdown-apartment-selector"
+                            title={`Căn hộ ${selectedApartment || '---'}`}
+                            variant="secondary"
+                            onSelect={(apCode) => dispatch(setSelectedApartment(apCode))}
+                        >
+                            {apartments.map((ap) => (
+                            <Dropdown.Item
+                                key={ap.apartmentCode}
+                                eventKey={ap.apartmentCode}
+                                active={ap.apartmentCode === selectedApartment}
+                            >
+                                {ap.apartmentCode}
+                            </Dropdown.Item>
+                            ))}
+                        </DropdownButton>
+                        )}
+                    </div>
                     <DropdownButton
                     className="drop-button"
                     align="end"

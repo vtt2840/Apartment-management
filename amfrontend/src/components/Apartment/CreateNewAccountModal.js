@@ -9,6 +9,7 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
         password: '',
     });
     const [confirmPassword, setConfirmPassword] = useState("");
+    
 
     useEffect(() => {
         if (show) {
@@ -30,7 +31,7 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
     const [objCheckInput, setObjCheckInput] = useState(defaultValidInput);
 
     
-    const isValidInputs = () => {
+    const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);
         if(!formData.email){
             toast.error("Email không được để trống!");
@@ -63,8 +64,7 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
             toast.error("Mật khẩu không trùng khớp!");
             setObjCheckInput({...defaultValidInput, isValidConfirmPassword: false });
             return false;
-        }
-        
+        }        
         return true;
     }
 
@@ -72,8 +72,9 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
         setFormData({...formData, [e.target.name]: e.target.value});
     };
 
-    const handleSubmit = () => {
-        let check = isValidInputs();
+
+    const handleSubmit = async () => {
+        let check = await isValidInputs();
         if(check === true){
             onSubmit(formData);
         }
