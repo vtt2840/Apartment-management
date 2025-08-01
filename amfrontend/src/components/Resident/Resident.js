@@ -29,11 +29,6 @@ const Resident = (props) => {
     const [showRegisterTempModal, setShowRegisterTempModal] = useState(false);
     const [showCancelRegisterTempModal, setShowCancelRegisterTempModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [paginatedData, setPaginatedData] = useState([]);
-    const [totalPages, setTotalPages] = useState(1);
-    const [rawResidents, setRawResidents] = useState([]);
     const [reloadTrigger, setReloadTrigger] = useState(false);
         
     const [absenceDetail, setAbsenceDetail] = useState(null);
@@ -42,31 +37,112 @@ const Resident = (props) => {
     const [showResidenceModal, setShowResidenceModal] = useState(false);
 
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await dispatch(getAllResidents(currentPage));
-                setRawResidents(res.payload.results);
-            } catch (err) {
-                toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [paginatedData, setPaginatedData] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const [rawResidents, setRawResidents] = useState([]);
+  
+    
+    const fetchAllResidents = async () => {
+        try {
+            let allResults = [];
+            let page = 1;
+            let hasNext = true;
+
+            while (hasNext) {
+                const res = await dispatch(getAllResidents(page));
+                const { results, next } = res.payload;
+
+                if (Array.isArray(results)) {
+                    allResults = [...allResults, ...results];
+                }
+
+                if (next) {
+                    page += 1;
+                } else {
+                    hasNext = false;
+                }
             }
-        };
-        fetchData();
+
+            setRawResidents(allResults);  // Dữ liệu đầy đủ ở đây
+            console.log(allResults);
+        } catch (err) {
+            toast.error("Có lỗi xảy ra khi tải cư dân!");
+        }
+    };
+    // const fetchAllResidents = async () => {
+    //     try {
+    //         let allResults = [];
+    //         const firstRes = await dispatch(getAllResidents(1));
+
+    //         if (!firstRes.payload) return;
+
+    //         const { results, count } = firstRes.payload;
+    //         allResults = [...results];
+
+    //         const pageSize = 10; 
+    //         const totalPages = Math.ceil(count / pageSize);
+
+    //         for (let page = 2; page <= totalPages; page++) {
+    //             const res = await dispatch(getAllResidents(page));
+    //             if (res.payload?.results) {
+    //                 allResults = [...allResults, ...res.payload.results];
+    //             }
+    //         }
+
+    //         setRawResidents(allResults);
+    //     } catch (err) {
+    //         toast.error("Có lỗi xảy ra khi tải cư dân!");
+    //     }
+    // };
+
+
+
+    useEffect(() => {
+        fetchAllResidents();
     }, [dispatch, reloadTrigger]);
 
+
     useEffect(() => {
-        const expandedResidents = rawResidents.flatMap((item) =>
-            item.apartment
-                .filter((apt) => showLeftResidents || apt.isMember === true)
-                .map((apt) => ({
-                    ...item,
-                    apartmentCode: apt.apartmentCode,
-                    isOwner: apt.isOwner,
-                    isMember: apt.isMember
-                }))
+        console.log("selectedApartmentCode:", selectedApartmentCode);
+        console.log("rawData", rawResidents);
+
+        const expandedResidents = rawResidents.flatMap((item) => {
+            console.log("===> Cư dân:", item.fullName);
+            console.log("    Căn hộ:", item.apartment.map(a => a.apartmentCode));
+            console.log("    selectedApartmentCode:", selectedApartmentCode);
+            console.log("Raw total:", rawResidents.length);
+
+
+            const filteredApartments = item.apartment.filter((apt) => {
+                const isMemberValid = showLeftResidents || apt.isMember === true;
+
+                if (role === 'admin') {
+                    return isMemberValid;
+                } else if (role === 'resident') {
+                    return isMemberValid && apt.apartmentCode === selectedApartmentCode;
+                }
+                return false;
+            });
+
+            return filteredApartments.map((apt) => ({
+                ...item,
+                apartmentCode: apt.apartmentCode,
+                isOwner: apt.isOwner,
+                isMember: apt.isMember,
+            }));
+        });
+
+
+        const uniqueResidents = expandedResidents.filter(
+            (item, index, self) =>
+                index === self.findIndex(
+                    (r) => r.residentId === item.residentId && r.apartmentCode === item.apartmentCode
+                )
         );
 
-        const sortedResidents = [...expandedResidents].sort((a, b) =>
+        const sortedResidents = [...uniqueResidents].sort((a, b) =>
             a.apartmentCode.localeCompare(b.apartmentCode) || a.residentId - b.residentId
         );
 
@@ -74,15 +150,20 @@ const Resident = (props) => {
         const start = (currentPage - 1) * pageSize;
         const paginated = sortedResidents.slice(start, start + pageSize);
 
+        console.log("Expanded:", expandedResidents.length);
+        console.log("Unique:", uniqueResidents.length);
+        console.log("Sorted:", sortedResidents.length);
+        console.log("Paginated:", paginated.length);
+
         setPaginatedData(paginated);
         setTotalPages(Math.ceil(sortedResidents.length / pageSize));
-    }, [rawResidents, currentPage, showLeftResidents]);
+    }, [rawResidents, currentPage, showLeftResidents, selectedApartmentCode]);
+
+
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
-    };    
-
-    const filteredLeftResidents = Array.isArray(residentList) ? residentList.filter(resident => resident.apartment?.some(item => item.isMember !== false && item.apartmentCode === selectedApartmentCode)): [];
+    };
 
     //add new resident
     const handleAddResident = () => {
@@ -109,7 +190,6 @@ const Resident = (props) => {
         setSelectedResident(resident);
         setShowEditModal(true);
     }
-
     const handleSubmitEditResident = async (formData) => {
         try{
             const data = {
@@ -138,7 +218,6 @@ const Resident = (props) => {
         setSelectedResident(resident);
         setShowDeleteModal(true);
     }
-
     const handleSubmitDeleteResident = async(data)=>{
         try{
             await dispatch(deleteOneResident(data));
@@ -212,7 +291,7 @@ const Resident = (props) => {
         } catch (err) {
             toast.error("Không tìm thấy thông tin tạm vắng!");
         }
-    };
+    }
     const handleViewResidenceDetail = async (absenceId) => {
         try {
             console.log(absenceId); 
@@ -225,7 +304,6 @@ const Resident = (props) => {
         }
     };
 
-
     return (
         <>
         <div className='container mt-4'>
@@ -237,10 +315,8 @@ const Resident = (props) => {
                     src={addicon}
                     width="30"
                     height="30"
-                    alt="Thêm cư dân mới"
-                    />Thêm cư dân mới 
+                    alt="Thêm cư dân mới"/>Thêm cư dân mới 
                 </button>
-                
             </div>)}
         </div>
         <table className="table table-bordered table-striped table-hover">
@@ -255,17 +331,14 @@ const Resident = (props) => {
                     <th className='text-center' scope="col">Quê quán</th>
                     <th className='text-center' scope="col">Số điện thoại</th>
                     <th className='text-center' scope="col">CCCD</th>
-                    <th className='text-center' scope="col">
-                        Trạng thái
+                    <th className='text-center' scope="col">Trạng thái
                         {role === 'admin' && (
                             <button
                                 onClick={() => setShowLeftResidents(prev => !prev)}
                                 className="btn btn-sm btn-light ms-2"
                                 title={showLeftResidents ? 'Ẩn cư dân đã rời đi' : 'Hiện cư dân đã rời đi'}
-                            >
-                                <i className={`fa ${showLeftResidents ? 'fa fa-sign-in' : 'fa fa-sign-out'}`}></i>
-                            </button>
-                        )}
+                            ><i className={`fa ${showLeftResidents ? 'fa fa-sign-in' : 'fa fa-sign-out'}`}></i>
+                            </button>)}
                     </th>
                     {role === 'resident' && (<th className='text-center' scope="col">Tạm trú / Tạm vắng</th>)}
                     {role === 'resident' && (<th className='text-center'>Hành động</th>)}
@@ -273,11 +346,11 @@ const Resident = (props) => {
             </thead>
             <tbody>
                 <>
-                    {role === 'admin' && paginatedData && paginatedData.length > 0 &&(
+                    {paginatedData && paginatedData.length > 0 &&(
                     paginatedData.map((item, index) => (
                         <tr key={`row-${index}`}>
-                        <td>{(currentPage - 1) * 10 + index + 1}</td>
-                        <td className='text-center'>{item.apartmentCode}</td>
+                        <td>{index + 1}</td>
+                        {role === 'admin' && (<td className='text-center'>{item.apartmentCode}</td>)}
                         <td>{item.fullName}</td>
                         <td>{item.email}</td>
                         <td>{item.dateOfBirth || ''}</td>
@@ -285,7 +358,7 @@ const Resident = (props) => {
                         <td>{item.hometown || ''}</td>
                         <td>{item.phoneNumber || ''}</td>
                         <td>{item.idNumber || ''}</td>
-                        <td className='text-center'>{
+                        {role === 'admin' && (<td className='text-center'>{
                             item.isMember === false ? 'Rời đi' : 
                                 item.status === 'living' ? 'Thường trú' : 
                                     item.status === 'temporaryabsence' ? (
@@ -293,35 +366,18 @@ const Resident = (props) => {
                                             className='text-temp'
                                             title='Xem thông tin'
                                             onClick={() => handleViewAbsenceDetail(item.absence_id)}
-                                        >
-                                            Tạm vắng
-                                        </span>
-                                    ) : 
-                                    (
+                                        >Tạm vắng
+                                        </span>) 
+                                    : (
                                         <span
                                             className='text-temp'
                                             title='Xem thông tin'
                                             onClick={() => handleViewResidenceDetail(item.residence_id)}
-                                        >
-                                            Tạm trú
-                                        </span>
-                                    )
-                        }</td>
-                        </tr>
-                        
-                    )))}
-
-                    {role === 'resident' && filteredLeftResidents && filteredLeftResidents.length > 0 &&(
-                    filteredLeftResidents.map((item, index) => (
-                        <tr key={`row-${index}`}>
-                        <td>{index + 1}</td>
-                        <td>{item.fullName}</td>
-                        <td>{item.email}</td>
-                        <td>{item.dateOfBirth || ''}</td>
-                        <td className='text-center'>{item.gender ? (item.gender === 'male' ? 'Nam' : 'Nữ') : '---'}</td>
-                        <td>{item.hometown || ''}</td>
-                        <td>{item.phoneNumber || ''}</td>
-                        <td>{item.idNumber || ''}</td>
+                                        >Tạm trú
+                                        </span>)
+                        }</td>)}
+                        {role === 'resident' && 
+                        <>
                         <td className='text-center'>{
                             item.status === 'living' ? 'Thường trú' : 
                             item.status === 'temporaryabsence' ? (
@@ -329,19 +385,15 @@ const Resident = (props) => {
                                     className='text-temp'
                                     title='Xem thông tin'
                                     onClick={() => handleViewAbsenceDetail(item.absence_id)}
-                                >
-                                Tạm vắng
-                                </span>
-                            ) : 
-                            (
+                                > Tạm vắng
+                                </span>)  
+                            : (
                                 <span
                                     className='text-temp'
                                     title='Xem thông tin'
                                     onClick={() => handleViewResidenceDetail(item.residence_id)}
-                                >
-                                Tạm trú
-                                </span>
-                            )
+                                >Tạm trú
+                                </span>)
                         }</td>
                         <td className='text-center'>
                             <span
@@ -365,8 +417,8 @@ const Resident = (props) => {
                             >{item.status === 'left' ? '' : <i className='fa fa-trash'></i>}</span>
                             </>                            
                         </td>
-                        </tr>
-                    )))}
+                        </>}
+                        </tr>)))}
                 </>
             </tbody>
         </table>
@@ -375,51 +427,43 @@ const Resident = (props) => {
             show={showAddModal}
             onClose={() => setShowAddModal(false)}
             onSubmit={handleSubmitAddResident}
-            apartmentCode={selectedApartmentCode}
-        />
+            apartmentCode={selectedApartmentCode}/>
         <DeleteResidentModal
             show={showDeleteModal}
             onClose={() => setShowDeleteModal(false)}
             onSubmit={handleSubmitDeleteResident}
             resident={selectedResident?.residentId}  
-            name={selectedResident?.fullName}          
-        />
+            name={selectedResident?.fullName}          />
         <RegisterTempModal
             show={showRegisterTempModal}
             onClose={() => setShowRegisterTempModal(false)}
             onSubmit={handleSubmitRegisterTemp}
             resident={selectedResident?.residentId}
-            name={selectedResident?.fullName}
-        />
+            name={selectedResident?.fullName}/>
         <CancelRegisterTempModal
             show={showCancelRegisterTempModal}
             onClose={() => setShowCancelRegisterTempModal(false)}
             onSubmit={handleSubmitCancelRegisterTemp}
             resident={selectedResident?.residentId}
-            name={selectedResident?.fullName}
-        />
+            name={selectedResident?.fullName}/>
         <EditResidentModal
             show={showEditModal}
             onClose={() => setShowEditModal(false)}
             onSubmit={handleSubmitEditResident}
-            resident={selectedResident}
-        />
+            resident={selectedResident}/>
         <TemporaryAbsenceDetailModal
             show={showAbsenceModal}
             onClose={() => setShowAbsenceModal(false)}
-            data={absenceDetail}
-        />
+            data={absenceDetail}/>
         <TemporaryResidenceDetailModal
             show={showResidenceModal}
             onClose={() => setShowResidenceModal(false)}
-            data={residenceDetail}
-        />
-
-        {role === 'admin' && (<ReactPaginate
+            data={residenceDetail}/>
+        <ReactPaginate
             nextLabel="Sau >"
             onPageChange={handlePageChange}
             pageRangeDisplayed={3}
-            marginPagesDisplayed={2}
+            marginPagesDisplayed={1}
             pageCount={totalPages}
             previousLabel="< Trước"
             pageClassName="page-item"
@@ -436,7 +480,7 @@ const Resident = (props) => {
             renderOnZeroPageCount={null}
             forcePage={currentPage - 1}
             className={'pagination justify-content-center'}
-        />)}
+        />
         </>
     )
 }

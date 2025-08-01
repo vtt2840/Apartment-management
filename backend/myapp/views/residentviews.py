@@ -9,11 +9,25 @@ from rest_framework import status
 from django.db.models.functions import Greatest
 from django.contrib.postgres.search import TrigramSimilarity
 
-#get all residents
+
+# #get all residents
+# class ResidentListAPIView(generics.ListAPIView):
+#     serializer_class = ResidentSerializer
+#     permission_classes = [IsAuthenticated]
+#     queryset = Resident.objects.all()
+
 class ResidentListAPIView(generics.ListAPIView):
-    queryset = Resident.objects.all().order_by('member__apartment__apartmentCode', 'residentId')
     serializer_class = ResidentSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Resident.objects.all()\
+            .prefetch_related('member_set', 'temporaryabsence_set', 'temporaryresidence_set')\
+            .order_by('residentId')\
+            .distinct()
+
+
+
 
 #create resident api view
 class CreateResidentAPIView(generics.CreateAPIView):

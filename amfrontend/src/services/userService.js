@@ -52,7 +52,7 @@ const resetconfirm = (uid, token, password) => {
 
 //resident
 
-const fetchAllResidents = (page = 1) => {
+const fetchAllResidents = (page) => {
     return axios.get(`/residents/?page=${page}`);
 }
 

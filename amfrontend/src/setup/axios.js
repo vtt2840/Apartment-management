@@ -2,7 +2,6 @@ import axios from "axios";
 import { logout } from "../store/slices/authSlice";
 import store from "../store";
 
-
 const instance = axios.create({
     baseURL:'http://localhost:8000',
 });

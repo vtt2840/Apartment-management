@@ -10,7 +10,6 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
     });
     const [confirmPassword, setConfirmPassword] = useState("");
     
-
     useEffect(() => {
         if (show) {
             setFormData({
@@ -29,7 +28,6 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
         isValidConfirmPassword: true
     }
     const [objCheckInput, setObjCheckInput] = useState(defaultValidInput);
-
     
     const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);

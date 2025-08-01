@@ -25,27 +25,63 @@ const Apartment = (props) => {
     const [totalPages, setTotalPages] = useState(1);
     const [reloadTrigger, setReloadTrigger] = useState(false);
 
+    const fetchAllApartments = async () => {
+        try {
+            let allResults = [];
+            let page = 1;
+            let hasNext = true;
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await dispatch(getAllApartments(currentPage));
-                const rawData = res.payload.results;
+            while (hasNext) {
+                const res = await dispatch(getAllApartments(page));
+                const { results, next } = res.payload;
 
-                const filtered = Array.isArray(rawData)
-                    ? (role === 'resident'
-                        ? rawData.filter(item => item.apartmentCode === selectedApartmentCode)
-                        : rawData)
-                    : [];
+                if (Array.isArray(results)) {
+                    allResults = [...allResults, ...results];
+                }
 
-                setPaginatedData(filtered);
-                setTotalPages(Math.ceil(res.payload.count / 10));
-            } catch (err) {
-                toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+                if (next) {
+                    page += 1;
+                } else {
+                    hasNext = false;
+                }
             }
-        };
-        fetchData();
+
+            const filtered = role === 'resident'
+                ? allResults.filter(item => item.apartmentCode === selectedApartmentCode)
+                : allResults;
+
+            setPaginatedData(filtered.slice((currentPage - 1) * 10, currentPage * 10));
+            setTotalPages(Math.ceil(filtered.length / 10));
+        } catch (err) {
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    };
+    useEffect(() => {
+        fetchAllApartments();
     }, [currentPage, dispatch, role, selectedApartmentCode, reloadTrigger]);
+
+
+
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const res = await dispatch(getAllApartments(currentPage));
+    //             const rawData = res.payload.results;
+
+    //             const filtered = Array.isArray(rawData)
+    //                 ? (role === 'resident'
+    //                     ? rawData.filter(item => item.apartmentCode === selectedApartmentCode)
+    //                     : rawData)
+    //                 : [];
+
+    //             setPaginatedData(filtered);
+    //             setTotalPages(Math.ceil(res.payload.count / 10));
+    //         } catch (err) {
+    //             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+    //         }
+    //     };
+    //     fetchData();
+    // }, [currentPage, dispatch, role, selectedApartmentCode, reloadTrigger]);
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
