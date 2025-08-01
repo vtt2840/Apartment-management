@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserCreateSerializer, UserSerializer
+from djoser.serializers import UserSerializer
 from ..models import Role, Account, Apartment, Resident, Member
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .apartmentserializers import ApartmentSerializer
@@ -68,13 +67,14 @@ class CreateAccountSerializer(serializers.ModelSerializer):
             resident.status = 'living'
             resident.save()
 
-        #create new member
-        Member.objects.create(
-            resident=resident,
-            apartment=apartment,
-            isOwner=True,
-            isMember=True
-        )
+        # check to create new member
+        if not Member.objects.filter(resident=resident, apartment=apartment).exists():
+            Member.objects.create(
+                resident=resident,
+                apartment=apartment,
+                isOwner=True,
+                isMember=True
+            )
 
         account = Account.objects.create_user(
             email=validated_data["email"],
@@ -121,7 +121,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
     
 #deactive account serializer
-# tìm số lượng căn hộ gắn với tài khoản, check số lượng > 1 thì gỡ bỏ tài khoản khỏi căn hộ chọn khóa
 class DeactiveAccountSerializer(serializers.Serializer):
     account_id = serializers.IntegerField()
     apartment_code = serializers.CharField()

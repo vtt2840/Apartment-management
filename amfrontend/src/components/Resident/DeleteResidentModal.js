@@ -25,7 +25,6 @@ const DeleteResidentModal = ({ show, onClose, onSubmit, resident, name }) => {
                     Xóa cư dân {name} 
                 </Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
                 <h6>Bạn có chắc chắn muốn xóa cư dân này?</h6>
             </Modal.Body>

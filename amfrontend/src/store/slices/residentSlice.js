@@ -84,7 +84,6 @@ export const cancelTempStatus = createAsyncThunk(
     }
 )
 
-
 const residentSlice = createSlice({
   name: 'resident',
   initialState: {
@@ -102,7 +101,7 @@ const residentSlice = createSlice({
       })
       .addCase(getAllResidents.fulfilled, (state, action) => {
         state.loading = false;
-        state.residentList = action.payload;
+        state.residentList = action.payload.results;
       })
       .addCase(getAllResidents.rejected, (state, action) => {
         state.loading = false;

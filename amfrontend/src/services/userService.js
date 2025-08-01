@@ -81,10 +81,16 @@ const temporaryAbsence = (data) => {
 const cancelTemporaryStatus = (data) => {
     return axios.post('/canceltempstatus/', data);
 }
+const getTemporaryAbsenceDetail = (absenceId) => {
+    return axios.get(`/temporary-absence/${absenceId}/`);
+}
 
+const getTemporaryResidenceDetail = (absenceId) => {
+    return axios.get(`/temporary-residence/${absenceId}/`);
+}
 
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
-    updateApartment, searchResidents, searchApartments
+    updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail
 }

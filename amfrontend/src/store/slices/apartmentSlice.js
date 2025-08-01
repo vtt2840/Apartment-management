@@ -92,7 +92,6 @@ const apartmentSlice = createSlice({
       })
       .addCase(editApartment.fulfilled, (state, action) => {
         state.loading = false;
-        state.apartmentList = action.payload;
       })
       .addCase(editApartment.rejected, (state, action) => {
         state.loading = false;
@@ -106,9 +105,21 @@ const apartmentSlice = createSlice({
       })
       .addCase(addNewAccount.fulfilled, (state, action) => {
         state.loading = false;
-        state.apartmentList.push(action.payload);
       })
       .addCase(addNewAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+       // assign account
+      .addCase(assignAccount.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(assignAccount.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(assignAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -120,7 +131,6 @@ const apartmentSlice = createSlice({
       })
       .addCase(deactiveAccount.fulfilled, (state, action) => {
         state.loading = false;
-        state.apartmentList.push(action.payload);
       })
       .addCase(deactiveAccount.rejected, (state, action) => {
         state.loading = false;

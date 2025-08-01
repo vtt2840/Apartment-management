@@ -23,6 +23,8 @@ const Apartment = (props) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [paginatedData, setPaginatedData] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
+    const [reloadTrigger, setReloadTrigger] = useState(false);
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,7 +45,7 @@ const Apartment = (props) => {
             }
         };
         fetchData();
-    }, [currentPage, dispatch, role, selectedApartmentCode]);
+    }, [currentPage, dispatch, role, selectedApartmentCode, reloadTrigger]);
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
@@ -101,18 +103,21 @@ const Apartment = (props) => {
             };
             if(accountId && accountId !== 'not found'){
                 await dispatch(assignAccount(olddata));
+                setReloadTrigger(prev => !prev);
                 //await dispatch(getAllApartments());
                 toast.success("Thêm tài khoản vào căn hộ thành công!");
                 setShowAddModal(false);
             } 
             if(accountId === 'not found'){
                 await dispatch(addNewAccount(data));
-                await dispatch(getAllApartments());
+                setReloadTrigger(prev => !prev);
+                //await dispatch(getAllApartments());
                 toast.success("Tạo tài khoản mới thành công!");
                 setShowAddModal(false);
             }
         }catch(err){
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+            console.log(err);
         }        
     };
 
@@ -128,7 +133,8 @@ const Apartment = (props) => {
     const handleSubmitLockAccount = async (data) => {
         try{
             await dispatch(deactiveAccount(data));
-            await dispatch(getAllApartments());
+            setReloadTrigger(prev => !prev);
+            //await dispatch(getAllApartments());
             toast.success("Khóa tài khoản thành công!");
             setShowLockModal(false);
         }catch(err){
@@ -144,6 +150,7 @@ const Apartment = (props) => {
     const handleSubmitEditApartment = async(formData) => {
          try{
             await dispatch(editApartment(formData));
+            setReloadTrigger(prev => !prev);
             await dispatch(getAllApartments());
             toast.success("Chỉnh sửa thông tin căn hộ thành công!");
             setShowEditModal(false);
@@ -223,7 +230,7 @@ const Apartment = (props) => {
             apartment={selectedApartment}
         />
         </div>
-        <ReactPaginate
+        {role === 'admin' && (<ReactPaginate
             nextLabel="Sau >"
             onPageChange={handlePageChange}
             pageRangeDisplayed={3}
@@ -244,8 +251,7 @@ const Apartment = (props) => {
             renderOnZeroPageCount={null}
             forcePage={currentPage - 1}
             className={'pagination justify-content-center'}
-        />
-
+        />)}
         </>
     )
 }

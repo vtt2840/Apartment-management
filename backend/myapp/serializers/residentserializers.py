@@ -11,6 +11,8 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class ResidentSerializer(serializers.ModelSerializer):
     apartment = MemberSerializer(source="member_set", many=True)
+    absence_id = serializers.SerializerMethodField()
+    residence_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Resident
@@ -25,7 +27,17 @@ class ResidentSerializer(serializers.ModelSerializer):
             "idNumber",
             "status",
             "apartment",  
+            "absence_id",
+            "residence_id",
         ]
+
+    def get_absence_id(self, obj):
+        absence = obj.temporaryabsence_set.first()
+        return absence.pk if absence else None
+    
+    def get_residence_id(self, obj):
+        residence = obj.temporaryresidence_set.first()
+        return residence.pk if residence else None
 
 class CreateResidentSerializer(serializers.ModelSerializer):
     apartment_code = serializers.CharField(write_only=True)
@@ -103,7 +115,7 @@ class RegisterTemporaryAbsenceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TemporaryAbsence
-        fields = ("resident_id", "startDate", "endDate", "reason", "destination")
+        fields = ("absenceId", "resident_id", "startDate", "endDate", "reason", "destination")
     
     def create(self, validated_data):
         resident_id = validated_data.pop("resident_id")

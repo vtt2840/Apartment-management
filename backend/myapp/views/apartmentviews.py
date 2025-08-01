@@ -14,14 +14,17 @@ class ApartmentListAPIView(generics.ListAPIView):
     serializer_class = ApartmentSerializer
     permission_classes = [IsAuthenticated,]
 
+#add account exist in database to another apartment
+
 class AddAccountExistToApartment(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
         serializer = AssignAccountToApartmentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Account assigned and member created successfully."}, status=status.HTTP_200_OK)
+            apartment = serializer.save()
+            response_data = ApartmentSerializer(apartment).data
+            return Response(response_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateApartment(APIView):

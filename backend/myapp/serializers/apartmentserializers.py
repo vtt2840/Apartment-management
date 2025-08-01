@@ -33,12 +33,15 @@ class AssignAccountToApartmentSerializer(serializers.Serializer):
         account = Account.objects.get(pkid=account_id)
         resident = Resident.objects.get(email=email)
 
-        Member.objects.create(
-            resident=resident,
-            apartment=apartment,
-            isOwner=True,
-            isMember=True
-        )
+        #check to create new member
+        if not Member.objects.filter(resident=resident, apartment=apartment).exists():
+            Member.objects.create(
+                resident=resident,
+                apartment=apartment,
+                isOwner=True,
+                isMember=True
+            )
+
 
         apartment.status = Apartment.Status.active
         apartment.account = account

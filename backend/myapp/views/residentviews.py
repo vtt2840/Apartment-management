@@ -15,14 +15,13 @@ class ResidentListAPIView(generics.ListAPIView):
     serializer_class = ResidentSerializer
     permission_classes = [IsAuthenticated,]
 
-
 #create resident api view
 class CreateResidentAPIView(generics.CreateAPIView):
     queryset = Resident.objects.all()
     serializer_class = CreateResidentSerializer
     permission_classes = [IsAuthenticated,]
 
-
+#delete resident
 class DeleteResident(APIView):
     permission_classes = [IsAuthenticated,]
     def post(self, request):
@@ -32,16 +31,19 @@ class DeleteResident(APIView):
             return Response({'status': 'success', 'message': 'Resident deleted'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+#register temporary residence
 class RegisterTemporaryResidence(generics.CreateAPIView):
     queryset = TemporaryResidence.objects.all()
     serializer_class = RegisterTemporaryResidenceSerializer
     permission_classes = [IsAuthenticated,]
     
+#register temporary absence
 class RegisterTemporaryAbsence(generics.CreateAPIView):
     queryset = TemporaryAbsence.objects.all()
     serializer_class = RegisterTemporaryAbsenceSerializer
     permission_classes = [IsAuthenticated,]
     
+#cancel register temporary status
 class CancelRegisterTemp(APIView):
     permission_classes = [IsAuthenticated,]
     def post(self, request):
@@ -51,6 +53,7 @@ class CancelRegisterTemp(APIView):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+#update resident info
 class UpdateResident(APIView):
     permission_classes = [IsAuthenticated,]
 
@@ -67,6 +70,7 @@ class UpdateResident(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#search resident
 class SearchResidentView(APIView):
     def get(self, request):
         keyword = request.query_params.get('q', '')
@@ -85,3 +89,22 @@ class SearchResidentView(APIView):
 
         serializer = ResidentSerializer(queryset, many=True)
         return Response(serializer.data)
+    
+#get temporary residence detail
+class TemporaryResidenceDetailView(APIView):
+    def get(self, request, pk):
+        try:
+            absence = TemporaryResidence.objects.get(pk=pk)
+            serializer = RegisterTemporaryResidenceSerializer(absence)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TemporaryResidence.DoesNotExist:
+            return Response({"detail": "not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class TemporaryAbsenceDetailView(APIView):
+    def get(self, request, pk):
+        try:
+            absence = TemporaryAbsence.objects.get(pk=pk)
+            serializer = RegisterTemporaryAbsenceSerializer(absence)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except TemporaryAbsence.DoesNotExist:
+            return Response({"detail": "not found"}, status=status.HTTP_404_NOT_FOUND)

@@ -91,7 +91,6 @@ const CreateNewResidentModal = ({ show, onClose, onSubmit, apartmentCode }) => {
         setFormData({...formData, [e.target.name]: e.target.value});
     };
 
-
     const handleSubmit = async () => {
         let check = await isValidInputs();
         if(check === true){

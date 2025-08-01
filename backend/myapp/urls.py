@@ -3,7 +3,7 @@ from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefres
                                  DeactivateAccount, AccountByApartment, PasswordResetConfirm, ResetPassword, CheckAccount)
 from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartment, UpdateApartment, SearchApartmentView
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
-                                  CancelRegisterTemp, UpdateResident, SearchResidentView)
+                                  CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView)
 
 urlpatterns = [
     path('login/', CustomTokenObtainPairAPIView.as_view(), name='login'),
@@ -31,7 +31,10 @@ urlpatterns = [
 
     path('registertempresidence/', RegisterTemporaryResidence.as_view(), name='register-temp-residence'),
     path('registertempabsence/', RegisterTemporaryAbsence.as_view(), name='register-temp-absence'),
-    path('canceltempstatus/', CancelRegisterTemp.as_view(), name='cancel-temp-status')
-
-
+    path('canceltempstatus/', CancelRegisterTemp.as_view(), name='cancel-temp-status'),
+    path('temporary-absence/<int:pk>/', TemporaryAbsenceDetailView.as_view(), name='temporary-absence-detail'),
+    path('temporary-residence/<int:pk>/', TemporaryResidenceDetailView.as_view(), name='temporary-residence-detail'),
 ]
+
+
+

@@ -11,6 +11,10 @@ import CancelRegisterTempModal from './CancelRegisterTempModal';
 import EditResidentModal from './EditResidentModal';
 import SearchResidentModal from './SearchResidentModal';
 import ReactPaginate from 'react-paginate';
+import TemporaryAbsenceDetailModal from './TemporaryAbsenceDetailModal';
+import TemporaryResidenceDetailModal from './TemporaryResidenceDetailModal';
+import { getTemporaryAbsenceDetail, getTemporaryResidenceDetail } from '../../services/userService';
+
 
 const Resident = (props) => {
     const dispatch = useDispatch();
@@ -30,6 +34,12 @@ const Resident = (props) => {
     const [paginatedData, setPaginatedData] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [rawResidents, setRawResidents] = useState([]);
+    const [reloadTrigger, setReloadTrigger] = useState(false);
+        
+    const [absenceDetail, setAbsenceDetail] = useState(null);
+    const [showAbsenceModal, setShowAbsenceModal] = useState(false);
+    const [residenceDetail, setResidenceDetail] = useState(null);
+    const [showResidenceModal, setShowResidenceModal] = useState(false);
 
 
     useEffect(() => {
@@ -42,7 +52,7 @@ const Resident = (props) => {
             }
         };
         fetchData();
-    }, [dispatch]);
+    }, [dispatch, reloadTrigger]);
 
     useEffect(() => {
         const expandedResidents = rawResidents.flatMap((item) =>
@@ -86,7 +96,7 @@ const Resident = (props) => {
         };
         try{
             await dispatch(addNewResident(data));
-            await dispatch(getAllResidents());
+            setReloadTrigger(prev => !prev);
             toast.success("Thêm cư dân thành công!");
             setShowAddModal(false);
         }catch(err){
@@ -108,7 +118,7 @@ const Resident = (props) => {
                 gender: formData.gender === 'Nam' ? 'male' : formData.gender === 'Nữ' ? 'female' : formData.gender
             }
             await dispatch(editResident(data));
-            await dispatch(getAllResidents());
+            setReloadTrigger(prev => !prev);
             toast.success("Chỉnh sửa thông tin cư dân thành công!");
             setShowEditModal(false);
         }catch(err){
@@ -132,7 +142,7 @@ const Resident = (props) => {
     const handleSubmitDeleteResident = async(data)=>{
         try{
             await dispatch(deleteOneResident(data));
-            await dispatch(getAllResidents());
+            setReloadTrigger(prev => !prev);
             toast.success("Xóa cư dân thành công!");
             setShowDeleteModal(false);
         }catch(err){
@@ -156,7 +166,7 @@ const Resident = (props) => {
                     destination: formData.destination
                 }
                 await dispatch(registerTemporaryAbsence(data));
-                await dispatch(getAllResidents());
+                setReloadTrigger(prev => !prev);
                 toast.success("Đăng ký tạm vắng thành công!");
             }else{
                 const data = {
@@ -166,7 +176,7 @@ const Resident = (props) => {
                     reason: formData.reason
                 }
                 await dispatch(registerTemporaryResidence(data));
-                await dispatch(getAllResidents());
+                setReloadTrigger(prev => !prev);
                 toast.success("Đăng ký tạm trú thành công!");
             }
             setShowRegisterTempModal(false);
@@ -184,13 +194,37 @@ const Resident = (props) => {
     const handleSubmitCancelRegisterTemp = async(data) => {
         try{
             await dispatch(cancelTempStatus(data));
-            await dispatch(getAllResidents());
+            setReloadTrigger(prev => !prev);
             toast.success("Hủy đăng ký thành công!");
             setShowCancelRegisterTempModal(false);
         }catch(err){
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         }
     }
+
+    const handleViewAbsenceDetail = async (absenceId) => {
+        try {
+            console.log(absenceId); 
+            const res = await getTemporaryAbsenceDetail(absenceId);
+            console.log(res.data);
+            setAbsenceDetail(res.data); 
+            setShowAbsenceModal(true);
+        } catch (err) {
+            toast.error("Không tìm thấy thông tin tạm vắng!");
+        }
+    };
+    const handleViewResidenceDetail = async (absenceId) => {
+        try {
+            console.log(absenceId); 
+            const res = await getTemporaryResidenceDetail(absenceId);
+            console.log(res.data);
+            setResidenceDetail(res.data); 
+            setShowResidenceModal(true);
+        } catch (err) {
+            toast.error("Không tìm thấy thông tin tạm trú!");
+        }
+    };
+
 
     return (
         <>
@@ -251,8 +285,30 @@ const Resident = (props) => {
                         <td>{item.hometown || ''}</td>
                         <td>{item.phoneNumber || ''}</td>
                         <td>{item.idNumber || ''}</td>
-                        <td className='text-center'>{item.isMember === false ? 'Rời đi' : item.status === 'living' ? 'Thường trú' : item.isMember === true ? 'Thường trú' : (item.status === 'temporaryabsence' ? 'Tạm vắng' : 'Tạm trú')}</td>
+                        <td className='text-center'>{
+                            item.isMember === false ? 'Rời đi' : 
+                                item.status === 'living' ? 'Thường trú' : 
+                                    item.status === 'temporaryabsence' ? (
+                                        <span
+                                            className='text-temp'
+                                            title='Xem thông tin'
+                                            onClick={() => handleViewAbsenceDetail(item.absence_id)}
+                                        >
+                                            Tạm vắng
+                                        </span>
+                                    ) : 
+                                    (
+                                        <span
+                                            className='text-temp'
+                                            title='Xem thông tin'
+                                            onClick={() => handleViewResidenceDetail(item.residence_id)}
+                                        >
+                                            Tạm trú
+                                        </span>
+                                    )
+                        }</td>
                         </tr>
+                        
                     )))}
 
                     {role === 'resident' && filteredLeftResidents && filteredLeftResidents.length > 0 &&(
@@ -328,7 +384,18 @@ const Resident = (props) => {
             onSubmit={handleSubmitEditResident}
             resident={selectedResident}
         />
-        <ReactPaginate
+        <TemporaryAbsenceDetailModal
+            show={showAbsenceModal}
+            onClose={() => setShowAbsenceModal(false)}
+            data={absenceDetail}
+        />
+        <TemporaryResidenceDetailModal
+            show={showResidenceModal}
+            onClose={() => setShowResidenceModal(false)}
+            data={residenceDetail}
+        />
+
+        {role === 'admin' && (<ReactPaginate
             nextLabel="Sau >"
             onPageChange={handlePageChange}
             pageRangeDisplayed={3}
@@ -349,7 +416,7 @@ const Resident = (props) => {
             renderOnZeroPageCount={null}
             forcePage={currentPage - 1}
             className={'pagination justify-content-center'}
-        />
+        />)}
         </>
     )
 }
