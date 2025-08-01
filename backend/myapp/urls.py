@@ -4,6 +4,7 @@ from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefres
 from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartment, UpdateApartment, SearchApartmentView
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
                                   CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView)
+from .views.vehicleviews import (VehicleListAPIView)
 
 urlpatterns = [
     path('login/', CustomTokenObtainPairAPIView.as_view(), name='login'),
@@ -34,6 +35,8 @@ urlpatterns = [
     path('canceltempstatus/', CancelRegisterTemp.as_view(), name='cancel-temp-status'),
     path('temporary-absence/<int:pk>/', TemporaryAbsenceDetailView.as_view(), name='temporary-absence-detail'),
     path('temporary-residence/<int:pk>/', TemporaryResidenceDetailView.as_view(), name='temporary-residence-detail'),
+
+    path('vehicles/', VehicleListAPIView.as_view(), name='vehicle-list'),
 ]
 
 

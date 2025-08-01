@@ -322,7 +322,27 @@ const Resident = (props) => {
                         <td>{item.hometown || ''}</td>
                         <td>{item.phoneNumber || ''}</td>
                         <td>{item.idNumber || ''}</td>
-                        <td className='text-center'>{item.status === 'living' ? 'Thường trú' : (item.status === 'temporaryabsence' ? 'Tạm vắng' : 'Tạm trú')}</td>
+                        <td className='text-center'>{
+                            item.status === 'living' ? 'Thường trú' : 
+                            item.status === 'temporaryabsence' ? (
+                                <span
+                                    className='text-temp'
+                                    title='Xem thông tin'
+                                    onClick={() => handleViewAbsenceDetail(item.absence_id)}
+                                >
+                                Tạm vắng
+                                </span>
+                            ) : 
+                            (
+                                <span
+                                    className='text-temp'
+                                    title='Xem thông tin'
+                                    onClick={() => handleViewResidenceDetail(item.residence_id)}
+                                >
+                                Tạm trú
+                                </span>
+                            )
+                        }</td>
                         <td className='text-center'>
                             <span
                                 title={item.status === 'living' ? 'Đăng ký tạm trú/tạm vắng' : 'Hủy tạm trú/tạm vắng'}

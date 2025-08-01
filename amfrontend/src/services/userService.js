@@ -89,8 +89,13 @@ const getTemporaryResidenceDetail = (absenceId) => {
     return axios.get(`/temporary-residence/${absenceId}/`);
 }
 
+//vehicle
+const fetchAllVehicles = (page = 1) => {
+    return axios.get(`/vehicles/?page=${page}`);
+}
+
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
-    updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail
+    updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles
 }

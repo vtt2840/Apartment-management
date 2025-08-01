@@ -44,7 +44,7 @@ const SearchApartmentModal = () => {
 
         <Modal show={show} onHide={handleClose} size="xl" centered>
             <Modal.Header closeButton>
-            <Modal.Title>Kết quả tìm kiếm cư dân</Modal.Title>
+            <Modal.Title>Kết quả tìm kiếm căn hộ</Modal.Title>
             </Modal.Header>
             <Modal.Body>
             {apartments.length === 0 ? (

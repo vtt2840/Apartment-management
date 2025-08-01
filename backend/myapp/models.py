@@ -174,3 +174,6 @@ class Vehicle(models.Model):
     color = models.CharField(max_length=20)
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ["apartment", "resident"]

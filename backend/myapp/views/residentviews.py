@@ -85,7 +85,7 @@ class SearchResidentView(APIView):
                 TrigramSimilarity('hometown', keyword),
                 TrigramSimilarity('idNumber', keyword),
             )
-        ).filter(similarity__gt=0.1).order_by('-similarity')
+        ).filter(similarity__gt=0.3).order_by('-similarity')
 
         serializer = ResidentSerializer(queryset, many=True)
         return Response(serializer.data)
