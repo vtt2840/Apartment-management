@@ -38,14 +38,12 @@ const Apartment = (props) => {
                 if (Array.isArray(results)) {
                     allResults = [...allResults, ...results];
                 }
-
                 if (next) {
                     page += 1;
                 } else {
                     hasNext = false;
                 }
             }
-
             const filtered = role === 'resident'
                 ? allResults.filter(item => item.apartmentCode === selectedApartmentCode)
                 : allResults;
@@ -56,37 +54,15 @@ const Apartment = (props) => {
             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         }
     };
+    
     useEffect(() => {
         fetchAllApartments();
     }, [currentPage, dispatch, role, selectedApartmentCode, reloadTrigger]);
 
 
-
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         try {
-    //             const res = await dispatch(getAllApartments(currentPage));
-    //             const rawData = res.payload.results;
-
-    //             const filtered = Array.isArray(rawData)
-    //                 ? (role === 'resident'
-    //                     ? rawData.filter(item => item.apartmentCode === selectedApartmentCode)
-    //                     : rawData)
-    //                 : [];
-
-    //             setPaginatedData(filtered);
-    //             setTotalPages(Math.ceil(res.payload.count / 10));
-    //         } catch (err) {
-    //             toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-    //         }
-    //     };
-    //     fetchData();
-    // }, [currentPage, dispatch, role, selectedApartmentCode, reloadTrigger]);
-
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
     };
-
     
     //add new account if apartment.status == inactive
     const hanldeAddNewAccount = (apartment)=> {

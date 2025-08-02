@@ -15,7 +15,6 @@ import TemporaryAbsenceDetailModal from './TemporaryAbsenceDetailModal';
 import TemporaryResidenceDetailModal from './TemporaryResidenceDetailModal';
 import { getTemporaryAbsenceDetail, getTemporaryResidenceDetail } from '../../services/userService';
 
-
 const Resident = (props) => {
     const dispatch = useDispatch();
     const {residentList, loading, error} = useSelector((state) => state.resident);
@@ -36,11 +35,9 @@ const Resident = (props) => {
     const [residenceDetail, setResidenceDetail] = useState(null);
     const [showResidenceModal, setShowResidenceModal] = useState(false);
 
-
     const [currentPage, setCurrentPage] = useState(1);
     const [paginatedData, setPaginatedData] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
-
     const [rawResidents, setRawResidents] = useState([]);
   
     
@@ -53,67 +50,27 @@ const Resident = (props) => {
             while (hasNext) {
                 const res = await dispatch(getAllResidents(page));
                 const { results, next } = res.payload;
-
                 if (Array.isArray(results)) {
                     allResults = [...allResults, ...results];
                 }
-
                 if (next) {
                     page += 1;
                 } else {
                     hasNext = false;
                 }
             }
-
-            setRawResidents(allResults);  // Dữ liệu đầy đủ ở đây
-            console.log(allResults);
+            setRawResidents(allResults);  
         } catch (err) {
             toast.error("Có lỗi xảy ra khi tải cư dân!");
         }
     };
-    // const fetchAllResidents = async () => {
-    //     try {
-    //         let allResults = [];
-    //         const firstRes = await dispatch(getAllResidents(1));
-
-    //         if (!firstRes.payload) return;
-
-    //         const { results, count } = firstRes.payload;
-    //         allResults = [...results];
-
-    //         const pageSize = 10; 
-    //         const totalPages = Math.ceil(count / pageSize);
-
-    //         for (let page = 2; page <= totalPages; page++) {
-    //             const res = await dispatch(getAllResidents(page));
-    //             if (res.payload?.results) {
-    //                 allResults = [...allResults, ...res.payload.results];
-    //             }
-    //         }
-
-    //         setRawResidents(allResults);
-    //     } catch (err) {
-    //         toast.error("Có lỗi xảy ra khi tải cư dân!");
-    //     }
-    // };
-
-
-
+ 
     useEffect(() => {
         fetchAllResidents();
     }, [dispatch, reloadTrigger]);
 
-
     useEffect(() => {
-        console.log("selectedApartmentCode:", selectedApartmentCode);
-        console.log("rawData", rawResidents);
-
         const expandedResidents = rawResidents.flatMap((item) => {
-            console.log("===> Cư dân:", item.fullName);
-            console.log("    Căn hộ:", item.apartment.map(a => a.apartmentCode));
-            console.log("    selectedApartmentCode:", selectedApartmentCode);
-            console.log("Raw total:", rawResidents.length);
-
 
             const filteredApartments = item.apartment.filter((apt) => {
                 const isMemberValid = showLeftResidents || apt.isMember === true;
@@ -125,7 +82,6 @@ const Resident = (props) => {
                 }
                 return false;
             });
-
             return filteredApartments.map((apt) => ({
                 ...item,
                 apartmentCode: apt.apartmentCode,
@@ -134,14 +90,12 @@ const Resident = (props) => {
             }));
         });
 
-
         const uniqueResidents = expandedResidents.filter(
             (item, index, self) =>
                 index === self.findIndex(
                     (r) => r.residentId === item.residentId && r.apartmentCode === item.apartmentCode
                 )
         );
-
         const sortedResidents = [...uniqueResidents].sort((a, b) =>
             a.apartmentCode.localeCompare(b.apartmentCode) || a.residentId - b.residentId
         );
@@ -158,8 +112,6 @@ const Resident = (props) => {
         setPaginatedData(paginated);
         setTotalPages(Math.ceil(sortedResidents.length / pageSize));
     }, [rawResidents, currentPage, showLeftResidents, selectedApartmentCode]);
-
-
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
@@ -479,8 +431,7 @@ const Resident = (props) => {
             activeClassName="active"
             renderOnZeroPageCount={null}
             forcePage={currentPage - 1}
-            className={'pagination justify-content-center'}
-        />
+            className={'pagination justify-content-center'}/>
         </>
     )
 }
