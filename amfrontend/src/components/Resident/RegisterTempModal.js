@@ -25,7 +25,7 @@ const ResidentTempModal = ({ show, onClose, onSubmit, resident, name }) => {
         }, [show, resident, name]);
 
     const handleNextStep = () => {
-        if (!typeRegister || typeRegister === "Tùy chọn") {
+        if(!typeRegister || typeRegister === "Tùy chọn"){
             toast.error("Vui lòng chọn loại đăng ký.");
             return;
         }
@@ -73,7 +73,6 @@ const ResidentTempModal = ({ show, onClose, onSubmit, resident, name }) => {
                 return false;
             }
         }
-        
         return true;
     }
 
@@ -98,7 +97,6 @@ const ResidentTempModal = ({ show, onClose, onSubmit, resident, name }) => {
             <Modal.Header closeButton>
                 <Modal.Title>Đăng ký tạm trú/tạm vắng</Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
                 {step === 1 && (
                     <>

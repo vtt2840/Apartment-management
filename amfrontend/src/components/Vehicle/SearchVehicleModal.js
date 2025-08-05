@@ -26,27 +26,27 @@ const SearchVehicleModal = () => {
     return(
         <>
         <div className="input-group">
-                    <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Nhập từ khóa"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    />
-                    <button className="btn btn-success" onClick={handleSearch}>
-                    <i className='fa fa-search'></i>
-                    </button>
-                </div>
+            <input
+                type="text"
+                className="form-control"
+                placeholder="Nhập từ khóa"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+            />
+            <button className="btn btn-success" onClick={handleSearch}>
+                <i className='fa fa-search'></i>
+            </button>
+        </div>
         
-                <Modal show={show} onHide={handleClose} size="xl" centered>
-                    <Modal.Header closeButton>
-                    <Modal.Title>Kết quả tìm kiếm phương tiện</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                    {vehicles.length === 0 ? (
-                        <p>Không tìm thấy phương tiện nào.</p>
-                    ) : (
-                        <div className="container">
+        <Modal show={show} onHide={handleClose} size="xl" centered>
+            <Modal.Header closeButton>
+                <Modal.Title>Kết quả tìm kiếm phương tiện</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {vehicles.length === 0 ? (
+                    <p>Không tìm thấy phương tiện nào.</p>
+                ) : (
+                    <div className="container">
                         <table className="table table-bordered table-striped table-hover">
                         <thead>
                             <tr>
@@ -81,13 +81,13 @@ const SearchVehicleModal = () => {
                         </table>
                         </div>
                     )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                    <Button className='cancelbtn' variant="secondary" onClick={handleClose}>
-                        Đóng
-                    </Button>
-                    </Modal.Footer>
-                </Modal>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button className='cancelbtn' variant="secondary" onClick={handleClose}>
+                    Đóng
+                </Button>
+            </Modal.Footer>
+        </Modal>
         </>
     )
 }

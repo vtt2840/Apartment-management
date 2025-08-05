@@ -70,54 +70,54 @@ const ResetPasswordPage = () => {
     }
 
     return (
-    <div className='container-reset'>
-                <div className='row mx-auto'>
-                    <div className='col-12 col-md-4 mx-auto text-center d-flex flex-column gap-4'>
-                            <h4>Nhập mật khẩu mới</h4>
-                            <div className='position-relative'>
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    style={{ borderWidth: '1.3px' }}
-                                    className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'}
-                                    placeholder='Mật khẩu mới'
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <i className={`fa ${showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
-                                onClick={showPasswordVisiblity}
-                                style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    right: '20px',
-                                    transform: 'translateY(-50%)',
-                                    cursor: 'pointer'
-                                }}/>
-                            </div>
-                            <div className='position-relative'>
-                                <input
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    style={{ borderWidth: '1.3px' }}
-                                    className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'}
-                                    placeholder='Nhập lại mật khẩu'
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    onKeyDown={(event) => handlePressEnter(event)}
-                                />
-                                <i className={`fa ${showConfirmPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
-                                onClick={showConfirmPasswordVisiblity}
-                                style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    right: '20px',
-                                    transform: 'translateY(-50%)',
-                                    cursor: 'pointer'
-                                }}
-                                />
-                            </div>
-                            <button className='btn btn-primary cancelbtn' onClick={handleReset}>Lưu</button>              
+        <div className='container-reset'>
+            <div className='row mx-auto'>
+                <div className='col-12 col-md-4 mx-auto text-center d-flex flex-column gap-4'>
+                    <h4>Nhập mật khẩu mới</h4>
+                    <div className='position-relative'>
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            style={{ borderWidth: '1.3px' }}
+                            className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'}
+                            placeholder='Mật khẩu mới'
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <i className={`fa ${showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
+                            onClick={showPasswordVisiblity}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                right: '20px',
+                                transform: 'translateY(-50%)',
+                                cursor: 'pointer'}}
+                        />
                     </div>
+                    <div className='position-relative'>
+                        <input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            style={{ borderWidth: '1.3px' }}
+                            className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'}
+                            placeholder='Nhập lại mật khẩu'
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            onKeyDown={(event) => handlePressEnter(event)}
+                        />
+                        <i className={`fa ${showConfirmPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
+                            onClick={showConfirmPasswordVisiblity}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                right: '20px',
+                                transform: 'translateY(-50%)',
+                                cursor: 'pointer'
+                            }}
+                        />
+                    </div>
+                    <button className='btn btn-primary' onClick={handleReset}>Lưu</button>              
                 </div>
-            </div>    
+            </div>
+        </div>    
     );
 }
 

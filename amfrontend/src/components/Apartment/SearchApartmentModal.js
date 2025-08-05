@@ -9,18 +9,17 @@ const SearchApartmentModal = () => {
     const [show, setShow] = useState(false);
 
     const handleSearch = async () => {
-        if (!query.trim()) return;
-        try {
-        const response = await searchApartments(query);
-        if (response.data.length === 0) {
-            toast.info("Không tìm thấy căn hộ phù hợp.");
-        } else {
-            setApartments(response.data);
-            setShow(true);
-        }
-        } catch (error) {
-        toast.error("Lỗi khi tìm kiếm căn hộ.");
-        console.error(error);
+        if(!query.trim()) return;
+        try{
+            const response = await searchApartments(query);
+            if(response.data.length === 0){
+                toast.info("Không tìm thấy căn hộ phù hợp.");
+            }else{
+                setApartments(response.data);
+                setShow(true);
+            }
+        }catch(error){
+            toast.error("Lỗi khi tìm kiếm căn hộ.");
         }
     };
 
@@ -88,7 +87,6 @@ const SearchApartmentModal = () => {
         </Modal>
         </>
     );
-    };
-
+};
 
 export default SearchApartmentModal;

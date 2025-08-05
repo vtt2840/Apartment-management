@@ -61,7 +61,7 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
             setObjCheckInput({...defaultValidInput, isValidPassword: false });
             return false;
         }
-        if (!(formData.password.length >= 8)) {
+        if(!(formData.password.length >= 8)){
             toast.error("Mật khẩu phải chứa ít nhất 8 ký tự!");
             setObjCheckInput({...defaultValidInput, isValidPassword: false });
             return false;

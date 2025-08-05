@@ -14,7 +14,7 @@ const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
     });
 
     useEffect(() => {
-        if (show && resident) {
+        if(show && resident){
             setFormData({
                 fullName: resident.fullName || '',
                 email: resident.email || '',
@@ -83,7 +83,6 @@ const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
                 return false;
             }
         }
-        
         return true;
     }
 
@@ -98,14 +97,12 @@ const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
         }
     };
 
-
     return (
       <>
         <Modal size="lg" show={show} onHide={onClose} className='modal-user' centered>
             <Modal.Header closeButton>
                 <Modal.Title>Chỉnh sửa thông tin cư dân  </Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
                 <div className='content-body row'>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>

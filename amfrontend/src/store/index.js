@@ -6,12 +6,12 @@ import vehicleReducer from './slices/vehicleSlice';
 
 
 const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    apartment: apartmentReducer,
-    resident: residentReducer,
-    vehicle: vehicleReducer,
-  },
+    reducer: {
+        auth: authReducer,
+        apartment: apartmentReducer,
+        resident: residentReducer,
+        vehicle: vehicleReducer,
+    },
 });
 
 export default store;

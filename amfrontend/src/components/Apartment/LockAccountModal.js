@@ -28,7 +28,6 @@ const LockAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                     Khóa tài khoản căn hộ {apartmentCode} 
                 </Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
                 <h6>Tài khoản sau khi khóa sẽ không thể truy cập vào hệ thống.</h6>
                 <h6>Bạn có chắc chắn muốn khóa tài khoản căn hộ này?</h6>

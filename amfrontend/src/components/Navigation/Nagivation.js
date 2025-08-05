@@ -41,7 +41,6 @@ const Navigation = (props) => {
             navigate('/login');
         } catch (err) {
             toast.error("Đăng xuất thất bại!");
-            console.log('Logout error:', err);
         }
     };
 
@@ -51,16 +50,14 @@ const Navigation = (props) => {
         <div className="nav-header">
             <Navbar bg="header" expand="lg" className="px-3">
             <Container fluid className="d-flex justify-content-between align-items-center">
-
                 <Navbar.Brand className="img">
-                <img
-                    src={logo}
-                    width="70"
-                    height="70"
-                    alt="Skylake logo"
-                />
+                    <img
+                        src={logo}
+                        width="70"
+                        height="70"
+                        alt="Skylake logo"
+                    />
                 </Navbar.Brand>
-
                 <div className="offcanvas-navheader d-lg-none">
                     <Navbar.Toggle aria-controls="offcanvasNavbar" />
                     <Navbar.Offcanvas
@@ -168,9 +165,8 @@ const Navigation = (props) => {
             </Navbar>
         </div>
         </>
-    )
-            
-}
+    )         
+    }
 }
 
 

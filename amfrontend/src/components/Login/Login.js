@@ -18,12 +18,12 @@ const Login = (props) => {
         email:"",
         password:""
     })
-    const togglePasswordVisiblity = () => {
-    setShowPassword(showPassword ? false : true);
-  };
+    const showPasswordVisiblity = () => {
+        setShowPassword(showPassword ? false : true);
+    };
 
     const handleLogin = async () => {
-        try {
+        try{
             const response = await loginUser(formData);
             const user = response.data.user;
 
@@ -39,11 +39,11 @@ const Login = (props) => {
 
             toast.success("Đăng nhập thành công!");
             navigate('/');
-        } catch (err) {
+        }catch(err){
             toast.error("Email hoặc mật khẩu không hợp lệ!");
-            if (err.response && err.response.status === 400) {
+            if(err.response && err.response.status === 400){
                 console.log("Login error:", err.response.data);
-            } else {
+            }else{
                 console.log("Server connection error");
             }
         }
@@ -58,77 +58,74 @@ const Login = (props) => {
     const handleSendEmail = () => {
         setShowModal(true);
     }
+
+    //proceed send email to reset pasword
     const handleSubmitEmail = async(email) =>{
-        //proceed send email to reset pasword
-        
-        //if not found email show toast "email không tồn tại
-        try {
+        try{
             await resetpassword(email);
             setShowModal(false);
-            toast.success('Vui lòng kiểm tra email để đặt lại mật khẩu.');
-        } catch (error) {
-            if (error.response?.data?.email) {
+            toast.success('Vui lòng kiểm tra email để đặt lại mật khẩu!');
+        }catch(error){
+            if(error.response?.data?.email){
                 toast.error(`Lỗi: ${error.response.data.email}`);
-            } else {
-                toast.error('Có lỗi xảy ra. Hãy thử lại.');
+            }else{
+                toast.error('Có lỗi xảy ra. Hãy thử lại!');
             }
         }
     }
 
-
-    return (
-            <div className='container mt-5'>
-                <div className='row mx-auto'>
-                    <div className='col-12 col-md-4 mx-auto text-center d-flex flex-column gap-4'>
-                            <img 
-                                src={logo}
-                                width="140"
-                                height="140"
-                                className="mx-auto"
-                                alt="Skylake logo"
-                            />
-                            <h4>Đăng nhập vào hệ thống Skylake</h4>
-                            <input
-                                type='email'
-                                style={{ borderWidth: '1.3px' }}
-                                className='form-control'
-                                placeholder='Email'
-                                value={formData.email}
-                                onChange={(event) => {setFormData({ ...formData, email: event.target.value })}}
-                            />
-                            <div className="position-relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    style={{ borderWidth: '1.3px' }}
-                                    className='form-control'
-                                    placeholder='Mật khẩu'
-                                    value={formData.password}
-                                    onChange={(event) => {setFormData({ ...formData, password: event.target.value })}}
-                                    onKeyDown={(event) => handlePressEnter(event)}
-                                />
-                                <i className={`fa ${showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
-                                onClick={togglePasswordVisiblity}
-                                style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    right: '15px',
-                                    transform: 'translateY(-50%)',
-                                    cursor: 'pointer'
-                                }}/>
-                            </div>
-                            <button className='btn btn-primary' onClick={handleLogin}>Đăng nhập</button>  
-                            <span className='text-center'>
-                                <a className='forgot-password' onClick={handleSendEmail}>Quên mật khẩu?</a>
-                            </span>               
+    return(
+        <div className='container mt-5'>
+            <div className='row mx-auto'>
+                <div className='col-12 col-md-4 mx-auto text-center d-flex flex-column gap-4'>
+                    <img 
+                        src={logo}
+                        width="140"
+                        height="140"
+                        className="mx-auto"
+                        alt="Skylake logo"
+                    />
+                    <h4>Đăng nhập vào hệ thống Skylake</h4>
+                    <input
+                        type='email'
+                        style={{ borderWidth: '1.3px' }}
+                        className='form-control'
+                        placeholder='Email'
+                        value={formData.email}
+                        onChange={(event) => {setFormData({ ...formData, email: event.target.value })}}
+                    />
+                    <div className="position-relative">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            style={{ borderWidth: '1.3px' }}
+                            className='form-control'
+                            placeholder='Mật khẩu'
+                            value={formData.password}
+                            onChange={(event) => {setFormData({ ...formData, password: event.target.value })}}
+                            onKeyDown={(event) => handlePressEnter(event)}
+                        />
+                        <i className={`fa ${showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
+                            onClick={showPasswordVisiblity}
+                            style={{
+                            position: 'absolute',
+                            top: '50%',
+                            right: '15px',
+                            transform: 'translateY(-50%)',
+                            cursor: 'pointer'
+                        }}/>
                     </div>
+                    <button className='btn btn-primary' onClick={handleLogin}>Đăng nhập</button>  
+                    <span className='text-center'>
+                        <a className='forgot-password' onClick={handleSendEmail}>Quên mật khẩu?</a>
+                    </span>               
                 </div>
-                <SendEmailModal
-                    show={showModal}
-                    onClose={() => setShowModal(false)}
-                    onSubmit={handleSubmitEmail}
-                />
             </div>
-
+            <SendEmailModal
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                onSubmit={handleSubmitEmail}
+            />
+        </div>
     )
 }
 

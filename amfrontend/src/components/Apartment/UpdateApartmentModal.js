@@ -44,7 +44,6 @@ const UpdateApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
             setObjCheckInput({...defaultValidInput, isValidGender: false });
             return false;
         }
-        
         return true;
     }
 
@@ -66,7 +65,6 @@ const UpdateApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
             <Modal.Header closeButton>
                 <Modal.Title>Chỉnh sửa thông tin căn hộ </Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
                 <div className='content-body row'>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>

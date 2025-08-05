@@ -98,14 +98,12 @@ const CreateNewResidentModal = ({ show, onClose, onSubmit, apartmentCode }) => {
         }
     };
 
-
     return (
       <>
         <Modal size="lg" show={show} onHide={onClose} className='modal-user' centered>
             <Modal.Header closeButton>
                 <Modal.Title>Thêm cư dân mới cho căn hộ {apartmentCode} </Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
                 <div className='content-body row'>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
@@ -132,8 +130,7 @@ const CreateNewResidentModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                             className='form-select'
                             name="gender"
                             value={formData.gender}
-                            onChange={handleChange}
-                        >
+                            onChange={handleChange}>
                             <option>Tùy chọn</option>
                             <option defaultValue="male">Nam</option>
                             <option value="female">Nữ</option>

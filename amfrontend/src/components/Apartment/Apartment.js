@@ -29,7 +29,7 @@ const Apartment = (props) => {
 
     useEffect(() => {
         if(totalCount){
-            setTotalPages(Math.ceil(totalCount/10));
+            setTotalPages(Math.ceil(totalCount/10)); //totalpages
         }
     }, [totalCount]);
 
@@ -55,25 +55,25 @@ const Apartment = (props) => {
     }
 
     const checkAccount = async (formData) => {
-        try {
+        try{
             const res = await checkAccountExists(formData);
             if (res.status === 200) {
                 return res.data.pkid;
             }
-        } catch (err) {
+        }catch (err) {
             let temp = 'not found'; //new account
-            if (err.response?.status === 400) {
+            if(err.response?.status === 400) {
                 const detail = err.response?.data?.detail;
-                if (detail === "Wrong password") {
+                if(detail === "Wrong password"){
                     toast.error("Vui lòng kiểm tra lại mật khẩu!");
                     return false;
                 }
-                if (detail === "Email taken") {
+                if(detail === "Email taken"){
                     toast.error("Kiểm tra lại chủ hộ nếu muốn đăng ký tài khoản đã tồn tại cho căn hộ mới!");
                     return false;
                 }
             }
-            if (err.response?.status === 404) {
+            if(err.response?.status === 404){
                 return temp; 
             }
             toast.error("Lỗi hệ thống, vui lòng thử lại sau!");
@@ -140,7 +140,7 @@ const Apartment = (props) => {
     }
 
     const handleSubmitEditApartment = async(formData) => {
-         try{
+        try{
             await dispatch(editApartment(formData));
             setReloadTrigger(prev => !prev);
             await dispatch(getAllApartments());

@@ -48,13 +48,12 @@ const SendEmailModal = ({ show, onClose, onSubmit }) => {
             <Modal.Header closeButton>
                 <Modal.Title>Nhập email để lấy lại mật khẩu:</Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
-                    <div className='col-12 form-group pt-3 pb-3'>
-                        <input type="text" className={objCheckInput.isValidEmail ? 'form-control' : 'form-control is-invalid'} 
-                            name="email" value={email} placeholder="Email" onChange={(event)=> setEmail(event.target.value)}
-                        />
-                    </div>
+                <div className='col-12 form-group pt-3 pb-3'>
+                    <input type="text" className={objCheckInput.isValidEmail ? 'form-control' : 'form-control is-invalid'} 
+                        name="email" value={email} placeholder="Email" onChange={(event)=> setEmail(event.target.value)}
+                    />
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>

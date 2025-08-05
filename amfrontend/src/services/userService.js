@@ -17,7 +17,7 @@ const updateApartment = ({apartmentCode, data}) => {
     return axios.put(`/apartments/updateinfo/${apartmentCode}`, data);
 }
 
-const createNewAccount = (data)=> {
+const createNewAccount = (data) => {
     return axios.post('/apartments/addnewaccount/', data);
 }
 

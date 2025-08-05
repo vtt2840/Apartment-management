@@ -180,24 +180,20 @@ const Resident = (props) => {
     }
 
     const handleViewAbsenceDetail = async (absenceId) => {
-        try {
-            console.log(absenceId); 
+        try{ 
             const res = await getTemporaryAbsenceDetail(absenceId);
-            console.log(res.data);
             setAbsenceDetail(res.data); 
             setShowAbsenceModal(true);
-        } catch (err) {
+        }catch(err){
             toast.error("Không tìm thấy thông tin tạm vắng!");
         }
     }
-    const handleViewResidenceDetail = async (absenceId) => {
-        try {
-            console.log(absenceId); 
-            const res = await getTemporaryResidenceDetail(absenceId);
-            console.log(res.data);
+    const handleViewResidenceDetail = async (residenceId) => {
+        try{
+            const res = await getTemporaryResidenceDetail(residenceId);
             setResidenceDetail(res.data); 
             setShowResidenceModal(true);
-        } catch (err) {
+        }catch(err){
             toast.error("Không tìm thấy thông tin tạm trú!");
         }
     };
@@ -329,38 +325,45 @@ const Resident = (props) => {
             show={showAddModal}
             onClose={() => setShowAddModal(false)}
             onSubmit={handleSubmitAddResident}
-            apartmentCode={selectedApartmentCode}/>
+            apartmentCode={selectedApartmentCode}
+        />
         <DeleteResidentModal
             show={showDeleteModal}
             onClose={() => setShowDeleteModal(false)}
             onSubmit={handleSubmitDeleteResident}
             resident={selectedResident?.residentId}  
-            name={selectedResident?.fullName}          />
+            name={selectedResident?.fullName}          
+        />
         <RegisterTempModal
             show={showRegisterTempModal}
             onClose={() => setShowRegisterTempModal(false)}
             onSubmit={handleSubmitRegisterTemp}
             resident={selectedResident?.residentId}
-            name={selectedResident?.fullName}/>
+            name={selectedResident?.fullName}
+        />
         <CancelRegisterTempModal
             show={showCancelRegisterTempModal}
             onClose={() => setShowCancelRegisterTempModal(false)}
             onSubmit={handleSubmitCancelRegisterTemp}
             resident={selectedResident?.residentId}
-            name={selectedResident?.fullName}/>
+            name={selectedResident?.fullName}
+        />
         <UpdateResidentModal
             show={showEditModal}
             onClose={() => setShowEditModal(false)}
             onSubmit={handleSubmitEditResident}
-            resident={selectedResident}/>
+            resident={selectedResident}
+        />
         <TemporaryAbsenceDetailModal
             show={showAbsenceModal}
             onClose={() => setShowAbsenceModal(false)}
-            data={absenceDetail}/>
+            data={absenceDetail}
+        />
         <TemporaryResidenceDetailModal
             show={showResidenceModal}
             onClose={() => setShowResidenceModal(false)}
-            data={residenceDetail}/>
+            data={residenceDetail}
+        />
         {totalPages > 1 && <ReactPaginate
             nextLabel="Sau >"
             onPageChange={handlePageChange}
