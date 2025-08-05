@@ -14,7 +14,7 @@ export const getAllVehicles = createAsyncThunk(
 );
 
 const vehicleSlice = createSlice({
-  name: 'apartment',
+  name: 'vehicle',
   initialState: {
     vehicleList: [],
     loading: false,
@@ -30,7 +30,8 @@ const vehicleSlice = createSlice({
       })
       .addCase(getAllVehicles.fulfilled, (state, action) => {
         state.loading = false;
-        state.vehicleList = action.payload;
+        state.vehicleList = action.payload.results;
+        state.totalCount = action.payload.count;
       })
       .addCase(getAllVehicles.rejected, (state, action) => {
         state.loading = false;

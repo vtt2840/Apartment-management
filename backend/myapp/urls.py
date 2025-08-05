@@ -4,7 +4,14 @@ from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefres
 from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartment, UpdateApartment, SearchApartmentView
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
                                   CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView)
-from .views.vehicleviews import (VehicleListAPIView)
+from .views.vehicleviews import (VehicleViewSet)
+from rest_framework.routers import SimpleRouter
+
+
+router = SimpleRouter()
+router.register(r'vehicles', VehicleViewSet, basename='vehicle')
+
+
 
 urlpatterns = [
     path('login/', CustomTokenObtainPairAPIView.as_view(), name='login'),
@@ -12,32 +19,31 @@ urlpatterns = [
     path('refresh/', CustomTokenRefreshAPIView.as_view(), name="token-refresh"),
 
     path('apartments/', ApartmentListAPIView.as_view(), name='apartment-list'),
-    path('addaccountapartment/', AddAccountExistToApartment.as_view(), name='add-account-exist-to-apartment'),
-    path('updateapartment/', UpdateApartment.as_view(), name='update-apartment'),
-    path('search-apartments/', SearchApartmentView.as_view(), name='search-apartments'),
+    path('apartments/addaccount/', AddAccountExistToApartment.as_view(), name='add-account-exist-to-apartment'),
+    path('apartments/updateinfo/<int:apartmentCode>/', UpdateApartment.as_view(), name='update-apartment'),
+    path('apartments/search/', SearchApartmentView.as_view(), name='search-apartments'),
 
-    path('addnewaccount/', CreateAccountAPIView.as_view(), name='add-new-account'),
-    path('lockaccount/', DeactivateAccount.as_view(), name='lock-account'),
-    path('accounts/by-apartment/', AccountByApartment.as_view(), name='account-by-apartment'),
-    path('account/checkaccountexists/', CheckAccount.as_view(), name='check-account-exists'),
-    path('resetpassword/', ResetPassword.as_view(), name='reset-password'),
-    path('password-reset-confirm/', PasswordResetConfirm.as_view(), name='password-reset-confirm'),
+    path('apartments/addnewaccount/', CreateAccountAPIView.as_view(), name='add-new-account'),
+    path('apartments/lockaccount/', DeactivateAccount.as_view(), name='lock-account'),
+    path('accounts/accounts-by-apartment/', AccountByApartment.as_view(), name='account-by-apartment'),
+    path('accounts/check-account-exists/', CheckAccount.as_view(), name='check-account-exists'),
+    path('accounts/resetpassword/', ResetPassword.as_view(), name='reset-password'),
+    path('accounts/password-reset-confirm/', PasswordResetConfirm.as_view(), name='password-reset-confirm'),
 
     path('residents/', ResidentListAPIView.as_view(), name='resident-list'),
-    path('addnewresident/', CreateResidentAPIView.as_view(), name='add-new-resident'),
-    path('deleteresident/', DeleteResident.as_view(), name='delete-resident'),
-    path('updateresident/', UpdateResident.as_view(), name='update-resident'),
-    path('search-residents/', SearchResidentView.as_view(), name='search-residents'),
+    path('residents/addnewresident/', CreateResidentAPIView.as_view(), name='add-new-resident'),
+    path('residents/delete/<int:residentId>/', DeleteResident.as_view(), name='delete-resident'),
+    path('residents/update/<int:residentId>/', UpdateResident.as_view(), name='update-resident'),
+    path('residents/search/', SearchResidentView.as_view(), name='search-residents'),
 
 
-    path('registertempresidence/', RegisterTemporaryResidence.as_view(), name='register-temp-residence'),
-    path('registertempabsence/', RegisterTemporaryAbsence.as_view(), name='register-temp-absence'),
+    path('temporary-residence/register/', RegisterTemporaryResidence.as_view(), name='register-temp-residence'),
+    path('temporary-absence/register/', RegisterTemporaryAbsence.as_view(), name='register-temp-absence'),
     path('canceltempstatus/', CancelRegisterTemp.as_view(), name='cancel-temp-status'),
     path('temporary-absence/<int:pk>/', TemporaryAbsenceDetailView.as_view(), name='temporary-absence-detail'),
     path('temporary-residence/<int:pk>/', TemporaryResidenceDetailView.as_view(), name='temporary-residence-detail'),
 
-    path('vehicles/', VehicleListAPIView.as_view(), name='vehicle-list'),
-]
+] + router.urls
 
 
 

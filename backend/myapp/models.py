@@ -167,13 +167,22 @@ class Vehicle(models.Model):
         bike = 'bike'
         other = 'other'
 
+    class Status(models.TextChoices):
+        inuse = 'inuse'
+        deleted = 'deleted'
+
     vehicleId = models.AutoField(primary_key=True)
-    licensePlate = models.CharField(max_length=10, unique=True)
+    licensePlate = models.CharField(max_length=10, null=True, blank=True)
     vehicleType = models.CharField(max_length=10, choices=Type.choices, default='car')
     brand = models.CharField(max_length=20)
     color = models.CharField(max_length=20)
+    timeregister = models.DateField(null=True)
+    status = models.CharField(max_length=7, choices=Status.choices, default='inuse')
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ["apartment", "resident"]
+
+    def __str__(self):
+        return f"{self.vehicleType}: {self.resident.fullName} - {self.apartment.apartmentCode}"

@@ -22,8 +22,8 @@ const CancelRegisterTempModal = ({ show, onClose, onSubmit, resident, name }) =>
                 <h6>Bạn có chắc chắn muốn hủy đăng ký cho cư dân {name} ?</h6>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Đóng</Button>
-                <Button variant="primary" onClick={handleSubmit}>Lưu</Button>
+                <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='savebtn' variant="primary" onClick={handleSubmit}>Lưu</Button>
             </Modal.Footer>
         </Modal>
         </>

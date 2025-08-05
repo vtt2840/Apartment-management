@@ -9,6 +9,15 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
         password: '',
     });
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const showPasswordVisiblity = () => {
+        setShowPassword(showPassword ? false : true);
+    };
+    const showConfirmPasswordVisiblity = () => {
+        setShowConfirmPassword(showConfirmPassword ? false : true);
+    }
     
     useEffect(() => {
         if (show) {
@@ -98,23 +107,39 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                             name="username" value={formData.username} placeholder="Chủ hộ" onChange={handleChange}
                         />
                     </div>
-                    <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
+                    <div className='col-12 col-sm-6 form-group pt-3 pb-3 position-relative'>
                         <label>Mật khẩu(<span className='redC'>*</span>):</label>
-                        <input type="password" className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'}
+                        <input type={showPassword ? "text" : "password"} className={objCheckInput.isValidPassword ? 'form-control' : 'form-control is-invalid'}
                             name="password" value={formData.password} placeholder="Mật khẩu" onChange={handleChange}
                         />
+                        <i className={`fa ${showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
+                            onClick={showPasswordVisiblity}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                right: '20px',
+                                cursor: 'pointer'
+                        }}/>
                     </div>
-                    <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
+                    <div className='col-12 col-sm-6 form-group pt-3 pb-3 position-relative'>
                         <label>Nhập lại mật khẩu(<span className='redC'>*</span>):</label>
-                        <input type="password" className={objCheckInput.isValidConfirmPassword ? 'form-control' : 'form-control is-invalid'} 
+                        <input type={showConfirmPassword ? "text" : "password"} className={objCheckInput.isValidConfirmPassword ? 'form-control' : 'form-control is-invalid'} 
                             name="confirmpassword" value={confirmPassword} placeholder="Nhập lại mật khẩu" onChange={(event)=> setConfirmPassword(event.target.value)}
                         />
+                        <i className={`fa ${showConfirmPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
+                            onClick={showConfirmPasswordVisiblity}
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                right: '20px',
+                                cursor: 'pointer'
+                        }}/>
                     </div>
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Đóng</Button>
-                <Button variant="primary" onClick={handleSubmit}>Lưu</Button>
+                <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='savebtn' variant="primary" onClick={handleSubmit}>Lưu</Button>
             </Modal.Footer>
         </Modal>
         </>

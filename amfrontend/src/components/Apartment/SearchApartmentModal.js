@@ -37,7 +37,7 @@ const SearchApartmentModal = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             />
-            <button className="btn btn-primary" onClick={handleSearch}>
+            <button className="btn btn-success" onClick={handleSearch}>
             <i className='fa fa-search'></i>
             </button>
         </div>
@@ -81,7 +81,7 @@ const SearchApartmentModal = () => {
             )}
             </Modal.Body>
             <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
+            <Button className='cancelbtn' variant="secondary" onClick={handleClose}>
                 Đóng
             </Button>
             </Modal.Footer>

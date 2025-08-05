@@ -7,12 +7,28 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models.functions import Greatest
 from django.contrib.postgres.search import TrigramSimilarity
+from uuid import UUID
 
-#get all apartments
+#get apartment list
 class ApartmentListAPIView(generics.ListAPIView):
-    queryset = Apartment.objects.all()
     serializer_class = ApartmentSerializer
     permission_classes = [IsAuthenticated,]
+
+    def get_queryset(self):
+        user = self.request.user
+        apartment_code = self.request.query_params.get('apartmentCode')
+        ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
+
+        #role == admin
+        if user.id == ADMIN_ID:
+            queryset = Apartment.objects.all()
+
+            return queryset
+        else:
+            queryset = Apartment.objects.filter(apartmentCode=apartment_code)
+            return queryset
+        
+
 
 #add account exist in database to another apartment
 
@@ -26,12 +42,11 @@ class AddAccountExistToApartment(APIView):
             response_data = ApartmentSerializer(apartment).data
             return Response(response_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
 class UpdateApartment(APIView):
     permission_classes = [IsAuthenticated,]
 
-    def put(self, request):
-        apartmentCode = request.data.get("apartmentCode")
+    def put(self, request, apartmentCode):
         try:
             apartmentCode = Apartment.objects.get(apartmentCode=apartmentCode)
         except Apartment.DoesNotExist:

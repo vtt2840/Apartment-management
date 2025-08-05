@@ -27,9 +27,9 @@ export const addNewResident = createAsyncThunk(
 
 export const deleteOneResident = createAsyncThunk(
   'resident/deleteResident',
-    async(data, {rejectWithValue}) => {
+    async(residentId, {rejectWithValue}) => {
       try {
-        const res = await deleteResident(data);
+        const res = await deleteResident(residentId);
         return res.data;
       } catch (err) {
         return rejectWithValue(err.response.data);
@@ -39,9 +39,9 @@ export const deleteOneResident = createAsyncThunk(
 
 export const editResident = createAsyncThunk(
   'resident/editResident',
-    async(data, {rejectWithValue}) => {
+    async({ residentId, data }, {rejectWithValue}) => {
       try {
-        const res = await updateResident(data);
+        const res = await updateResident({ residentId, data });
         return res.data;
       } catch (err) {
         return rejectWithValue(err.response.data);
@@ -102,6 +102,7 @@ const residentSlice = createSlice({
       .addCase(getAllResidents.fulfilled, (state, action) => {
         state.loading = false;
         state.residentList = action.payload.results;
+        state.totalCount = action.payload.count;
       })
       .addCase(getAllResidents.rejected, (state, action) => {
         state.loading = false;

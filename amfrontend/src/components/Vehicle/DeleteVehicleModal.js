@@ -1,16 +1,11 @@
 import { Modal, Button } from 'react-bootstrap';
 import dangericon from '../../static/danger-icon.png';
-import { accountByApartment } from '../../services/userService';
 
-const LockAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
+const DeleteVehicleModal = ({ show, onClose, onSubmit, vehicle, licensePlate }) => {
     
     const handleSubmit = async() => {
-        const res = await accountByApartment(apartmentCode);
-        const data = {
-            apartment_code: apartmentCode,
-            account_id: res.data.pkid
-        }
-        onSubmit(data);
+        const vehicleId = vehicle;
+        onSubmit(vehicleId);
     };
 
     return (
@@ -25,21 +20,19 @@ const LockAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                     className="mx-3"
                     alt="Alert"
                     />
-                    Khóa tài khoản căn hộ {apartmentCode} 
+                    Xóa phương tiện {licensePlate} 
                 </Modal.Title>
             </Modal.Header>
-
             <Modal.Body>
-                <h6>Tài khoản sau khi khóa sẽ không thể truy cập vào hệ thống.</h6>
-                <h6>Bạn có chắc chắn muốn khóa tài khoản căn hộ này?</h6>
+                <h6>Bạn có chắc chắn muốn xóa phương tiện này?</h6>
             </Modal.Body>
             <Modal.Footer>
                 <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
-                <Button className='savebtn' variant="primary" onClick={handleSubmit}>Lưu</Button>
+                <Button className='deletebtn' variant="primary" onClick={handleSubmit}>Xóa</Button>
             </Modal.Footer>
         </Modal>
         </>
     );
 };
 
-export default LockAccountModal;
+export default DeleteVehicleModal;

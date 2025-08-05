@@ -4,10 +4,8 @@ import dangericon from '../../static/danger-icon.png';
 const DeleteResidentModal = ({ show, onClose, onSubmit, resident, name }) => {
     
     const handleSubmit = async() => {
-        const data = {
-            resident_id: resident
-        }
-        onSubmit(data);
+        const residentId = resident;
+        onSubmit(residentId);
     };
 
     return (
@@ -29,8 +27,8 @@ const DeleteResidentModal = ({ show, onClose, onSubmit, resident, name }) => {
                 <h6>Bạn có chắc chắn muốn xóa cư dân này?</h6>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Đóng</Button>
-                <Button variant="primary" onClick={handleSubmit}>Xóa</Button>
+                <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='deletebtn' variant="primary" onClick={handleSubmit}>Xóa</Button>
             </Modal.Footer>
         </Modal>
         </>

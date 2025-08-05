@@ -8,7 +8,7 @@ import CreateNewResidentModal from './CreateNewResidentModal';
 import DeleteResidentModal from './DeleteResidentModal';
 import RegisterTempModal from './RegisterTempModal';
 import CancelRegisterTempModal from './CancelRegisterTempModal';
-import EditResidentModal from './EditResidentModal';
+import UpdateResidentModal from './UpdateResidentModal';
 import SearchResidentModal from './SearchResidentModal';
 import ReactPaginate from 'react-paginate';
 import TemporaryAbsenceDetailModal from './TemporaryAbsenceDetailModal';
@@ -17,9 +17,10 @@ import { getTemporaryAbsenceDetail, getTemporaryResidenceDetail } from '../../se
 
 const Resident = (props) => {
     const dispatch = useDispatch();
-    const {residentList, loading, error} = useSelector((state) => state.resident);
+    const residentList = useSelector((state) => state.resident.residentList);
     const role = useSelector(state => state.auth.role);
     const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
+    const totalCount = useSelector(state => state.resident.totalCount);
 
     const [selectedResident, setSelectedResident] = useState(null);
     const [showLeftResidents, setShowLeftResidents] = useState(false);
@@ -36,82 +37,28 @@ const Resident = (props) => {
     const [showResidenceModal, setShowResidenceModal] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [paginatedData, setPaginatedData] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
-    const [rawResidents, setRawResidents] = useState([]);
   
-    
-    const fetchAllResidents = async () => {
-        try {
-            let allResults = [];
-            let page = 1;
-            let hasNext = true;
-
-            while (hasNext) {
-                const res = await dispatch(getAllResidents(page));
-                const { results, next } = res.payload;
-                if (Array.isArray(results)) {
-                    allResults = [...allResults, ...results];
-                }
-                if (next) {
-                    page += 1;
-                } else {
-                    hasNext = false;
-                }
-            }
-            setRawResidents(allResults);  
-        } catch (err) {
-            toast.error("Có lỗi xảy ra khi tải cư dân!");
+    useEffect(() => {
+        if(totalCount){
+            setTotalPages(Math.ceil(totalCount/10)); //total pages
         }
-    };
- 
+    }, [totalCount]);
+
+    //get resident list
     useEffect(() => {
-        fetchAllResidents();
-    }, [dispatch, reloadTrigger]);
+        dispatch(getAllResidents({
+            apartmentCode: selectedApartmentCode, 
+            showLeftResidents: showLeftResidents, 
+            page: currentPage}));
+        console.log(residentList);
+    }, [dispatch, reloadTrigger, selectedApartmentCode, showLeftResidents, currentPage]);
 
+    //if showleftresident render to page 1
     useEffect(() => {
-        const expandedResidents = rawResidents.flatMap((item) => {
+        setCurrentPage(1); 
+    }, [showLeftResidents]);
 
-            const filteredApartments = item.apartment.filter((apt) => {
-                const isMemberValid = showLeftResidents || apt.isMember === true;
-
-                if (role === 'admin') {
-                    return isMemberValid;
-                } else if (role === 'resident') {
-                    return isMemberValid && apt.apartmentCode === selectedApartmentCode;
-                }
-                return false;
-            });
-            return filteredApartments.map((apt) => ({
-                ...item,
-                apartmentCode: apt.apartmentCode,
-                isOwner: apt.isOwner,
-                isMember: apt.isMember,
-            }));
-        });
-
-        const uniqueResidents = expandedResidents.filter(
-            (item, index, self) =>
-                index === self.findIndex(
-                    (r) => r.residentId === item.residentId && r.apartmentCode === item.apartmentCode
-                )
-        );
-        const sortedResidents = [...uniqueResidents].sort((a, b) =>
-            a.apartmentCode.localeCompare(b.apartmentCode) || a.residentId - b.residentId
-        );
-
-        const pageSize = 10;
-        const start = (currentPage - 1) * pageSize;
-        const paginated = sortedResidents.slice(start, start + pageSize);
-
-        console.log("Expanded:", expandedResidents.length);
-        console.log("Unique:", uniqueResidents.length);
-        console.log("Sorted:", sortedResidents.length);
-        console.log("Paginated:", paginated.length);
-
-        setPaginatedData(paginated);
-        setTotalPages(Math.ceil(sortedResidents.length / pageSize));
-    }, [rawResidents, currentPage, showLeftResidents, selectedApartmentCode]);
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
@@ -146,10 +93,9 @@ const Resident = (props) => {
         try{
             const data = {
                 ...formData,
-                residentId: selectedResident.residentId,
                 gender: formData.gender === 'Nam' ? 'male' : formData.gender === 'Nữ' ? 'female' : formData.gender
             }
-            await dispatch(editResident(data));
+            await dispatch(editResident({ residentId: selectedResident.residentId, data }));
             setReloadTrigger(prev => !prev);
             toast.success("Chỉnh sửa thông tin cư dân thành công!");
             setShowEditModal(false);
@@ -298,79 +244,83 @@ const Resident = (props) => {
             </thead>
             <tbody>
                 <>
-                    {paginatedData && paginatedData.length > 0 &&(
-                    paginatedData.map((item, index) => (
-                        <tr key={`row-${index}`}>
-                        <td>{index + 1}</td>
-                        {role === 'admin' && (<td className='text-center'>{item.apartmentCode}</td>)}
-                        <td>{item.fullName}</td>
-                        <td>{item.email}</td>
-                        <td>{item.dateOfBirth || ''}</td>
-                        <td className='text-center'>{item.gender ? (item.gender === 'male' ? 'Nam' : 'Nữ') : '---'}</td>
-                        <td>{item.hometown || ''}</td>
-                        <td>{item.phoneNumber || ''}</td>
-                        <td>{item.idNumber || ''}</td>
-                        {role === 'admin' && (<td className='text-center'>{
-                            item.isMember === false ? 'Rời đi' : 
-                                item.status === 'living' ? 'Thường trú' : 
-                                    item.status === 'temporaryabsence' ? (
-                                        <span
-                                            className='text-temp'
-                                            title='Xem thông tin'
-                                            onClick={() => handleViewAbsenceDetail(item.absence_id)}
-                                        >Tạm vắng
-                                        </span>) 
-                                    : (
-                                        <span
-                                            className='text-temp'
-                                            title='Xem thông tin'
-                                            onClick={() => handleViewResidenceDetail(item.residence_id)}
-                                        >Tạm trú
-                                        </span>)
-                        }</td>)}
-                        {role === 'resident' && 
-                        <>
-                        <td className='text-center'>{
+                {residentList && residentList.length > 0 ? (
+                residentList.map((item, index) => (
+                    <tr key={`row-${index}`}>
+                    <td className='text-center'>{(currentPage - 1)*10 + index + 1}</td>
+                    {role === 'admin' && (<td className='text-center'>{item.apartmentCode}</td>)}
+                    <td>{item.fullName}</td>
+                    <td>{item.email}</td>
+                    <td>{item.dateOfBirth || ''}</td>
+                    <td className='text-center'>{item.gender ? (item.gender === 'male' ? 'Nam' : 'Nữ') : '---'}</td>
+                    <td>{item.hometown || ''}</td>
+                    <td>{item.phoneNumber || ''}</td>
+                    <td>{item.idNumber || ''}</td>
+                    {role === 'admin' && (<td className='text-center'>{
+                        item.isMember === false ? 'Rời đi' : 
                             item.status === 'living' ? 'Thường trú' : 
-                            item.status === 'temporaryabsence' ? (
-                                <span
-                                    className='text-temp'
-                                    title='Xem thông tin'
-                                    onClick={() => handleViewAbsenceDetail(item.absence_id)}
-                                > Tạm vắng
-                                </span>)  
-                            : (
-                                <span
-                                    className='text-temp'
-                                    title='Xem thông tin'
-                                    onClick={() => handleViewResidenceDetail(item.residence_id)}
-                                >Tạm trú
-                                </span>)
-                        }</td>
-                        <td className='text-center'>
+                                item.status === 'temporaryabsence' ? (
+                                    <span
+                                        className='text-temp'
+                                        title='Xem thông tin'
+                                        onClick={() => handleViewAbsenceDetail(item.absence_id)}
+                                    >Tạm vắng
+                                    </span>) 
+                                : (
+                                    <span
+                                        className='text-temp'
+                                        title='Xem thông tin'
+                                        onClick={() => handleViewResidenceDetail(item.residence_id)}
+                                    >Tạm trú
+                                    </span>)
+                    }</td>)}
+                    {role === 'resident' && 
+                    <>
+                    <td className='text-center'>{
+                        item.status === 'living' ? 'Thường trú' : 
+                        item.status === 'temporaryabsence' ? (
                             <span
-                                title={item.status === 'living' ? 'Đăng ký tạm trú/tạm vắng' : 'Hủy tạm trú/tạm vắng'}
-                                className='registertemp'
-                                onClick={()=>{item.status === 'living' ?  handleRegisterTemp(item) : handleCancelRegisterTemp(item)}}
-                            >{item.status === 'left' ? '' : (item.status === 'living' ? <i className='fa fa-plus'></i> : <i className='fa fa-ban'></i>)}
-                            </span>
-                        </td>
-                        <td className='text-center'>
-                            <>
+                                className='text-temp'
+                                title='Xem thông tin'
+                                onClick={() => handleViewAbsenceDetail(item.absence_id)}
+                            > Tạm vắng
+                            </span>)  
+                        : (
                             <span
-                                title='Chỉnh sửa cư dân'
-                                className='editresident'
-                                onClick={()=> hanldeEditResident(item)}
-                            >{item.status === 'left' ? '' : <i className='fa fa-edit'></i>}</span>
-                            <span
-                                title='Xóa cư dân'
-                                className='deleteresident'
-                                onClick={()=> handleDeleteResident(item)}
-                            >{item.status === 'left' ? '' : <i className='fa fa-trash'></i>}</span>
-                            </>                            
-                        </td>
-                        </>}
-                        </tr>)))}
+                                className='text-temp'
+                                title='Xem thông tin'
+                                onClick={() => handleViewResidenceDetail(item.residence_id)}
+                            >Tạm trú
+                            </span>)
+                    }</td>
+                    <td className='text-center'>
+                        <span
+                            title={item.status === 'living' ? 'Đăng ký tạm trú/tạm vắng' : 'Hủy tạm trú/tạm vắng'}
+                            className='registertemp'
+                            onClick={()=>{item.status === 'living' ?  handleRegisterTemp(item) : handleCancelRegisterTemp(item)}}
+                        >{item.status === 'left' ? '' : (item.status === 'living' ? <i className='fa fa-plus'></i> : <i className='fa fa-ban'></i>)}
+                        </span>
+                    </td>
+                    <td className='text-center'>
+                        <>
+                        <span
+                            title='Chỉnh sửa cư dân'
+                            className='editresident'
+                            onClick={()=> hanldeEditResident(item)}
+                        >{item.status === 'left' ? '' : <i className='fa fa-edit'></i>}</span>
+                        <span
+                            title='Xóa cư dân'
+                            className='deleteresident'
+                            onClick={()=> handleDeleteResident(item)}
+                        >{item.status === 'left' ? '' : <i className='fa fa-trash'></i>}</span>
+                        </>                            
+                    </td>
+                    </>}
+                    </tr>)))
+                    :
+                    (
+                        <tr><td colSpan={10} className="text-center">Không có dữ liệu</td></tr>
+                    )}
                 </>
             </tbody>
         </table>
@@ -398,7 +348,7 @@ const Resident = (props) => {
             onSubmit={handleSubmitCancelRegisterTemp}
             resident={selectedResident?.residentId}
             name={selectedResident?.fullName}/>
-        <EditResidentModal
+        <UpdateResidentModal
             show={showEditModal}
             onClose={() => setShowEditModal(false)}
             onSubmit={handleSubmitEditResident}
@@ -411,7 +361,7 @@ const Resident = (props) => {
             show={showResidenceModal}
             onClose={() => setShowResidenceModal(false)}
             data={residenceDetail}/>
-        <ReactPaginate
+        {totalPages > 1 && <ReactPaginate
             nextLabel="Sau >"
             onPageChange={handlePageChange}
             pageRangeDisplayed={3}
@@ -431,7 +381,8 @@ const Resident = (props) => {
             activeClassName="active"
             renderOnZeroPageCount={null}
             forcePage={currentPage - 1}
-            className={'pagination justify-content-center'}/>
+            className={'pagination justify-content-center'}
+        />}
         </>
     )
 }

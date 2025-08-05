@@ -78,7 +78,8 @@ const apartmentSlice = createSlice({
       })
       .addCase(getAllApartments.fulfilled, (state, action) => {
         state.loading = false;
-        state.apartmentList = action.payload;
+        state.apartmentList = action.payload.results;
+        state.totalCount = action.payload.count;
       })
       .addCase(getAllApartments.rejected, (state, action) => {
         state.loading = false;

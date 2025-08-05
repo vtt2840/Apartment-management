@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { getAllApartments, addNewAccount, deactiveAccount, assignAccount, editApartment } from '../../store/slices/apartmentSlice';
 import CreateNewAccountModal from './CreateNewAccountModal';
 import LockAccountModal from './LockAccountModal';
-import EditApartmentModal from './EditApartmentModal';
+import UpdateApartmentModal from './UpdateApartmentModal';
 import SearchApartmentModal from './SearchApartmentModal';
 import { checkAccountExists } from '../../services/userService';
 import ReactPaginate from "react-paginate";
@@ -13,7 +13,9 @@ import ReactPaginate from "react-paginate";
 const Apartment = (props) => {
     const dispatch = useDispatch();
     const role = useSelector(state => state.auth.role);
+    const apartmentList = useSelector(state => state.apartment.apartmentList);
     const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
+    const totalCount = useSelector(state => state.apartment.totalCount);
 
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -25,40 +27,18 @@ const Apartment = (props) => {
     const [totalPages, setTotalPages] = useState(1);
     const [reloadTrigger, setReloadTrigger] = useState(false);
 
-    const fetchAllApartments = async () => {
-        try {
-            let allResults = [];
-            let page = 1;
-            let hasNext = true;
-
-            while (hasNext) {
-                const res = await dispatch(getAllApartments(page));
-                const { results, next } = res.payload;
-
-                if (Array.isArray(results)) {
-                    allResults = [...allResults, ...results];
-                }
-                if (next) {
-                    page += 1;
-                } else {
-                    hasNext = false;
-                }
-            }
-            const filtered = role === 'resident'
-                ? allResults.filter(item => item.apartmentCode === selectedApartmentCode)
-                : allResults;
-
-            setPaginatedData(filtered.slice((currentPage - 1) * 10, currentPage * 10));
-            setTotalPages(Math.ceil(filtered.length / 10));
-        } catch (err) {
-            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-        }
-    };
-    
     useEffect(() => {
-        fetchAllApartments();
-    }, [currentPage, dispatch, role, selectedApartmentCode, reloadTrigger]);
+        if(totalCount){
+            setTotalPages(Math.ceil(totalCount/10));
+        }
+    }, [totalCount]);
 
+    useEffect(() => {
+        dispatch(getAllApartments({
+            apartmentCode: selectedApartmentCode,
+            page: currentPage
+        }));
+    }, [dispatch, reloadTrigger, selectedApartmentCode, currentPage])
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
@@ -190,7 +170,7 @@ const Apartment = (props) => {
             </thead>
             <tbody>
                 <>
-                    {paginatedData.map((item, index) => (
+                    {apartmentList.map((item, index) => (
                         <tr key={`row-${index}`}>
                             <td className='text-center'>{(currentPage - 1) * 10 + index + 1}</td>
                             <td className='text-center'>{item.apartmentCode}</td>
@@ -235,7 +215,7 @@ const Apartment = (props) => {
             onSubmit={handleSubmitLockAccount}
             apartmentCode={selectedApartment?.apartmentCode}
         />
-        <EditApartmentModal
+        <UpdateApartmentModal
             show={showEditModal}
             onClose={() => setShowEditModal(false)}
             onSubmit={handleSubmitEditApartment}

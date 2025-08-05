@@ -1,6 +1,7 @@
-from ..serializers.residentserializers import (ResidentSerializer, CreateResidentSerializer, DeleteResidentSerializer, RegisterTemporaryResidenceSerializer,
-                                                RegisterTemporaryAbsenceSerializer, CancelRegisterTempSerializer, UpdateResidentSerializer)
-from ..models import Resident, TemporaryResidence, TemporaryAbsence
+from ..serializers.residentserializers import (ResidentSerializer, CreateResidentSerializer, RegisterTemporaryResidenceSerializer,
+                                                RegisterTemporaryAbsenceSerializer, CancelRegisterTempSerializer, UpdateResidentSerializer,
+                                                MemberSerializer)
+from ..models import Resident, TemporaryResidence, TemporaryAbsence, Member
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -8,26 +9,31 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models.functions import Greatest
 from django.contrib.postgres.search import TrigramSimilarity
+from uuid import UUID
 
-
-# #get all residents
-# class ResidentListAPIView(generics.ListAPIView):
-#     serializer_class = ResidentSerializer
-#     permission_classes = [IsAuthenticated]
-#     queryset = Resident.objects.all()
-
+# #get resident list
 class ResidentListAPIView(generics.ListAPIView):
-    serializer_class = ResidentSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = MemberSerializer
+    permission_classes = [IsAuthenticated,]
 
     def get_queryset(self):
-        return Resident.objects.all()\
-            .prefetch_related('member_set', 'temporaryabsence_set', 'temporaryresidence_set')\
-            .order_by('residentId')\
-            .distinct()
+        user = self.request.user
+        show_left = self.request.query_params.get('showLeftResidents') 
+        apartment_code = self.request.query_params.get('apartmentCode')
+        ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
 
+        # role == admin
+        if user.id == ADMIN_ID:
+            #queryset = Member.objects.all()
+            queryset = Member.objects.select_related('resident', 'apartment')
+            if show_left not in ["true", "1"]:
+                queryset = queryset.filter(isMember=True)
+            return queryset.distinct()
 
-
+        # role == resident
+        else:         
+            queryset = Member.objects.filter(apartment__apartmentCode=apartment_code, isMember=True)
+            return queryset.distinct()
 
 #create resident api view
 class CreateResidentAPIView(generics.CreateAPIView):
@@ -37,13 +43,18 @@ class CreateResidentAPIView(generics.CreateAPIView):
 
 #delete resident
 class DeleteResident(APIView):
-    permission_classes = [IsAuthenticated,]
-    def post(self, request):
-        serializer = DeleteResidentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'status': 'success', 'message': 'Resident deleted'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, residentId):
+        try:
+            resident = Resident.objects.get(residentId=residentId)
+        except Resident.DoesNotExist:
+            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        resident.status = 'left'
+        resident.save()
+        Member.objects.filter(resident=resident).update(isOwner=False, isMember=False)
+
+        return Response({"message": "Resident marked as left"}, status=status.HTTP_200_OK)
     
 #register temporary residence
 class RegisterTemporaryResidence(generics.CreateAPIView):
@@ -69,10 +80,9 @@ class CancelRegisterTemp(APIView):
     
 #update resident info
 class UpdateResident(APIView):
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
 
-    def put(self, request):
-        residentId = request.data.get("residentId")
+    def put(self, request, residentId):
         try:
             resident = Resident.objects.get(residentId=residentId)
         except Resident.DoesNotExist:
@@ -83,6 +93,7 @@ class UpdateResident(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 #search resident
 class SearchResidentView(APIView):

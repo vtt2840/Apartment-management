@@ -165,12 +165,12 @@ const ResidentTempModal = ({ show, onClose, onSubmit, resident, name }) => {
                 )}
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>Đóng</Button>
+                <Button className='cancelbtn'  variant="secondary" onClick={handleClose}>Hủy</Button>
                 {step === 1 && (
-                    <Button variant="primary" onClick={handleNextStep}>Tiếp tục</Button>
+                    <Button className='savebtn' variant="primary" onClick={handleNextStep}>Tiếp tục</Button>
                 )}
                 {step === 2 && (
-                    <Button variant="success" onClick={handleSubmit}>Xác nhận</Button>
+                    <Button className='savebtn' variant="success" onClick={handleSubmit}>Xác nhận</Button>
                 )}
             </Modal.Footer>
         </Modal>

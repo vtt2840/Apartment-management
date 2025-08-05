@@ -99,7 +99,7 @@ const Navigation = (props) => {
                         <NavLink to="/fee" exact className="nav-link">Khoản phí</NavLink>
                         <NavLink to="/apartments" exact className="nav-link">Căn hộ</NavLink>
                         <NavLink to="/residents" exact className="nav-link">Cư dân</NavLink>
-                        <NavLink to="/vehicle" exact className="nav-link">Phương tiện</NavLink>
+                        <NavLink to="/vehicles" exact className="nav-link">Phương tiện</NavLink>
                         <NavDropdown title="Tài khoản" id="basic-nav-dropdown">
                             <NavDropdown.Item href="#action/3.0">Thông tin tài khoản</NavDropdown.Item>
                             <NavDropdown.Divider />
@@ -120,7 +120,7 @@ const Navigation = (props) => {
                     <NavLink to="/fee" exact className="nav-link">Khoản phí</NavLink>
                     <NavLink to="/apartments" exact className="nav-link">Căn hộ</NavLink>
                     <NavLink to="/residents" exact className="nav-link">Cư dân</NavLink>
-                    <NavLink to="/vehicle" exact className="nav-link">Phương tiện</NavLink>
+                    <NavLink to="/vehicles" exact className="nav-link">Phương tiện</NavLink>
                 </Nav>
                 <Nav className="d-flex align-items-center gap-2">
                     <div className='name'>

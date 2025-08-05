@@ -57,8 +57,8 @@ const SendEmailModal = ({ show, onClose, onSubmit }) => {
                     </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Đóng</Button>
-                <Button variant="primary" onClick={handleSubmit}>Gửi</Button>
+                <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='savebtn' variant="primary" onClick={handleSubmit}>Lưu</Button>
             </Modal.Footer>
         </Modal>
         </>

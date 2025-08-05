@@ -2,18 +2,49 @@ from rest_framework import serializers
 from ..models import Resident, Member, Apartment, TemporaryResidence, TemporaryAbsence
 
 class MemberSerializer(serializers.ModelSerializer):
-    apartmentCode = serializers.CharField(source="apartment.apartmentCode")
-
-    class Meta:
-        model = Member
-        fields = ["apartmentCode", "isOwner", "isMember"]
-
-
-class ResidentSerializer(serializers.ModelSerializer):
-    apartment = MemberSerializer(source="member_set", many=True)
+    residentId = serializers.IntegerField(source='resident.residentId')
+    fullName = serializers.CharField(source='resident.fullName')
+    dateOfBirth = serializers.DateField(source='resident.dateOfBirth')
+    status = serializers.CharField(source='resident.status')
+    phoneNumber = serializers.CharField(source='resident.phoneNumber')
+    email = serializers.EmailField(source='resident.email')
+    gender = serializers.CharField(source='resident.gender')
+    hometown = serializers.CharField(source='resident.hometown')
+    idNumber = serializers.CharField(source='resident.idNumber')
+    apartmentCode = serializers.CharField(source='apartment.apartmentCode')
     absence_id = serializers.SerializerMethodField()
     residence_id = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Member
+        fields = [
+            "memberId",
+            "residentId",
+            "fullName",
+            "dateOfBirth",
+            "email",
+            "phoneNumber",
+            "gender",
+            "hometown",
+            "idNumber",
+            "status",
+            "apartmentCode",
+            "isOwner",
+            "isMember",
+            "absence_id",
+            "residence_id",
+        ]
+
+    def get_absence_id(self, obj):
+        absence = obj.resident.temporaryabsence_set.first()
+        return absence.pk if absence else None
+    
+    def get_residence_id(self, obj):
+        residence = obj.resident.temporaryresidence_set.first()
+        return residence.pk if residence else None
+
+class ResidentSerializer(serializers.ModelSerializer):
+    apartment = MemberSerializer(source="member_set", many=True)
     class Meta:
         model = Resident
         fields = [
@@ -26,18 +57,8 @@ class ResidentSerializer(serializers.ModelSerializer):
             "hometown",
             "idNumber",
             "status",
-            "apartment",  
-            "absence_id",
-            "residence_id",
+            "apartment",
         ]
-
-    def get_absence_id(self, obj):
-        absence = obj.temporaryabsence_set.first()
-        return absence.pk if absence else None
-    
-    def get_residence_id(self, obj):
-        residence = obj.temporaryresidence_set.first()
-        return residence.pk if residence else None
 
 class CreateResidentSerializer(serializers.ModelSerializer):
     apartment_code = serializers.CharField(write_only=True)
@@ -70,23 +91,6 @@ class CreateResidentSerializer(serializers.ModelSerializer):
 
         return resident
     
-#delete resident serializers
-class DeleteResidentSerializer(serializers.Serializer):
-    resident_id = serializers.IntegerField()
-
-    def validate_resident_id(self, value):
-        try:
-            self.resident = Resident.objects.get(pk=value)
-        except Resident.DoesNotExist:
-            raise serializers.ValidationError("Resident does not exist")
-        return value
-    
-    def save(self, **kwargs):
-        resident = self.resident
-        resident.status = 'left' #update status = left
-        resident.save()
-        Member.objects.filter(resident=resident).update(isOwner=0, isMember=0) #update is not member
-        return resident
 
 class RegisterTemporaryResidenceSerializer(serializers.ModelSerializer):
     resident_id = serializers.IntegerField()

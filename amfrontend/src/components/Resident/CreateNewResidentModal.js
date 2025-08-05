@@ -14,7 +14,7 @@ const CreateNewResidentModal = ({ show, onClose, onSubmit, apartmentCode }) => {
     });
 
     useEffect(() => {
-        if (show) {
+        if(show){
             setFormData({
                 fullName: '',
                 email: '',
@@ -160,8 +160,8 @@ const CreateNewResidentModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Đóng</Button>
-                <Button variant="primary" onClick={handleSubmit}>Lưu</Button>
+                <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='savebtn' variant="primary" onClick={handleSubmit}>Lưu</Button>
             </Modal.Footer>
         </Modal>
         </>

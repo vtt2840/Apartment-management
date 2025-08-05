@@ -2,7 +2,7 @@ import { Modal, Button } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
-const EditApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
+const UpdateApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
     const [formData, setFormData] = useState({
         apartmentCode: '',
         floor: '',
@@ -90,12 +90,12 @@ const EditApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
                 </div>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Đóng</Button>
-                <Button variant="primary" onClick={handleSubmit}>Lưu</Button>
+                <Button className='cancelbtn' variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='savebtn' variant="primary" onClick={handleSubmit}>Lưu</Button>
             </Modal.Footer>
         </Modal>
         </>
     );
 };
 
-export default EditApartmentModal;
+export default UpdateApartmentModal;

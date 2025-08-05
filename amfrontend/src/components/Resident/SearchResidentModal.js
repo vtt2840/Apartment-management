@@ -10,20 +10,18 @@ const SearchResidentModal = () => {
 
     const handleSearch = async () => {
         if (!query.trim()) return;
-        try {
-        const response = await searchResidents(query);
-        if (response.data.length === 0) {
-            toast.info("Không tìm thấy cư dân phù hợp.");
-        } else {
-            setResidents(response.data);
-            setShow(true);
-        }
-        } catch (error) {
-        toast.error("Lỗi khi tìm kiếm cư dân.");
-        console.error(error);
+        try{
+            const response = await searchResidents(query);
+            if(response.data.length === 0){
+                toast.info("Không tìm thấy cư dân phù hợp!");
+            }else{
+                setResidents(response.data);
+                setShow(true);
+            }
+        }catch(error){
+            toast.error("Lỗi khi tìm kiếm cư dân!");
         }
     };
-
     
     const expandedResidents = residents.flatMap((item) =>
         item.apartment
@@ -41,7 +39,7 @@ const SearchResidentModal = () => {
 
     const handleClose = () => setShow(false);
 
-    return (
+    return(
         <>
         <div className="input-group">
             <input
@@ -51,7 +49,7 @@ const SearchResidentModal = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             />
-            <button className="btn btn-primary" onClick={handleSearch}>
+            <button className="btn btn-success" onClick={handleSearch}>
             <i className='fa fa-search'></i>
             </button>
         </div>
@@ -83,15 +81,15 @@ const SearchResidentModal = () => {
                 <tbody>
                     {sortedResidents.map((item, index) => (
                     <tr key={`row-${index}`}>
-                        <td>{index + 1}</td>
-                        <td>{item.apartmentCode}</td>
+                        <td className='text-center'>{index + 1}</td>
+                        <td className='text-center'>{item.apartmentCode}</td>
                         <td>{item.fullName}</td>
                         <td>{item.email}</td>
-                        <td>{item.dateOfBirth || ''}</td>
-                        <td>{item.gender === 'male' ? 'Nam' : 'Nữ'}</td>
-                        <td>{item.hometown || ''}</td>
-                        <td>{item.phoneNumber || ''}</td>
-                        <td>{item.idNumber || ''}</td>
+                        <td className='text-center'>{item.dateOfBirth || ''}</td>
+                        <td className='text-center'>{item.gender === 'male' ? 'Nam' : 'Nữ'}</td>
+                        <td className='text-center'>{item.hometown || ''}</td>
+                        <td className='text-center'>{item.phoneNumber || ''}</td>
+                        <td className='text-center'>{item.idNumber || ''}</td>
                         <td className='text-center'>{item.isMember === false ? 'Rời đi' : item.status === 'living' ? 'Thường trú' : item.isMember === true ? 'Thường trú' : (item.status === 'temporaryabsence' ? 'Tạm vắng' : 'Tạm trú')}</td>
                     </tr>
                     ))}
@@ -101,14 +99,14 @@ const SearchResidentModal = () => {
             )}
             </Modal.Body>
             <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
+            <Button className='cancelbtn' variant="secondary" onClick={handleClose}>
                 Đóng
             </Button>
             </Modal.Footer>
         </Modal>
         </>
-    );
-    };
+    )
+};
 
 
 export default SearchResidentModal;

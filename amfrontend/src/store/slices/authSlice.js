@@ -5,7 +5,7 @@ const storedAuth = JSON.parse(localStorage.getItem('auth'));
 const initialState = {
   email: storedAuth?.email || null,
   role: storedAuth?.role || null,
-  apartments: storedAuth?.apartments || [], // <-- đổi thành mảng
+  apartments: storedAuth?.apartments || [], 
   selectedApartment: storedAuth?.selectedApartment || null,
   isAuthenticated: !!storedAuth,
 };
@@ -17,11 +17,10 @@ const authSlice = createSlice({
     loginSuccess(state, action) {
       state.email = action.payload.email;
       state.role = action.payload.role;
-      state.apartments = action.payload.apartments || []; // <-- gán danh sách căn hộ
-      state.selectedApartment = action.payload.apartments?.[0]?.apartmentCode || null; // <-- mặc định chọn căn hộ đầu tiên
+      state.apartments = action.payload.apartments || []; 
+      state.selectedApartment = action.payload.apartments?.[0]?.apartmentCode || null; 
       state.isAuthenticated = true;
 
-      // Lưu lại vào localStorage
       localStorage.setItem(
         'auth',
         JSON.stringify({

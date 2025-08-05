@@ -12,11 +12,15 @@ const Login = (props) => {
     let navigate = useNavigate();
     const dispatch = useDispatch();
     const [showModal, setShowModal] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
         email:"",
         password:""
     })
+    const togglePasswordVisiblity = () => {
+    setShowPassword(showPassword ? false : true);
+  };
 
     const handleLogin = async () => {
         try {
@@ -92,15 +96,26 @@ const Login = (props) => {
                                 value={formData.email}
                                 onChange={(event) => {setFormData({ ...formData, email: event.target.value })}}
                             />
-                            <input
-                                type='password'
-                                style={{ borderWidth: '1.3px' }}
-                                className='form-control'
-                                placeholder='Mật khẩu'
-                                value={formData.password}
-                                onChange={(event) => {setFormData({ ...formData, password: event.target.value })}}
-                                onKeyDown={(event) => handlePressEnter(event)}
-                            />
+                            <div className="position-relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    style={{ borderWidth: '1.3px' }}
+                                    className='form-control'
+                                    placeholder='Mật khẩu'
+                                    value={formData.password}
+                                    onChange={(event) => {setFormData({ ...formData, password: event.target.value })}}
+                                    onKeyDown={(event) => handlePressEnter(event)}
+                                />
+                                <i className={`fa ${showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
+                                onClick={togglePasswordVisiblity}
+                                style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    right: '15px',
+                                    transform: 'translateY(-50%)',
+                                    cursor: 'pointer'
+                                }}/>
+                            </div>
                             <button className='btn btn-primary' onClick={handleLogin}>Đăng nhập</button>  
                             <span className='text-center'>
                                 <a className='forgot-password' onClick={handleSendEmail}>Quên mật khẩu?</a>
