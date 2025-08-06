@@ -10,11 +10,20 @@ from rest_framework import status
 from django.db.models.functions import Greatest
 from django.contrib.postgres.search import TrigramSimilarity
 from uuid import UUID
+from rest_framework.pagination import PageNumberPagination
 
-# #get resident list
+#custom page number pagination
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10 
+    page_size_query_param = 'page_size' 
+    max_page_size = 1000
+
+
+# get resident list
 class ResidentListAPIView(generics.ListAPIView):
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated,]
+    pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -94,7 +103,6 @@ class UpdateResident(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 #search resident
 class SearchResidentView(APIView):
     def get(self, request):
@@ -110,7 +118,7 @@ class SearchResidentView(APIView):
                 TrigramSimilarity('hometown', keyword),
                 TrigramSimilarity('idNumber', keyword),
             )
-        ).filter(similarity__gt=0.3).order_by('-similarity')
+        ).filter(similarity__gt=0.4).order_by('-similarity')
 
         serializer = ResidentSerializer(queryset, many=True)
         return Response(serializer.data)

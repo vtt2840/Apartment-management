@@ -32,7 +32,7 @@ const SearchApartmentModal = () => {
             <input
             type="text"
             className="form-control"
-            placeholder="Nhập từ khóa"
+            placeholder="Nhập từ khóa (Mã căn hộ, chủ hộ, email)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             />

@@ -118,7 +118,8 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                                 position: 'absolute',
                                 top: '50%',
                                 right: '20px',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                color: '#5a5555'
                         }}/>
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3 position-relative'>
@@ -132,7 +133,8 @@ const CreateNewAccountModal = ({ show, onClose, onSubmit, apartmentCode }) => {
                                 position: 'absolute',
                                 top: '50%',
                                 right: '20px',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                color: '#5a5555'
                         }}/>
                     </div>
                 </div>

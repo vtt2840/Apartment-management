@@ -2,9 +2,9 @@ import { Modal, Button } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
-const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle }) => {
+const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) => {
     const [formData, setFormData] = useState({
-        fullName: '',
+        resident: '',
         licensePlate: '',
         vehicleType: '',
         brand: '',
@@ -14,17 +14,17 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle }) => {
     useEffect(() => {
         if(show && vehicle){
             setFormData({
-                fullName: vehicle.fullName || '',
+                resident: vehicle.resident,
                 licensePlate: vehicle.licensePlate || '',
-                vehicleType: vehicle.vehicleType || '',
-                brand: vehicle.brand || '',
-                color: vehicle.color || '',                
+                vehicleType: vehicle.vehicleType,
+                brand: vehicle.brand,
+                color: vehicle.color,                
             });
         }
     }, [show, vehicle]);
 
     const defaultValidInput = {
-        isValidFullname: true,
+        isValidResident: true,
         isValidLicensePlate: true,
         isValidVehicleType: true,
         isValidBrand: true,
@@ -35,9 +35,9 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle }) => {
     //check input valid
     const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);
-        if(!formData.fullName){
+        if(!formData.resident){
             toast.error("Chủ xe không được để trống!");
-            setObjCheckInput({...defaultValidInput, isValidFullname: false});
+            setObjCheckInput({...defaultValidInput, isValidResident: false});
             return false;
         }
         if(!formData.vehicleType){
@@ -65,7 +65,7 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle }) => {
     const handleSubmit = async() => {
         let check = await isValidInputs();
         if(check === true){
-            onsubmit(formData);
+            onSubmit(formData);
         }
     };
 
@@ -79,9 +79,19 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle }) => {
                 <div className='content-body row'>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Chủ xe(<span className='redC'>*</span>):</label>
-                        <input type='text' className={objCheckInput.isValidFullname ? 'form-control' : 'form-control is-invalid'}
-                            name='fullName' value={formData.fullName} placeholder='Chủ xe' onChange={handleChange}
-                        />
+                        <select 
+                            className='form-select'
+                            name='resident'
+                            value={formData.resident} 
+                            onChange={handleChange}
+                        >
+                            <option>Tùy chọn</option>
+                            {residentList.map((resident) => (
+                                <option key={resident.residentId} value={resident.residentId}>
+                                {resident.fullName} ({resident.phoneNumber})
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Biển số xe:</label>

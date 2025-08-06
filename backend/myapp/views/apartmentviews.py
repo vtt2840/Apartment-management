@@ -66,11 +66,10 @@ class SearchApartmentView(APIView):
         queryset = Apartment.objects.annotate(
             similarity=Greatest(
                 TrigramSimilarity('apartmentCode', keyword),
-                TrigramSimilarity('status', keyword),
                 TrigramSimilarity('account__username', keyword),
                 TrigramSimilarity('account__email', keyword),
             )
-        ).filter(similarity__gt=0.2).order_by('-similarity')
+        ).filter(similarity__gt=0.5).order_by('-similarity')
 
         serializer = ApartmentSerializer(queryset, many=True)
         return Response(serializer.data)

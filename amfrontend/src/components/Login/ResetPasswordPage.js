@@ -90,7 +90,9 @@ const ResetPasswordPage = () => {
                                 top: '50%',
                                 right: '20px',
                                 transform: 'translateY(-50%)',
-                                cursor: 'pointer'}}
+                                cursor: 'pointer',
+                                color: '#5a5555'
+                            }}
                         />
                     </div>
                     <div className='position-relative'>
@@ -110,7 +112,8 @@ const ResetPasswordPage = () => {
                                 top: '50%',
                                 right: '20px',
                                 transform: 'translateY(-50%)',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                color: '#5a5555'
                             }}
                         />
                     </div>

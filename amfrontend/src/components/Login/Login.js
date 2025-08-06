@@ -111,7 +111,8 @@ const Login = (props) => {
                             top: '50%',
                             right: '15px',
                             transform: 'translateY(-50%)',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            color: '#5a5555'
                         }}/>
                     </div>
                     <button className='btn btn-primary' onClick={handleLogin}>Đăng nhập</button>  

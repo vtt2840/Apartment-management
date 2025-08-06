@@ -67,8 +67,7 @@ const updateResident = ({residentId, data}) => {
     return axios.put(`/residents/update/${residentId}/`, data);
 }
 const searchResidents = (keyword) => {
-  return axios.get(`/residents/search/?q=${encodeURIComponent(keyword)}/`);
-  
+    return axios.get(`/residents/search/?q=${encodeURIComponent(keyword)}/`);
 };
 
 //temporaryregister
@@ -96,9 +95,22 @@ const getTemporaryResidenceDetail = (absenceId) => {
 const fetchAllVehicles = ({apartmentCode, showDeletedVehicles, page}) => {
     return axios.get(`/vehicles/?apartmentCode=${apartmentCode}&showDeletedVehicles=${showDeletedVehicles}&page=${page}`);
 }
+const createNewVehicle = (data) => {
+    return axios.post('/vehicles/', data);
+}
+const updateVehicle = ({vehicleId, data}) => {
+    return axios.put(`vehicles/${vehicleId}/`, data);
+}
+const deleteVehicle = (vehicleId) => {
+    return axios.delete(`/vehicles/${vehicleId}/`);
+}
+const searchVehicles = (keyword) => {
+    return axios.get(`/vehicles/search/?q=${keyword}/`);
+}
 
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
-    updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles
+    updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
+    updateVehicle, deleteVehicle, searchVehicles
 }

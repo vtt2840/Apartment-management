@@ -134,7 +134,7 @@ class Member(models.Model):
 
     class Meta:
         unique_together = ('resident', 'apartment') 
-        ordering = ["apartment"]
+        ordering = ["apartment", "memberId"]
 
     def __str__(self):
         return f"{self.resident.fullName} ({self.resident.email}) - {self.apartment.apartmentCode}"
@@ -182,7 +182,7 @@ class Vehicle(models.Model):
     resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ["apartment", "resident"]
+        ordering = ["apartment", "resident", "vehicleId"]
 
     def __str__(self):
         return f"{self.vehicleType}: {self.resident.fullName} - {self.apartment.apartmentCode}"

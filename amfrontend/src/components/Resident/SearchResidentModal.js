@@ -45,7 +45,7 @@ const SearchResidentModal = () => {
             <input
             type="text"
             className="form-control"
-            placeholder="Nhập từ khóa"
+            placeholder="Nhập từ khóa (Họ tên, email, quê quán, SĐT, CCCD)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             />

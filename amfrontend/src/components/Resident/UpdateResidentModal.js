@@ -16,11 +16,11 @@ const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
     useEffect(() => {
         if(show && resident){
             setFormData({
-                fullName: resident.fullName || '',
+                fullName: resident.fullName,
                 email: resident.email || '',
-                dateOfBirth: resident.dateOfBirth || '',
-                gender: resident.gender || '',
-                hometown: resident.hometown || '',
+                dateOfBirth: resident.dateOfBirth,
+                gender: resident.gender,
+                hometown: resident.hometown,
                 phoneNumber: resident.phoneNumber || '',
                 idNumber: resident.idNumber || '',
             });

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import { searchVehicles } from "../../services/userService";
 
 const SearchVehicleModal = () => {
     const [query, setQuery] = useState('');
@@ -10,7 +11,7 @@ const SearchVehicleModal = () => {
     const handleSearch = async () => {
         if(!query.trim()) return;
         try{
-            const response = null;
+            const response = await searchVehicles(query);
             if(response.data.length === 0){
                 toast.info("Không tìm thấy phương tiện phù hợp!");
             }else{
@@ -29,7 +30,7 @@ const SearchVehicleModal = () => {
             <input
                 type="text"
                 className="form-control"
-                placeholder="Nhập từ khóa"
+                placeholder="Nhập từ khóa (Biển số, hãng, màu sắc)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
             />

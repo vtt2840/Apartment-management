@@ -51,7 +51,6 @@ const Resident = (props) => {
             apartmentCode: selectedApartmentCode, 
             showLeftResidents: showLeftResidents, 
             page: currentPage}));
-        console.log(residentList);
     }, [dispatch, reloadTrigger, selectedApartmentCode, showLeftResidents, currentPage]);
 
     //if showleftresident render to page 1

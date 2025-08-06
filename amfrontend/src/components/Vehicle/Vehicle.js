@@ -2,13 +2,14 @@ import './Vehicle.scss';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { getAllVehicles } from '../../store/slices/vehicleSlice';
+import { getAllVehicles, addNewVehicle, editVehicle, deleteOneVehicle } from '../../store/slices/vehicleSlice';
 import addicon from '../../static/addicon.png';
 import ReactPaginate from 'react-paginate';
 import CreateNewVehicleModal from './CreateNewVehicleModal';
 import UpdateVehicleModal from './UpdateVehicleModal';
 import DeleteVehicleModal from './DeleteVehicleModal';
 import SearchVehicleModal from './SearchVehicleModal';
+import axios from '../../setup/axios';
 
 const Vehicle = (props) => {
     const dispatch = useDispatch();
@@ -26,6 +27,7 @@ const Vehicle = (props) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [residentList, setResidentList] = useState([]);
 
     useEffect(() => {
         if(totalCount){
@@ -33,6 +35,7 @@ const Vehicle = (props) => {
         }
     }, [totalCount]);
 
+    //get vehicle list
     useEffect(() => {
         dispatch(getAllVehicles({
             apartmentCode: selectedApartmentCode,
@@ -49,12 +52,49 @@ const Vehicle = (props) => {
         setCurrentPage(selectedItem.selected + 1);
     }
 
+    //get resident list to create/update vehicle
+    useEffect(() => {
+        const fetchResidents = async () => {
+            try{
+                const res = await axios.get('/residents/', {
+                    params:{
+                        apartmentCode: selectedApartmentCode,
+                        showLeftResidents: false,
+                        page_size: 100,
+                    }
+                });
+                const data = res.data;
+                const residents = Array.isArray(data.results) ? data.results : data;
+                setResidentList(residents);
+            }catch(error){
+                toast.error("Không thể tải danh sách cư dân");
+            }
+        };
+        if(selectedApartmentCode){
+            fetchResidents();
+        }
+    }, [selectedApartmentCode]);
+
+
     //add new vehicle
     const handleAddVehicle = () => {
         setShowAddModal(true);
     }
 
-    const handleSubmitAddVehicle = () => {}
+    const handleSubmitAddVehicle = async(formData) => {
+        const data = {
+            ...formData,
+            apartment: selectedApartmentCode
+        };
+        try{
+            await dispatch(addNewVehicle(data));
+            setReloadTrigger(prev => !prev);
+            toast.success("Thêm phương tiện thành công!");
+            setShowAddModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    }
 
     //edit vehicle
     const hanldeEditVehicle = (vehicle) => {
@@ -62,7 +102,20 @@ const Vehicle = (props) => {
         setShowEditModal(true);
     }
 
-    const handleSubmitEditVehicle = () => {}
+    const handleSubmitEditVehicle = async(formData) => {
+        const data = {
+            ...formData,
+            apartment: selectedApartmentCode
+        };
+        try{
+            await dispatch(editVehicle({vehicleId: selectedVehicle.vehicleId, data: data}));
+            setReloadTrigger(prev => !prev);
+            toast.success("Chỉnh sửa phương tiện thành công!");
+            setShowEditModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    }
 
     //delete vehicle
     const handleDeleteVehicle = (vehicle) => {
@@ -70,7 +123,16 @@ const Vehicle = (props) => {
         setShowDeleteModal(true);
     }
 
-    const handleSubmitDeleteVehicle = () => {}
+    const handleSubmitDeleteVehicle = async(data) => {
+        try{
+            await dispatch(deleteOneVehicle(data));
+            setReloadTrigger(prev => !prev);
+            toast.success("Xóa phương tiện thành công!");
+            setShowDeleteModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    }
 
     return (
     <>
@@ -156,12 +218,14 @@ const Vehicle = (props) => {
             onClose={() => setShowAddModal(false)}
             onSubmit={handleSubmitAddVehicle}
             apartmentCode={selectedApartmentCode}
+            residentList={residentList}
         />
         <UpdateVehicleModal
             show={showEditModal}
             onClose={() => setShowEditModal(false)}
             onSubmit={handleSubmitEditVehicle}
             vehicle={selectedVehicle}
+            residentList={residentList}
         />
         <DeleteVehicleModal
             show={showDeleteModal}
