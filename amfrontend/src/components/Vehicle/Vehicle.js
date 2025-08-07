@@ -21,13 +21,19 @@ const Vehicle = (props) => {
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [showDeletedVehicles, setShowDeletedVehicles] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [residentList, setResidentList] = useState([]);
+
+    const [showDecreaseApartmentCode, setShowDecreaseApartmentCode] = useState(false);
+    const [showType, setShowType] = useState('all');
+    const [showFilterTypeMenu, setShowFilterTypeMenu] = useState(false);
+    const [dateRegister, setDateRegister] = useState('all');
+    const [showFilterDateRegisterMenu, setShowFilterDateRegisterMenu] = useState(false);
+    const [showStatus, setShowStatus] = useState(false);
 
     useEffect(() => {
         if(totalCount){
@@ -39,17 +45,33 @@ const Vehicle = (props) => {
     useEffect(() => {
         dispatch(getAllVehicles({
             apartmentCode: selectedApartmentCode,
-            showDeletedVehicles: showDeletedVehicles,
+            status: showStatus,
             page: currentPage,
+            showDecreaseApartmentCode: showDecreaseApartmentCode,
+            showType: showType !== 'all' ? showType : null,
+            dateRegister: dateRegister !== 'all' ? dateRegister : null,
         }))
-    }, [dispatch, reloadTrigger, selectedApartmentCode, showDeletedVehicles, currentPage]);
+    }, [dispatch, reloadTrigger, selectedApartmentCode, showStatus, currentPage, showDecreaseApartmentCode, showType, dateRegister]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [showDeletedVehicles])
+    }, [showStatus])
 
+    //handle page change
     const handlePageChange= (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1);
+    }
+
+    //filter vehicle type
+    const handleTypeFilter = (type) => {
+        setShowType(type);
+        setShowFilterTypeMenu(false); 
+    };
+
+    //filter date register
+    const handleDateRegisterFilter = (date) => {
+        setDateRegister(date);
+        setShowFilterDateRegisterMenu(false);
     }
 
     //get resident list to create/update vehicle
@@ -74,7 +96,6 @@ const Vehicle = (props) => {
             fetchResidents();
         }
     }, [selectedApartmentCode]);
-
 
     //add new vehicle
     const handleAddVehicle = () => {
@@ -136,7 +157,7 @@ const Vehicle = (props) => {
 
     return (
     <>
-     <div className='container mt-4'>
+    <div className='container mt-4'>
         <div className='content-top row mx-auto my-3'>
             {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchVehicleModal/></div>)}
             {role === 'resident' && (<div className='col-12 mx-auto text-end'>
@@ -152,21 +173,68 @@ const Vehicle = (props) => {
         <table className="table table-bordered table-striped table-hover">
             <thead>
                 <tr>
-                    <th className='text-center' scope="col">STT</th>
-                    {role === 'admin' && (<th className='text-center' scope="col">Mã căn hộ</th>)}
-                    <th className='text-center' scope="col">Chủ xe</th>
-                    <th className='text-center' scope="col">Số điện thoại</th>
-                    <th className='text-center' scope="col">Biển số</th>
-                    <th className='text-center' scope="col">Loại xe</th>
-                    <th className='text-center' scope="col">Hãng</th>
-                    <th className='text-center' scope="col">Màu sắc</th>
-                    <th className='text-center' scope="col">Ngày đăng ký</th>
+                    <th className='text-center align-middle' scope="col">STT</th>
+                    {role === 'admin' && (<th className='text-center' scope="col">Mã căn hộ
+                        <button
+                            onClick={() => setShowDecreaseApartmentCode(prev => !prev)}
+                            className="btn"
+                            title={showDecreaseApartmentCode ? 'Giảm dần' : 'Tăng dần'}
+                        ><i className={`fa ${showDecreaseApartmentCode ? 'fa fa-caret-down' : 'fa fa-caret-up'}`}></i>
+                        </button>
+                    </th>)}
+                    <th className='text-center align-middle' scope="col">Chủ xe</th>
+                    <th className='text-center align-middle' scope="col">Số điện thoại</th>
+                    <th className='text-center align-middle' scope="col">Biển số</th>
+                    <th className='text-center' scope="col">Loại xe
+                        {role === 'admin' && (
+                            <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterTypeMenu(!showFilterTypeMenu)}
+                                    className="btn"
+                                    title="Lọc loại xe"
+                                >
+                                    <i className='fa fa-filter'></i>
+                                </button>
+                                {showFilterTypeMenu && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <button className="dropdown-item" onClick={() => handleTypeFilter('all')}>Tất cả</button>
+                                        <button className="dropdown-item" onClick={() => handleTypeFilter('bike')}>Xe đạp</button>
+                                        <button className="dropdown-item" onClick={() => handleTypeFilter('motorbike')}>Mô tô</button>
+                                        <button className="dropdown-item" onClick={() => handleTypeFilter('car')}>Ô tô</button>
+                                        <button className="dropdown-item" onClick={() => handleTypeFilter('other')}>Khác</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </th>
+                    <th className='text-center align-middle' scope="col">Hãng</th>
+                    <th className='text-center align-middle' scope="col">Màu sắc</th>
+                    <th className='text-center' scope="col">Ngày đăng ký
+                        {role === 'admin' && (
+                            <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterDateRegisterMenu(!showFilterDateRegisterMenu)}
+                                    className="btn"
+                                    title="Lọc loại xe"
+                                >
+                                    <i className='fa fa-filter'></i>
+                                </button>
+                                {showFilterDateRegisterMenu && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <button className="dropdown-item" onClick={() => handleDateRegisterFilter('increase')}>Tăng dần</button>
+                                        <button className="dropdown-item" onClick={() => handleDateRegisterFilter('decrease')}>Giảm dần</button>
+                                        <button className="dropdown-item" onClick={() => handleDateRegisterFilter('all')}>Bỏ lọc</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </th>
                     {role === 'admin' && (<th className='text-center' scope="col">Trạng thái
                             <button
-                                onClick={() => setShowDeletedVehicles(prev => !prev)}
-                                className="btn btn-sm btn-light ms-2"
-                                title={showDeletedVehicles ? 'Ẩn phương tiện đã xóa' : 'Hiện phương tiện đã xóa'}
-                            ><i className={`fa ${showDeletedVehicles ? 'fa fa-sign-in' : 'fa fa-sign-out'}`}></i>
+                                onClick={() => setShowStatus(prev => !prev)}
+                                className="btn"
+                                title={showStatus ? 'Phương tiện đang sử dụng' : 'Phương tiện đã xóa'}
+                            ><i className='fa fa-filter'></i>
                             </button>
                     </th>)}
                     {role === 'resident' && (<th className='text-center'>Hành động</th>)}

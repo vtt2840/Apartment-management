@@ -186,3 +186,66 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return f"{self.vehicleType}: {self.resident.fullName} - {self.apartment.apartmentCode}"
+    
+class FeeType(models.Model):
+    class Scope(models.TextChoices):
+        all = 'all'
+        some = 'some'
+    class Status(models.TextChoices):
+        active = 'active'
+        inactive = 'inactive'
+    typeId = models.AutoField(primary_key=True)
+    feeName = models.CharField(max_length=200)
+    typeDescription = models.CharField(max_length=500, null=True, blank=True)
+    isRequired = models.BooleanField(default=True)
+    appliedScope = models.CharField(max_length=4, choices=Scope.choices, default='all')
+    status = models.CharField(max_length=8, choices=Status.choices, default='active')
+    applicableApartments = models.ManyToManyField('Apartment', blank=True)
+
+    def __str__(self):
+        return self.feeName
+
+class FeeCollection(models.Model):
+    class Status(models.TextChoices):
+        active = 'active'
+        inactive = 'inactive'
+    collectionId = models.AutoField(primary_key=True)
+    month = models.CharField(max_length=2)
+    year = models.CharField(max_length=4)
+    createdDate = models.DateField()
+    dueDate = models.DateField()
+    status = models.CharField(max_length=8, choices=Status.choices, default='active')
+    feeType = models.ForeignKey(FeeType, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return f"{self.feeType} {self.month}/{self.year}"
+
+class ApartmentFee(models.Model):
+    class Status(models.TextChoices):
+        paid = 'paid'
+        unpaid = 'unpaid'
+
+    apartmentFeeId = models.AutoField(primary_key=True)
+    amount = models.FloatField()
+    status = models.CharField(max_length=6, choices=Status.choices, default='unpaid')
+    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
+    feeCollection = models.ForeignKey(FeeCollection, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.apartment.apartmentCode} {self.feeCollection.feeType} {self.feeCollection.month}/{self.feeCollection.year}"
+
+class PaymentTransaction(models.Model):
+    class Status(models.TextChoices):
+        successful = 'successful'
+        pending = 'pending'
+        failed = 'failed'
+
+    transactionId = models.CharField(max_length=200, primary_key=True)
+    apartmentFee = models.ForeignKey(ApartmentFee, on_delete=models.CASCADE)
+    amount = models.FloatField()
+    paymentDate = models.DateField()
+    status = models.CharField(max_length=10, choices=Status.choices, default='successful')
+
+    def __str__(self):
+        return f"{self.apartmentFee.apartment.apartmentCode} {self.apartmentFee.feeCollection.feeType} {self.apartmentFee.feeCollection.month}/{self.apartmentFee.feeCollection.year} {self.status}"

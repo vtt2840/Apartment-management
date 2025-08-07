@@ -8,27 +8,45 @@ from rest_framework import status
 from django.db.models.functions import Greatest
 from django.contrib.postgres.search import TrigramSimilarity
 from uuid import UUID
+from rest_framework.pagination import PageNumberPagination
+
+#custom page number pagination
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10 
+    page_size_query_param = 'page_size' 
+    max_page_size = 1000
 
 #get apartment list
 class ApartmentListAPIView(generics.ListAPIView):
     serializer_class = ApartmentSerializer
     permission_classes = [IsAuthenticated,]
+    pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
         apartment_code = self.request.query_params.get('apartmentCode')
+        floor = self.request.query_params.get('floor')
+        status = self.request.query_params.get('status')
         ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
 
         #role == admin
-        if user.id == ADMIN_ID:
+        if user.id == ADMIN_ID or not apartment_code:
             queryset = Apartment.objects.all()
-
+            #decrease floor
+            if floor in ["true", "1"]:
+                queryset = queryset.order_by("-apartmentCode") 
+            if status == 'sold':
+                queryset = queryset.filter(status='active')
+                return queryset
+            else:
+                if status == 'unsold':
+                    queryset = queryset.filter(status='inactive')
+                    return queryset
             return queryset
         else:
             queryset = Apartment.objects.filter(apartmentCode=apartment_code)
             return queryset
         
-
 
 #add account exist in database to another apartment
 

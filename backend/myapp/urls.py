@@ -1,9 +1,10 @@
 from django.urls import path
-from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefreshAPIView, LogoutAPIView, CreateAccountAPIView, 
-                                 DeactivateAccount, AccountByApartment, PasswordResetConfirm, ResetPassword, CheckAccount)
+from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefreshAPIView, LogoutAPIView, CreateAccountAPIView, UpdateAccountAdmin,
+                                 DeactivateAccount, AccountByApartment, PasswordResetConfirm, ResetPassword, CheckAccount, ChangePasswordView)
 from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartment, UpdateApartment, SearchApartmentView
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
-                                  CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView)
+                                  CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
+                                  ResidentCountView)
 from .views.vehicleviews import (VehicleViewSet)
 from rest_framework.routers import SimpleRouter
 
@@ -29,8 +30,11 @@ urlpatterns = [
     path('accounts/check-account-exists/', CheckAccount.as_view(), name='check-account-exists'),
     path('accounts/resetpassword/', ResetPassword.as_view(), name='reset-password'),
     path('accounts/password-reset-confirm/', PasswordResetConfirm.as_view(), name='password-reset-confirm'),
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
+    path('update-account-admin/', UpdateAccountAdmin.as_view(), name='update-account-admin'),
 
     path('residents/', ResidentListAPIView.as_view(), name='resident-list'),
+    path('residents/count/', ResidentCountView.as_view(), name='count-resident'),
     path('residents/addnewresident/', CreateResidentAPIView.as_view(), name='add-new-resident'),
     path('residents/delete/<int:residentId>/', DeleteResident.as_view(), name='delete-resident'),
     path('residents/update/<int:residentId>/', UpdateResident.as_view(), name='update-resident'),

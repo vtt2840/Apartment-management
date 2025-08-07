@@ -30,6 +30,7 @@ const Login = (props) => {
             const userData = {
                 email: user.email,
                 role: user.role,
+                username: user.username,
                 apartments: user.apartments || [],
                 selectedApartment: user.apartments?.[0]?.apartmentCode || null
             };
@@ -112,7 +113,7 @@ const Login = (props) => {
                             right: '15px',
                             transform: 'translateY(-50%)',
                             cursor: 'pointer',
-                            color: '#5a5555'
+                            color: '#878585'
                         }}/>
                     </div>
                     <button className='btn btn-primary' onClick={handleLogin}>Đăng nhập</button>  

@@ -20,29 +20,65 @@ class CustomPageNumberPagination(PageNumberPagination):
 
 
 # get resident list
+       
 class ResidentListAPIView(generics.ListAPIView):
     serializer_class = MemberSerializer
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsAuthenticated]
     pagination_class = CustomPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
-        show_left = self.request.query_params.get('showLeftResidents') 
+        status = self.request.query_params.get('status')
+        gender = self.request.query_params.get('gender')
         apartment_code = self.request.query_params.get('apartmentCode')
+        showDecreaseApartmentCode = self.request.query_params.get('showDecreaseApartmentCode')
+        dateOfBirth = self.request.query_params.get('dateOfBirth')
+        orderBirth = self.request.query_params.get('orderBirth')
         ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
 
-        # role == admin
         if user.id == ADMIN_ID:
-            #queryset = Member.objects.all()
             queryset = Member.objects.select_related('resident', 'apartment')
-            if show_left not in ["true", "1"]:
-                queryset = queryset.filter(isMember=True)
-            return queryset.distinct()
 
-        # role == resident
-        else:         
-            queryset = Member.objects.filter(apartment__apartmentCode=apartment_code, isMember=True)
-            return queryset.distinct()
+            if status == 'notleft':
+                queryset = queryset.filter(isMember=True)
+            elif status == 'living':
+                queryset = queryset.filter(resident__status='living', isMember=True)
+            elif status == 'temporaryresidence':
+                queryset = queryset.filter(resident__status='temporaryresidence')
+            elif status == 'temporaryabsence':
+                queryset = queryset.filter(resident__status='temporaryabsence')
+            elif status == 'left':
+                queryset = queryset.filter(isMember=False)
+            else:
+                return queryset.none()
+
+            if gender in ['male', 'female']:
+                queryset = queryset.filter(resident__gender=gender)
+            if showDecreaseApartmentCode in ['true', '1']:
+                queryset = queryset.order_by('-apartment__apartmentCode')
+            if orderBirth == 'increase':
+                queryset = queryset.order_by('resident__dateOfBirth')
+            elif orderBirth == 'decrease':
+                queryset = queryset.order_by('-resident__dateOfBirth')
+            elif dateOfBirth not in ['null']:
+                queryset = queryset.filter(resident__dateOfBirth__year=dateOfBirth)
+            return queryset
+
+        # Resident (not admin)
+        return Member.objects.filter(
+            apartment__apartmentCode=apartment_code,
+            isMember=True
+        ).distinct()
+
+# count number of residents
+class ResidentCountView(generics.ListAPIView):
+    serializer_class = ResidentSerializer
+    permission_classes = [IsAuthenticated,]
+    pagination_class = CustomPageNumberPagination
+    
+    def get_queryset(self):
+        queryset = Resident.objects.exclude(status='left')
+        return queryset
 
 #create resident api view
 class CreateResidentAPIView(generics.CreateAPIView):

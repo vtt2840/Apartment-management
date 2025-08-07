@@ -22,8 +22,11 @@ const Apartment = (props) => {
     const [showLockModal, setShowLockModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
+    const [showDecreaseFloor, setShowDecreaseFloor] = useState(false);
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
+
     const [currentPage, setCurrentPage] = useState(1);
-    const [paginatedData, setPaginatedData] = useState([]);
     const [totalPages, setTotalPages] = useState(1);
     const [reloadTrigger, setReloadTrigger] = useState(false);
 
@@ -36,14 +39,22 @@ const Apartment = (props) => {
     useEffect(() => {
         dispatch(getAllApartments({
             apartmentCode: selectedApartmentCode,
-            page: currentPage
+            page: currentPage,
+            floor: showDecreaseFloor,
+            status: filterStatus !== 'all' ? filterStatus : null, //filter status if not all
         }));
-    }, [dispatch, reloadTrigger, selectedApartmentCode, currentPage])
+    }, [dispatch, reloadTrigger, selectedApartmentCode, currentPage, filterStatus, showDecreaseFloor])
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
     };
-    
+
+    //filter status
+    const handleStatusFilter = (status) => {
+        setFilterStatus(status);
+        setShowFilterMenu(false); 
+    };
+
     //add new account if apartment.status == inactive
     const hanldeAddNewAccount = (apartment)=> {
         if(apartment.status === 'active'){
@@ -158,14 +169,41 @@ const Apartment = (props) => {
         <table className="table table-bordered table-striped table-hover">
             <thead>
                 <tr>
-                    <th className='text-center' scope="col">STT</th>
-                    <th className='text-center' scope="col">Mã căn hộ</th>
-                    <th className='text-center' scope="col">Chủ hộ</th>
-                    <th className='text-center' scope="col">Email</th>
-                    <th className='text-center' scope="col">Tầng</th>
-                    <th className='text-center' scope="col">Diện tích (m2)</th>
-                    <th className='text-center' scope="col">Trạng thái</th>
-                    {role === 'admin' && (<th className='text-center'>Hành động</th>)}
+                    <th className='text-center align-middle' scope="col">STT</th>
+                    <th className='text-center align-middle' scope="col">Mã căn hộ</th>
+                    <th className='text-center align-middle' scope="col">Chủ hộ</th>
+                    <th className='text-center align-middle' scope="col">Email</th>
+                    <th className='text-center align-middle' scope="col">Tầng
+                        {role === 'admin' && (
+                            <button
+                                onClick={() => setShowDecreaseFloor(prev => !prev)}
+                                className="btn"
+                                title={showDecreaseFloor ? 'Giảm dần' : 'Tăng dần'}
+                            ><i className={`fa ${showDecreaseFloor ? 'fa fa-caret-down' : 'fa fa-caret-up'}`}></i>
+                            </button>)}
+                    </th>
+                    <th className='text-center align-middle' scope="col">Diện tích (m2)</th>
+                    <th className='text-center align-middle' scope="col">Trạng thái
+                        {role === 'admin' && (
+                            <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterMenu(!showFilterMenu)}
+                                    className="btn"
+                                    title="Lọc trạng thái"
+                                >
+                                    <i className='fa fa-filter' ></i>
+                                </button>
+                                {showFilterMenu && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('all')}>Tất cả</button>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('sold')}>Đã bán</button>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('unsold')}>Chưa bán</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </th>
+                    {role === 'admin' && (<th className='text-center align-middle'>Hành động</th>)}
                 </tr>
             </thead>
             <tbody>

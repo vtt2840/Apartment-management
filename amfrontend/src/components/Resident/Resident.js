@@ -23,7 +23,6 @@ const Resident = (props) => {
     const totalCount = useSelector(state => state.resident.totalCount);
 
     const [selectedResident, setSelectedResident] = useState(null);
-    const [showLeftResidents, setShowLeftResidents] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showRegisterTempModal, setShowRegisterTempModal] = useState(false);
@@ -36,6 +35,15 @@ const Resident = (props) => {
     const [residenceDetail, setResidenceDetail] = useState(null);
     const [showResidenceModal, setShowResidenceModal] = useState(false);
 
+    const [filterStatus, setFilterStatus] = useState('notleft');
+    const [showFilterStatusMenu, setShowFilterStatusMenu] = useState(false);
+    const [filterGender, setFilterGender] = useState('all');
+    const [showFilterGenderMenu, setShowFilterGenderMenu] = useState(false);
+    const [showDecreaseApartmentCode, setShowDecreaseApartmentCode] = useState(false);
+    const [showDecreaseBirth, setShowDecreaseBirth] = useState('all');
+    const [showFilterBithMenu, setShowFilterBirthMenu] = useState(false);
+    const [dateOfBirth, setDateOfBirth] = useState(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
   
@@ -45,22 +53,44 @@ const Resident = (props) => {
         }
     }, [totalCount]);
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterStatus])
+    
+
     //get resident list
     useEffect(() => {
         dispatch(getAllResidents({
             apartmentCode: selectedApartmentCode, 
-            showLeftResidents: showLeftResidents, 
-            page: currentPage}));
-    }, [dispatch, reloadTrigger, selectedApartmentCode, showLeftResidents, currentPage]);
-
-    //if showleftresident render to page 1
-    useEffect(() => {
-        setCurrentPage(1); 
-    }, [showLeftResidents]);
+            page: currentPage,
+            status: filterStatus, 
+            gender: filterGender !== 'all' ? filterGender : null,
+            showDecreaseApartmentCode: showDecreaseApartmentCode,
+            dateOfBirth: dateOfBirth ? dateOfBirth : null,
+            orderBirth: !dateOfBirth && showDecreaseBirth !== 'all' ? showDecreaseBirth : null,
+        }));
+    }, [dispatch, reloadTrigger, selectedApartmentCode,  currentPage, filterStatus, filterGender, showDecreaseApartmentCode, showDecreaseBirth, dateOfBirth]);
 
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
+    };
+
+    //filter status
+    const handleStatusFilter = (status) => {
+        setFilterStatus(status);
+        setShowFilterStatusMenu(false); 
+    };
+    //filter gender
+    const handleGenderFilter = (gender) => {
+        setFilterGender(gender);
+        setShowFilterGenderMenu(false);
+    }
+    //filter dateofbirth
+    const handleDateOfBirthFilter = (sortOrder) => {
+        setDateOfBirth(null); 
+        setShowDecreaseBirth(sortOrder);
+        setShowFilterBirthMenu(false);
     };
 
     //add new resident
@@ -215,23 +245,89 @@ const Resident = (props) => {
         <table className="table table-bordered table-striped table-hover">
             <thead>
                 <tr>
-                    <th className='text-center' scope="col">STT</th>
-                    {role === 'admin' && (<th className='text-center' scope="col">Mã căn hộ</th>)}
-                    <th className='text-center' scope="col">Họ tên</th>
-                    <th className='text-center' scope="col">Email</th>
-                    <th className='text-center' scope="col">Ngày sinh</th>
-                    <th className='text-center' scope="col">Giới tính</th>
-                    <th className='text-center' scope="col">Quê quán</th>
-                    <th className='text-center' scope="col">Số điện thoại</th>
-                    <th className='text-center' scope="col">CCCD</th>
-                    <th className='text-center' scope="col">Trạng thái
+                    <th className='text-center align-middle' scope="col">STT</th>
+                    {role === 'admin' && (<th className='text-center' scope="col">Mã căn hộ
+                        <button
+                            onClick={() => setShowDecreaseApartmentCode(prev => !prev)}
+                            className="btn"
+                            title={showDecreaseApartmentCode ? 'Giảm dần' : 'Tăng dần'}
+                        ><i className={`fa ${showDecreaseApartmentCode ? 'fa fa-caret-down' : 'fa fa-caret-up'}`}></i>
+                        </button>
+                    </th>)}
+                    <th className='text-center align-middle' scope="col">Họ tên</th>
+                    <th className='text-center align-middle' scope="col">Email</th>
+                    <th className='text-center align-middle' scope="col">Ngày sinh
                         {role === 'admin' && (
-                            <button
-                                onClick={() => setShowLeftResidents(prev => !prev)}
-                                className="btn btn-sm btn-light ms-2"
-                                title={showLeftResidents ? 'Ẩn cư dân đã rời đi' : 'Hiện cư dân đã rời đi'}
-                            ><i className={`fa ${showLeftResidents ? 'fa fa-sign-in' : 'fa fa-sign-out'}`}></i>
-                            </button>)}
+                            <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterBirthMenu(!showFilterBithMenu)}
+                                    className="btn"
+                                    title="Lọc ngày sinh"
+                                >
+                                    <i className='fa fa-filter'></i>
+                                </button>
+                                {showFilterBithMenu && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <input 
+                                            type="number" 
+                                            name="dateOfBirth" 
+                                            value={dateOfBirth} 
+                                            placeholder="Năm sinh" 
+                                            style={{ maxWidth: '90px', marginLeft: '10px', marginRight: '10px' }}
+                                            onChange={(e) => setDateOfBirth(e.target.value)}
+                                        />
+                                        <button className="dropdown-item" onClick={() => handleDateOfBirthFilter('increase')}>Tăng dần</button>
+                                        <button className="dropdown-item" onClick={() => handleDateOfBirthFilter('decrease')}>Giảm dần</button>
+                                        <button className="dropdown-item" onClick={() => handleDateOfBirthFilter('all')}>Bỏ lọc</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </th>
+                    <th className='text-center' scope="col">Giới tính
+                        {role === 'admin' && (
+                            <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterGenderMenu(!showFilterGenderMenu)}
+                                    className="btn"
+                                    title="Lọc giới tính"
+                                >
+                                    <i className='fa fa-filter'></i>
+                                </button>
+                                {showFilterGenderMenu && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <button className="dropdown-item" onClick={() => handleGenderFilter('all')}>Tất cả</button>
+                                        <button className="dropdown-item" onClick={() => handleGenderFilter('male')}>Nam</button>
+                                        <button className="dropdown-item" onClick={() => handleGenderFilter('female')}>Nữ</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </th>
+                    <th className='text-center align-middle' scope="col">Quê quán</th>
+                    <th className='text-center align-middle' scope="col">Số điện thoại</th>
+                    <th className='text-center align-middle' scope="col">CCCD</th>
+                    <th className='text-center align-middle' scope="col">Trạng thái
+                        {role === 'admin' && (
+                            <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterStatusMenu(!showFilterStatusMenu)}
+                                    className="btn"
+                                    title="Lọc trạng thái"
+                                >
+                                    <i className='fa fa-filter'></i>
+                                </button>
+                                {showFilterStatusMenu && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('living')}>Thường trú</button>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('temporaryresidence')}>Tạm trú</button>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('temporaryabsence')}>Tạm vắng</button>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('left')}>Rời đi</button>
+                                        <button className="dropdown-item" onClick={() => handleStatusFilter('notleft')}>Bỏ lọc</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </th>
                     {role === 'resident' && (<th className='text-center' scope="col">Tạm trú / Tạm vắng</th>)}
                     {role === 'resident' && (<th className='text-center'>Hành động</th>)}
@@ -246,7 +342,7 @@ const Resident = (props) => {
                     {role === 'admin' && (<td className='text-center'>{item.apartmentCode}</td>)}
                     <td>{item.fullName}</td>
                     <td>{item.email}</td>
-                    <td>{item.dateOfBirth || ''}</td>
+                    <td className='text-center'>{item.dateOfBirth || ''}</td>
                     <td className='text-center'>{item.gender ? (item.gender === 'male' ? 'Nam' : 'Nữ') : '---'}</td>
                     <td>{item.hometown || ''}</td>
                     <td>{item.phoneNumber || ''}</td>

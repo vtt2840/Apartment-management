@@ -1,4 +1,4 @@
-import './navigation.scss';
+import './Navigation.scss';
 import React, { useState, useEffect } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import { NavLink, useNavigate, useLocation} from 'react-router-dom';
@@ -11,20 +11,26 @@ import Container from 'react-bootstrap/Container';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import account_icon from '../../static/account-icon.png'
-import { logoutUser } from '../../services/userService';
-import { logout, setSelectedApartment } from '../../store/slices/authSlice';
+import { logoutUser, changePassword, updateAccountAdmin } from '../../services/userService';
+import { logout, setSelectedApartment, loginSuccess } from '../../store/slices/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
+import ChangePasswordModal from './ChangePasswordModal';
+import UpdateAccountModal from './UpdateAccountModal';
+import axios from '../../setup/axios';
 
 const Navigation = (props) => {
-    let navigate = useNavigate();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    
     const isAuthenticated = useSelector(state => state.auth.role);
     const role = useSelector(state => state.auth.role);
     const apartments = useSelector(state => state.auth.apartments);
-    
+    const email = useSelector(state => state.auth.email);
+    const username = useSelector(state => state.auth.username);
     const selectedApartment = useSelector(state => state.auth.selectedApartment);//default selected apartment
+
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [showUpdateAccount, setShowUpdateAccount] = useState(false);
 
     useEffect(() => {
         if (apartments && apartments.length > 0 && !selectedApartment) {
@@ -33,17 +39,57 @@ const Navigation = (props) => {
     }, [apartments, selectedApartment, dispatch]);
 
 
+    //logout
     const handleLogout = async () => {
-        try {
+        try{
             await logoutUser();
             toast.success("Đăng xuất thành công!");
             dispatch(logout());
             navigate('/login');
-        } catch (err) {
+        }catch(err){
             toast.error("Đăng xuất thất bại!");
         }
     };
 
+    //change password
+    const changepassword = () => {
+        setShowChangePassword(true);
+    }
+    const handleChangePassword = async(data) => {
+        try{
+            await changePassword(data);
+            toast.success("Đổi mật khẩu thành công!");
+            setShowChangePassword(false);
+        }catch(err){
+            if(err.response.status === 400){
+                toast.error("Mật khẩu cũ không đúng!");
+            }
+            else{
+                toast.error("Có lỗi xảy ra, vui lòng thử lại!")
+            }
+        }
+    }
+
+    const updateAccount = () => {
+        setShowUpdateAccount(true);
+    }
+
+    const handleUpdateAccount = async(data) => {
+        try{
+            const res = await updateAccountAdmin(data);
+            toast.success("Chỉnh sửa tài khoản thành công!");
+            setShowUpdateAccount(false);
+            dispatch(loginSuccess({
+                email: res.data.email,
+                username: res.data.username,
+                role: role,
+                apartments: apartments,
+                selectedApartment: selectedApartment,
+            }));
+        }catch(err){
+            console.log(err);
+        }
+    }
     if(isAuthenticated){
     return (
         <>
@@ -69,7 +115,7 @@ const Navigation = (props) => {
                     <Offcanvas.Header closeButton>
                         <Offcanvas.Title id="offcanvasNavbarLabel">
                             {role === 'admin' ? (
-                                <div className='name'>Admin</div>
+                                <div className='name'>{username}</div>
                             ) : (
                             <DropdownButton
                                 id="dropdown-apartment-selector"
@@ -98,9 +144,9 @@ const Navigation = (props) => {
                         <NavLink to="/residents" exact className="nav-link">Cư dân</NavLink>
                         <NavLink to="/vehicles" exact className="nav-link">Phương tiện</NavLink>
                         <NavDropdown title="Tài khoản" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="#action/3.0">Thông tin tài khoản</NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => updateAccount()}>Thông tin tài khoản</NavDropdown.Item>
                             <NavDropdown.Divider />
-                            <NavDropdown.Item href="#action/3.1">Đổi mật khẩu</NavDropdown.Item>
+                            <NavDropdown.Item onClick={() => changepassword()}>Đổi mật khẩu</NavDropdown.Item>
                             <NavDropdown.Divider />
                             <NavDropdown.Item>
                             <span onClick={() => handleLogout()}>Đăng xuất</span>
@@ -122,7 +168,7 @@ const Navigation = (props) => {
                 <Nav className="d-flex align-items-center gap-2">
                     <div className='name'>
                         {role === 'admin' ? (
-                            <div className='name'>Admin</div>
+                            <div className='name'>{username}</div>
                         ) : (
                         <DropdownButton
                             id="dropdown-apartment-selector"
@@ -150,9 +196,9 @@ const Navigation = (props) => {
                         <img src={account_icon} width="35" height="35" alt="Tài khoản" />
                     }
                     >
-                    <Dropdown.Item href="#action/3.0">Thông tin tài khoản</Dropdown.Item>
+                    <Dropdown.Item onClick={() => updateAccount()}>Thông tin tài khoản</Dropdown.Item>
                     <Dropdown.Divider />
-                    <Dropdown.Item href="#action/3.1">Đổi mật khẩu</Dropdown.Item>
+                    <Dropdown.Item onClick={() => changepassword()}>Đổi mật khẩu</Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item>
                         <span onClick={() => handleLogout()}>Đăng xuất</span>
@@ -164,6 +210,19 @@ const Navigation = (props) => {
             </Container>
             </Navbar>
         </div>
+        <ChangePasswordModal
+            show={showChangePassword}
+            onClose={() => setShowChangePassword(false)}
+            onSubmit={handleChangePassword}
+        />
+        <UpdateAccountModal
+            show={showUpdateAccount}
+            onClose={() => setShowUpdateAccount(false)}
+            onSubmit={handleUpdateAccount}
+            apartmentCode={selectedApartment}
+            username={username}
+            email={email}
+        />
         </>
     )         
     }

@@ -91,7 +91,7 @@ const ResetPasswordPage = () => {
                                 right: '20px',
                                 transform: 'translateY(-50%)',
                                 cursor: 'pointer',
-                                color: '#5a5555'
+                                color: '#878585'
                             }}
                         />
                     </div>
@@ -113,7 +113,7 @@ const ResetPasswordPage = () => {
                                 right: '20px',
                                 transform: 'translateY(-50%)',
                                 cursor: 'pointer',
-                                color: '#5a5555'
+                                color: '#878585'
                             }}
                         />
                     </div>

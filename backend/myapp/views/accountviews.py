@@ -71,13 +71,11 @@ class CustomTokenRefreshAPIView(TokenRefreshView):
 
         #get refresh token from cookies
         refresh_token = request.COOKIES.get("refresh")
-
         if refresh_token:
             data["refresh"] = refresh_token
 
         request._full_data = data  
         request._data = data      
-
         res = super().post(request, *args, **kwargs)
         
         if res.status_code == status.HTTP_200_OK:
@@ -159,7 +157,7 @@ class ResetPassword(APIView):
         serializer = PasswordResetSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Email đặt lại mật khẩu đã được gửi.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Email sent'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #confirm password
@@ -171,3 +169,32 @@ class PasswordResetConfirm(APIView):
             serializer.save()
             return Response({'message': 'Password reset successful.'}, status=200)
         return Response(serializer.errors, status=400)
+    
+#change password
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        user = self.request.user
+        old_password = request.data.get('oldPassword')
+        new_password = request.data.get('newPassword')
+
+        if not user.check_password(old_password):
+            return Response({"error": "Wrong password"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response(status=status.HTTP_200_OK)
+    
+class UpdateAccountAdmin(APIView):
+    permission_classes = [IsAuthenticated,]
+    def put(self, request):
+        user = request.user
+        username = request.data.get('username')
+        email = request.data.get('email')
+
+        user.username = username
+        user.email = email
+        user.save()
+
+        serializer = AccountSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

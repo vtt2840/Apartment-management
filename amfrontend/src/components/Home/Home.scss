@@ -4,7 +4,7 @@
 
         .img-fluid{
             border-radius: 30px;
-            box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+            box-shadow: rgba(122, 122, 122, 0.2) 0px 2px 8px 0px;
         }
     }
     .content-right{
@@ -15,6 +15,42 @@
             text-justify: inter-word;
             font-weight: 450;
             
+        }
+        .content-right-bottom{
+            .count-home,
+            .count-resident{
+                margin-top: 40px;
+                margin-right: 35px;
+                padding-top: 20px;
+                border-radius: 30px;
+                height: 100px;
+                width: 160px;
+                box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+                font-weight: 550;
+                font-size: 16px;
+                text-align: center;
+
+                div {
+                    font-size: 24px;
+                    color: #1e6b41;
+                }
+            }
+            .count-vehicle{
+                margin-top: 40px;
+                padding-top: 20px;
+                border-radius: 30px;
+                height: 100px;
+                width: 160px;
+                box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+                font-weight: 550;
+                font-size: 16px;
+                text-align: center;
+
+                div {
+                    font-size: 24px; 
+                    color: #1e6b41;
+                }
+            }
         }
     }
 }

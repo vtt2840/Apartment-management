@@ -9,8 +9,8 @@ const logoutUser = () => {
 }
 
 //apartment and account
-const fetchAllApartments = ({apartmentCode, page}) => {
-    return axios.get(`/apartments/?apartmentCode=${apartmentCode}&page=${page}`);
+const fetchAllApartments = ({apartmentCode, page, floor, status}) => {
+    return axios.get(`/apartments/?apartmentCode=${apartmentCode}&page=${page}&floor=${floor}&status=${status}`);
 };
 
 const updateApartment = ({apartmentCode, data}) => {
@@ -50,10 +50,15 @@ const resetconfirm = (uid, token, password) => {
     return axios.post('/accounts/password-reset-confirm/', { uid: uid, token: token, new_password: password});
 }
 
+const changePassword = (data) => {
+    return axios.post('/change-password/', data);
+}
+const updateAccountAdmin = (data) => {
+    return axios.put('/update-account-admin/', data);
+}
 //resident
-
-const fetchAllResidents = ({apartmentCode, showLeftResidents, page}) => {
-    return axios.get(`/residents/?apartmentCode=${apartmentCode}&showLeftResidents=${showLeftResidents}&page=${page}`);
+const fetchAllResidents = ({apartmentCode, status, page, gender, showDecreaseApartmentCode, dateOfBirth, orderBirth}) => {
+    return axios.get(`/residents/?apartmentCode=${apartmentCode}&page=${page}&status=${status}&gender=${gender}&showDecreaseApartmentCode=${showDecreaseApartmentCode}&dateOfBirth=${dateOfBirth}&orderBirth=${orderBirth}`);
 }
 
 const createNewResident = (data) => {
@@ -92,8 +97,8 @@ const getTemporaryResidenceDetail = (absenceId) => {
 }
 
 //vehicle
-const fetchAllVehicles = ({apartmentCode, showDeletedVehicles, page}) => {
-    return axios.get(`/vehicles/?apartmentCode=${apartmentCode}&showDeletedVehicles=${showDeletedVehicles}&page=${page}`);
+const fetchAllVehicles = ({apartmentCode, status, page, showDecreaseApartmentCode, showType, dateRegister}) => {
+    return axios.get(`/vehicles/?apartmentCode=${apartmentCode}&status=${status}&page=${page}&showDecreaseApartmentCode=${showDecreaseApartmentCode}&showType=${showType}&dateRegister=${dateRegister}`);
 }
 const createNewVehicle = (data) => {
     return axios.post('/vehicles/', data);
@@ -112,5 +117,5 @@ export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
     updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
-    updateVehicle, deleteVehicle, searchVehicles
+    updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin
 }

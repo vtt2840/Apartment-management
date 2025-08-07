@@ -7,24 +7,46 @@ from uuid import UUID
 from rest_framework.decorators import action
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models.functions import Greatest
+from rest_framework.pagination import PageNumberPagination
+
+#custom page number pagination
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10 
+    page_size_query_param = 'page_size' 
+    max_page_size = 1000
+
 
 #vehicle view set
 class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CustomPageNumberPagination
     lookup_field = 'vehicleId'
 
     def get_queryset(self):
         user = self.request.user
-        show_deleted = self.request.query_params.get('showDeletedVehicles')
+        status = self.request.query_params.get('status')
         apartment_code = self.request.query_params.get('apartmentCode')
+        showDecreaseApartmentCode = self.request.query_params.get('showDecreaseApartmentCode')
+        showType = self.request.query_params.get('showType')
+        dateRegister = self.request.query_params.get('dateRegister')
         ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
 
         #role == admin
-        if user.id == ADMIN_ID:
+        if user.id == ADMIN_ID or not apartment_code:
             queryset = Vehicle.objects.all()
-            if show_deleted not in ['true', '1']:
+            if status not in ['true', '1']:
                 queryset = queryset.filter(status='inuse')
+            if status in ['true', '1']:
+                queryset = queryset.filter(status='deleted')
+            if showDecreaseApartmentCode in ['true', '1']:
+                queryset = queryset.order_by('-apartment__apartmentCode')
+            if showType in ['car', 'bike', 'motorbike', 'other']:
+                queryset = queryset.filter(vehicleType=showType)
+            if dateRegister == 'increase':
+                queryset = queryset.order_by('timeregister')
+            if dateRegister == 'decrease':
+                queryset = queryset.order_by('-timeregister')
             return queryset
         
         #role = resident
@@ -38,6 +60,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
             queryset = Vehicle.objects.filter(vehicleId=vehicle_id)
             return queryset
         
+    #create new vehicle
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
