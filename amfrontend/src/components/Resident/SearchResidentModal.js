@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, Button, Table } from 'react-bootstrap';
+import { useState } from 'react';
+import { Modal, Button} from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { searchResidents } from '../../services/userService';
 

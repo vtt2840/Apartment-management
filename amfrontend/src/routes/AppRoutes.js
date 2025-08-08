@@ -6,6 +6,7 @@ import Apartment from '../components/Apartment/Apartment';
 import ResetPasswordPage from '../components/Login/ResetPasswordPage';
 import Resident from '../components/Resident/Resident';
 import Vehicle from '../components/Vehicle/Vehicle';
+import Fee from '../components/Fee/Fee';
 
 const AppRoutes = (props) => {
     return(
@@ -17,6 +18,7 @@ const AppRoutes = (props) => {
             <Route path="/apartments" element={<PrivateRoute><Apartment/></PrivateRoute>}/>
             <Route path="/residents" element={<PrivateRoute><Resident/></PrivateRoute>}/>
             <Route path="/vehicles" element={<PrivateRoute><Vehicle/></PrivateRoute>}/>
+            <Route path="/fee" element={<PrivateRoute><Fee/></PrivateRoute>}/>
         </Routes>
         </>
     )

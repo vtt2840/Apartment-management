@@ -1,5 +1,5 @@
 import './Vehicle.scss';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getAllVehicles, addNewVehicle, editVehicle, deleteOneVehicle } from '../../store/slices/vehicleSlice';

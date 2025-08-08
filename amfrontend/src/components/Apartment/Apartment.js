@@ -1,5 +1,5 @@
 import './Apartment.scss';
-import React , {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getAllApartments, addNewAccount, deactiveAccount, assignAccount, editApartment } from '../../store/slices/apartmentSlice';
@@ -165,7 +165,9 @@ const Apartment = (props) => {
     return (
         <>
         <div className='container mt-4'>
-        {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchApartmentModal/></div>)}
+        <div className='content-top row mx-auto mt-3'>
+            {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchApartmentModal/></div>)}
+        </div>
         <table className="table table-bordered table-striped table-hover">
             <thead>
                 <tr>

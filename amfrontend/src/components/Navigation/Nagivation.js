@@ -1,7 +1,7 @@
 import './Navigation.scss';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
-import { NavLink, useNavigate, useLocation} from 'react-router-dom';
+import { NavLink, useNavigate} from 'react-router-dom';
 import Nav from 'react-bootstrap/Nav';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -16,7 +16,6 @@ import { logout, setSelectedApartment, loginSuccess } from '../../store/slices/a
 import { useDispatch, useSelector } from 'react-redux';
 import ChangePasswordModal from './ChangePasswordModal';
 import UpdateAccountModal from './UpdateAccountModal';
-import axios from '../../setup/axios';
 
 const Navigation = (props) => {
     const navigate = useNavigate();
@@ -88,6 +87,7 @@ const Navigation = (props) => {
             }));
         }catch(err){
             console.log(err);
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
         }
     }
     if(isAuthenticated){

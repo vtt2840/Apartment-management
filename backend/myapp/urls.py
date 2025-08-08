@@ -5,12 +5,14 @@ from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartme
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
                                   CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
                                   ResidentCountView)
+from .views.feeviews import (ApartmentFeeViewSet)
 from .views.vehicleviews import (VehicleViewSet)
 from rest_framework.routers import SimpleRouter
 
 
 router = SimpleRouter()
 router.register(r'vehicles', VehicleViewSet, basename='vehicle')
+router.register(r'fee', ApartmentFeeViewSet, basename='fee')
 
 
 

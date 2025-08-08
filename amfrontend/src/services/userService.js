@@ -113,9 +113,14 @@ const searchVehicles = (keyword) => {
     return axios.get(`/vehicles/search/?q=${keyword}/`);
 }
 
+//fee
+const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, status, dueDate}) => {
+    return axios.get(`/fee/?page=${page}&apartment_code=${apartment_code}&month=${month}&year=${year}&isRequired=${isRequired}&status=${status}&dueDate=${dueDate}`);
+}
+
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
     updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
-    updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin
+    updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin, fetchNewFeeCollection
 }

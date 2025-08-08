@@ -1,6 +1,5 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { resetconfirm } from '../../services/userService';
 import { useLocation } from 'react-router-dom';
@@ -23,7 +22,7 @@ const ResetPasswordPage = () => {
         setShowPassword(showPassword ? false : true);
     }
     const showConfirmPasswordVisiblity = () => {
-        setConfirmPassword(showConfirmPassword ? false : true);
+        setShowConfirmPassword(showConfirmPassword ? false : true);
     }
 
     const navigate = useNavigate();

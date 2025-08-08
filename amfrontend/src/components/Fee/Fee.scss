@@ -1,0 +1,36 @@
+.container {
+    font-size: 15px;
+
+    .table-striped>tbody>tr:nth-child(odd)>td, 
+    .table-striped>tbody>tr:nth-child(odd)>th {
+        background-color: rgb(235, 248, 244); 
+    }
+    .content-left{
+        padding: 1.5rem;
+        .edit{
+            padding-left: 10px;
+            padding-right: 10px;
+            cursor: pointer;
+        }
+        .payment{
+            padding-left: 10px;
+            padding-right: 10px;
+            cursor: pointer;
+        }
+    }
+    .content-right{
+        margin-top: 2.5rem;
+        .custombtn{
+            margin-bottom: 15px;
+            border-radius: 20px;
+            width: 190px;
+            box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+            text-align: center;
+            background-color: #498765;
+            .btn{
+                color: white !important;
+            }
+        }
+    }
+    
+}

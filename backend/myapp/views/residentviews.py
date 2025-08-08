@@ -11,6 +11,9 @@ from django.db.models.functions import Greatest
 from django.contrib.postgres.search import TrigramSimilarity
 from uuid import UUID
 from rest_framework.pagination import PageNumberPagination
+import os
+from dotenv import load_dotenv
+load_dotenv() 
 
 #custom page number pagination
 class CustomPageNumberPagination(PageNumberPagination):
@@ -34,7 +37,8 @@ class ResidentListAPIView(generics.ListAPIView):
         showDecreaseApartmentCode = self.request.query_params.get('showDecreaseApartmentCode')
         dateOfBirth = self.request.query_params.get('dateOfBirth')
         orderBirth = self.request.query_params.get('orderBirth')
-        ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
+        
+        ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
         if user.id == ADMIN_ID:
             queryset = Member.objects.select_related('resident', 'apartment')

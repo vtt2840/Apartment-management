@@ -1,25 +1,24 @@
 import { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import { searchApartments } from '../../services/userService';
 
-const SearchApartmentModal = () => {
+const SearchFeeModal = () => {
     const [query, setQuery] = useState('');
-    const [apartments, setApartments] = useState([]);
+    const [fee, setFee] = useState([]);
     const [show, setShow] = useState(false);
 
     const handleSearch = async () => {
         if(!query.trim()) return;
         try{
-            const response = await searchApartments(query);
-            if(response.data.length === 0){
-                toast.info("Không tìm thấy căn hộ phù hợp.");
-            }else{
-                setApartments(response.data);
-                setShow(true);
-            }
+            // const response = await searchApartments(query);
+            // if(response.data.length === 0){
+            //     toast.info("Không tìm thấy căn hộ phù hợp.");
+            // }else{
+            //     setApartments(response.data);
+            //     setShow(true);
+            // }
         }catch(error){
-            toast.error("Lỗi khi tìm kiếm căn hộ.");
+            toast.error("Lỗi khi tìm kiếm khoản phí!");
         }
     };
 
@@ -32,7 +31,7 @@ const SearchApartmentModal = () => {
             <input
             type="text"
             className="form-control"
-            placeholder="Nhập từ khóa (Mã căn hộ, chủ hộ, email)"
+            placeholder="Nhập từ khóa"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             />
@@ -43,11 +42,11 @@ const SearchApartmentModal = () => {
 
         <Modal show={show} onHide={handleClose} size="xl" centered>
             <Modal.Header closeButton>
-            <Modal.Title>Kết quả tìm kiếm căn hộ</Modal.Title>
+            <Modal.Title>Kết quả tìm kiếm khoản phí</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-            {apartments.length === 0 ? (
-                <p>Không tìm thấy cư dân nào.</p>
+            {fee.length === 0 ? (
+                <p>Không tìm thấy khoản phí nào.</p>
             ) : (
                 <div className="container">
                 <table className="table table-bordered table-striped table-hover">
@@ -63,7 +62,7 @@ const SearchApartmentModal = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {apartments.map((item, index) => (
+                    {fee.map((item, index) => (
                     <tr key={`row-${index}`}>
                         <td className='text-center'>{index+1}</td>
                         <td className='text-center'>{item.apartmentCode}</td>
@@ -89,4 +88,4 @@ const SearchApartmentModal = () => {
     );
 };
 
-export default SearchApartmentModal;
+export default SearchFeeModal;

@@ -9,7 +9,12 @@ admin.site.register(Member)
 admin.site.register(TemporaryResidence)
 admin.site.register(TemporaryAbsence)
 admin.site.register(Vehicle)
-admin.site.register(FeeType)
+
+class FeeTypeAdmin(admin.ModelAdmin):
+    filter_horizontal = ('applicableApartments',)
+
+admin.site.register(FeeType, FeeTypeAdmin)
+
 admin.site.register(FeeCollection)
 admin.site.register(ApartmentFee)
 admin.site.register(PaymentTransaction)

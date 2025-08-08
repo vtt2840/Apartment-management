@@ -8,6 +8,9 @@ from rest_framework.decorators import action
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models.functions import Greatest
 from rest_framework.pagination import PageNumberPagination
+import os
+from dotenv import load_dotenv
+load_dotenv() 
 
 #custom page number pagination
 class CustomPageNumberPagination(PageNumberPagination):
@@ -30,7 +33,8 @@ class VehicleViewSet(viewsets.ModelViewSet):
         showDecreaseApartmentCode = self.request.query_params.get('showDecreaseApartmentCode')
         showType = self.request.query_params.get('showType')
         dateRegister = self.request.query_params.get('dateRegister')
-        ADMIN_ID = UUID("f2de1633-8252-4f2e-9806-ecdf50f6c6d4")
+        
+        ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
         #role == admin
         if user.id == ADMIN_ID or not apartment_code:

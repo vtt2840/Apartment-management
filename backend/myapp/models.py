@@ -200,6 +200,7 @@ class FeeType(models.Model):
     isRequired = models.BooleanField(default=True)
     appliedScope = models.CharField(max_length=4, choices=Scope.choices, default='all')
     status = models.CharField(max_length=8, choices=Status.choices, default='active')
+    amountDefault = models.FloatField(null=True, blank=True)
     applicableApartments = models.ManyToManyField('Apartment', blank=True)
 
     def __str__(self):
@@ -217,6 +218,8 @@ class FeeCollection(models.Model):
     status = models.CharField(max_length=8, choices=Status.choices, default='active')
     feeType = models.ForeignKey(FeeType, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ['year', 'month', 'feeType']
 
     def __str__(self):
         return f"{self.feeType} {self.month}/{self.year}"
@@ -232,6 +235,9 @@ class ApartmentFee(models.Model):
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     feeCollection = models.ForeignKey(FeeCollection, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ['feeCollection', 'apartment']
+
     def __str__(self):
         return f"{self.apartment.apartmentCode} {self.feeCollection.feeType} {self.feeCollection.month}/{self.feeCollection.year}"
 
@@ -246,6 +252,9 @@ class PaymentTransaction(models.Model):
     amount = models.FloatField()
     paymentDate = models.DateField()
     status = models.CharField(max_length=10, choices=Status.choices, default='successful')
+
+    class Meta:
+        ordering = ['paymentDate', 'apartmentFee']
 
     def __str__(self):
         return f"{self.apartmentFee.apartment.apartmentCode} {self.apartmentFee.feeCollection.feeType} {self.apartmentFee.feeCollection.month}/{self.apartmentFee.feeCollection.year} {self.status}"

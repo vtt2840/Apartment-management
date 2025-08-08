@@ -3,6 +3,7 @@ import authReducer from './slices/authSlice';
 import apartmentReducer from './slices/apartmentSlice';
 import residentReducer from './slices/residentSlice';
 import vehicleReducer from './slices/vehicleSlice';
+import feeReducer from './slices/feeSlice';
 
 
 const store = configureStore({
@@ -11,6 +12,7 @@ const store = configureStore({
         apartment: apartmentReducer,
         resident: residentReducer,
         vehicle: vehicleReducer,
+        fee: feeReducer,
     },
 });
 

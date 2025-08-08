@@ -1,5 +1,5 @@
 import './Resident.scss';
-import React , {useState, useEffect} from 'react';
+import {useState, useEffect} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { getAllResidents, addNewResident, deleteOneResident, registerTemporaryResidence, registerTemporaryAbsence, cancelTempStatus, editResident } from '../../store/slices/residentSlice';

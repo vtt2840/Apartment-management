@@ -1,5 +1,4 @@
 import { Modal, Button } from 'react-bootstrap';
-import dangericon from '../../static/danger-icon.png';
 
 const CancelRegisterTempModal = ({ show, onClose, onSubmit, resident, name }) => {
     
