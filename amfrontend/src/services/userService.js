@@ -118,9 +118,30 @@ const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, s
     return axios.get(`/fee/?page=${page}&apartment_code=${apartment_code}&month=${month}&year=${year}&isRequired=${isRequired}&status=${status}&dueDate=${dueDate}`);
 }
 
+const updateApartmentFee = ({apartmentFeeId, data}) => {
+    return axios.patch(`/fee/${apartmentFeeId}/`, data);
+}
+
+const checkFeeNameExists = (feeName) => {
+    return axios.post('/feetype/check-feename-exists/', feeName);
+}
+
+const createNewFeeType = (data) => {
+    return axios.post('/feetype/', data);
+}
+
+const fetchAllFeeTypes = (data) => {
+    return axios.get(`/feetype/`, data);
+}
+
+const updateFeeType = ({typeId, data}) => {
+    return axios.put(`/feetype/${typeId}/`, data);
+}
+
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
     updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
-    updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin, fetchNewFeeCollection
+    updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin, fetchNewFeeCollection, updateApartmentFee, checkFeeNameExists,
+    createNewFeeType, fetchAllFeeTypes, updateFeeType
 }

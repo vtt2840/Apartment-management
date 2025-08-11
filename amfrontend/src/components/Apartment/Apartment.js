@@ -68,7 +68,7 @@ const Apartment = (props) => {
     const checkAccount = async (formData) => {
         try{
             const res = await checkAccountExists(formData);
-            if (res.status === 200) {
+            if(res.status === 200){
                 return res.data.pkid;
             }
         }catch (err) {

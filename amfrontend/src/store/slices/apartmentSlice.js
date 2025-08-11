@@ -73,69 +73,69 @@ const apartmentSlice = createSlice({
         builder
             // get apartment list
             .addCase(getAllApartments.pending, (state) => {
-              state.loading = true;
-              state.error = null;
+                state.loading = true;
+                state.error = null;
             })
             .addCase(getAllApartments.fulfilled, (state, action) => {
-              state.loading = false;
-              state.apartmentList = action.payload.results;
-              state.totalCount = action.payload.count;
+                state.loading = false;
+                state.apartmentList = action.payload.results;
+                state.totalCount = action.payload.count;
             })
             .addCase(getAllApartments.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.payload;
+                state.loading = false;
+                state.error = action.payload;
             })
 
             // edit apartment 
             .addCase(editApartment.pending, (state) => {
-              state.loading = true;
-              state.error = null;
+                state.loading = true;
+                state.error = null;
             })
             .addCase(editApartment.fulfilled, (state, action) => {
-              state.loading = false;
+                state.loading = false;
             })
             .addCase(editApartment.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.payload;
+                state.loading = false;
+                state.error = action.payload;
             })
 
             // add new account
             .addCase(addNewAccount.pending, (state) => {
-              state.loading = true;
-              state.error = null;
+                state.loading = true;
+                state.error = null;
             })
             .addCase(addNewAccount.fulfilled, (state, action) => {
-              state.loading = false;
+                state.loading = false;
             })
             .addCase(addNewAccount.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.payload;
+                state.loading = false;
+                state.error = action.payload;
             })
 
             // assign account
             .addCase(assignAccount.pending, (state) => {
-              state.loading = true;
-              state.error = null;
+                state.loading = true;
+                state.error = null;
             })
             .addCase(assignAccount.fulfilled, (state, action) => {
-              state.loading = false;
+                state.loading = false;
             })
             .addCase(assignAccount.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.payload;
+                state.loading = false;
+                state.error = action.payload;
             })
 
             //lock account
             .addCase(deactiveAccount.pending, (state) => {
-              state.loading = true;
-              state.error = null;
+                state.loading = true;
+                state.error = null;
             })
             .addCase(deactiveAccount.fulfilled, (state, action) => {
-              state.loading = false;
+                state.loading = false;
             })
             .addCase(deactiveAccount.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.payload;
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });

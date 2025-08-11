@@ -19,7 +19,7 @@ class CustomPageNumberPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-#vehicle view set
+#vehicle viewset
 class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleSerializer
     permission_classes = [IsAuthenticated]

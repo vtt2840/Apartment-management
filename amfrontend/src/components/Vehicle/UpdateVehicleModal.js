@@ -1,6 +1,7 @@
 import { Modal, Button } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) => {
     const [formData, setFormData] = useState({
@@ -69,6 +70,12 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) 
         }
     };
 
+    const vehicleTypeOption = [
+        { value: 'car', label: 'Ô tô' },
+        { value: 'bike', label: 'Xe đạp' },
+        { value: 'motorbike', label: 'Mô tô' },
+        { value: 'other', label: 'Khác' },
+    ]
     return(
         <>
         <Modal size='lg' show={show} onHide={onClose} className='modal-vehicle' centered>
@@ -101,18 +108,18 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) 
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Loại xe(<span className='redC'>*</span>):</label>
-                        <select
-                            className='form-select'
-                            name='vehicleType'
-                            value={formData.vehicleType}
-                            onChange={handleChange}
-                        >
-                            <option>Tùy chọn</option>
-                            <option defaultValue="car">Ô tô</option>
-                            <option value="bike">Xe đạp</option>
-                            <option value="motorbike">Mô tô</option>
-                            <option value="other">Khác</option>
-                        </select>
+                        <Select
+                            name="vehicleType"
+                            options={vehicleTypeOption}
+                            placeholder='Tùy chọn'
+                            value={vehicleTypeOption.find(opt => opt.value === formData.vehicleType) || null}
+                            onChange={(selectedOption) => {
+                                setFormData({
+                                    ...formData,
+                                    vehicleType: selectedOption ? selectedOption.value : ''
+                                });
+                            }}
+                        />
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Hãng(<span className='redC'>*</span>):</label>

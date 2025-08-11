@@ -1,6 +1,7 @@
 import { Modal, Button } from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
     const [formData, setFormData] = useState({
@@ -97,6 +98,11 @@ const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
         }
     };
 
+    const genderOption = [
+        { value: 'male', label: 'Nam'},
+        { value: 'female', label: 'Nữ'},
+    ]
+
     return (
       <>
         <Modal size="lg" show={show} onHide={onClose} className='modal-user' centered>
@@ -125,16 +131,18 @@ const UpdateResidentModal = ({ show, onClose, onSubmit, resident }) => {
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Giới tính(<span className='redC'>*</span>):</label>
-                        <select
-                            className='form-select'
+                        <Select
                             name="gender"
-                            value={formData.gender}
-                            onChange={handleChange}
-                        >
-                            <option>Tùy chọn</option>
-                            <option defaultValue="male">Nam</option>
-                            <option value="female">Nữ</option>
-                        </select>
+                            options={genderOption}
+                            placeholder='Tùy chọn'
+                            value={genderOption.find(opt => opt.value === formData.gender) || null}
+                            onChange={(selectedOption) => {
+                                setFormData({
+                                    ...formData,
+                                    gender: selectedOption ? selectedOption.value : ''
+                                });
+                            }}
+                        />
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Quê quán(<span className='redC'>*</span>):</label>

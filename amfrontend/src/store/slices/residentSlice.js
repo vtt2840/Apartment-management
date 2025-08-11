@@ -96,8 +96,8 @@ const residentSlice = createSlice({
         builder
         // get resident list
         .addCase(getAllResidents.pending, (state) => {
-          state.loading = true;
-          state.error = null;
+            state.loading = true;
+            state.error = null;
         })
         .addCase(getAllResidents.fulfilled, (state, action) => {
           state.loading = false;

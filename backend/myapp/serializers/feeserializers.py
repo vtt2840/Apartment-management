@@ -3,10 +3,10 @@ from ..models import FeeCollection, FeeType, ApartmentFee, PaymentTransaction, A
 from datetime import date
 
 class ApartmentFeeSerializer(serializers.ModelSerializer):
-    apartmentCode = serializers.CharField(source='apartment.apartmentCode')
-    feeName = serializers.CharField(source='feeCollection.feeType.feeName')
-    month = serializers.SerializerMethodField()
-    isRequired = serializers.BooleanField(source='feeCollection.feeType.isRequired')
+    apartmentCode = serializers.CharField(source='apartment.apartmentCode', read_only=True)
+    feeName = serializers.CharField(source='feeCollection.feeType.feeName', read_only=True)
+    month = serializers.SerializerMethodField(read_only=True)
+    isRequired = serializers.BooleanField(source='feeCollection.feeType.isRequired', read_only=True)
     dueDate = serializers.DateField(source='feeCollection.dueDate')
     class Meta:
         model = ApartmentFee
@@ -14,3 +14,37 @@ class ApartmentFeeSerializer(serializers.ModelSerializer):
 
     def get_month(self, obj):
         return f"{obj.feeCollection.month}/{obj.feeCollection.year}"
+    
+    def update(self, instance, validated_data):
+        if 'feeCollection' in validated_data:
+            fc_data = validated_data.pop('feeCollection')
+            if 'dueDate' in fc_data:
+                instance.feeCollection.dueDate = fc_data['dueDate']
+                instance.feeCollection.save()
+        return super().update(instance, validated_data)
+    
+class FeeTypeSerializer(serializers.ModelSerializer):
+    applicableApartments = serializers.PrimaryKeyRelatedField(
+        queryset=Apartment.objects.all(),
+        many=True,
+        required=False
+    )
+    class Meta:
+        model = FeeType
+        fields = ['typeId', 'feeName', 'typeDescription', 'isRequired', 'appliedScope', 'amountDefault', 'applicableApartments', 'status']
+
+    def create(self, validated_data):
+        validated_data['status'] = 'active' 
+        return super().create(validated_data)
+    
+class CheckFeeNameSerializer(serializers.Serializer):
+    feeName = serializers.CharField()
+
+    def validate_feeName(self, value):
+        try:
+            feeType = FeeType.objects.get(feeName=value)
+        except FeeType.DoesNotExist:
+            raise serializers.ValidationError("FeeType not found")
+        self.feeType = feeType 
+        return value
+    
