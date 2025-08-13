@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchNewFeeCollection, updateApartmentFee, createNewFeeType, fetchAllFeeTypes, updateFeeType } from '../../services/userService';
+import { fetchNewFeeCollection, updateApartmentFee, createNewFeeType, fetchAllFeeTypes, updateFeeType, deleteFeeType, createNewFeeCollection } from '../../services/userService';
 
 export const getNewFeeCollection = createAsyncThunk(
     'apartment/getNewFeeCollection',
@@ -55,6 +55,31 @@ export const editFeeType = createAsyncThunk(
     async (data, {rejectWithValue}) => {
         try {
             const res = await updateFeeType(data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
+export const deleteOneFeeType = createAsyncThunk(
+    'apartment/deleteOneFeeType',
+    async (data, {rejectWithValue}) => {
+        try {
+            const res = await deleteFeeType(data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
+
+export const addNewFeeCollection = createAsyncThunk(
+    'apartment/addNewFeeCollection',
+    async (data, {rejectWithValue}) => {
+        try {
+            const res = await createNewFeeCollection(data);
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response.data);
@@ -136,6 +161,32 @@ const feeSlice = createSlice({
             state.loading = false;
         })
         .addCase(editFeeType.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        })
+
+        //delete feetype
+        .addCase(deleteOneFeeType.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(deleteOneFeeType.fulfilled, (state) => {
+            state.loading = false;
+        })
+        .addCase(deleteOneFeeType.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+        })
+
+        //create new feecollection
+        .addCase(addNewFeeCollection.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+        })
+        .addCase(addNewFeeCollection.fulfilled, (state) => {
+            state.loading = false;
+        })
+        .addCase(addNewFeeCollection.rejected, (state, action) => {
             state.loading = false;
             state.error = action.payload;
         })

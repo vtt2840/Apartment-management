@@ -1,26 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Button} from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { searchResidents } from '../../services/userService';
+import ReactPaginate from "react-paginate";
 
 const SearchResidentModal = () => {
     const [query, setQuery] = useState('');
     const [residents, setResidents] = useState([]);
     const [show, setShow] = useState(false);
 
-    const handleSearch = async () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    
+    const handleSearch = async (page) => {
         if (!query.trim()) return;
         try{
-            const response = await searchResidents(query);
-            if(response.data.length === 0){
+            const response = await searchResidents({keyword: query, page});
+            const pages = Math.ceil(response.data.count / 10);
+            setTotalPages(pages);
+            if(!response.data.results || response.data.results.length === 0){
                 toast.info("Không tìm thấy cư dân phù hợp!");
             }else{
-                setResidents(response.data);
+                setResidents(response.data.results);
                 setShow(true);
             }
         }catch(error){
             toast.error("Lỗi khi tìm kiếm cư dân!");
         }
+    };
+
+    useEffect(() => {
+        handleSearch(currentPage);
+    }, [currentPage]);
+    
+    const handlePageChange = (selectedItem) => {
+        setCurrentPage(selectedItem.selected + 1); 
     };
     
     const expandedResidents = residents.flatMap((item) =>
@@ -49,7 +63,7 @@ const SearchResidentModal = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             />
-            <button className="btn btn-success" onClick={handleSearch}>
+            <button className="btn btn-success" onClick={() => {setCurrentPage(1); handleSearch(1);}}>
             <i className='fa fa-search'></i>
             </button>
         </div>
@@ -81,7 +95,7 @@ const SearchResidentModal = () => {
                 <tbody>
                     {sortedResidents.map((item, index) => (
                     <tr key={`row-${index}`}>
-                        <td className='text-center'>{index + 1}</td>
+                        <td className='text-center'>{(currentPage - 1)*10 + index + 1}</td>
                         <td className='text-center'>{item.apartmentCode}</td>
                         <td>{item.fullName}</td>
                         <td>{item.email}</td>
@@ -97,6 +111,28 @@ const SearchResidentModal = () => {
                 </table>
                 </div>
             )}
+            {totalPages > 1 && <ReactPaginate
+                nextLabel="Sau >"
+                onPageChange={handlePageChange}
+                pageRangeDisplayed={3}
+                marginPagesDisplayed={2}
+                pageCount={totalPages}
+                previousLabel="< Trước"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                previousLinkClassName="page-link"
+                nextClassName="page-item"
+                nextLinkClassName="page-link"
+                breakLabel="..."
+                breakClassName="page-item"
+                breakLinkClassName="page-link"
+                containerClassName="pagination"
+                activeClassName="active"
+                renderOnZeroPageCount={null}
+                forcePage={currentPage - 1}
+                className={'pagination justify-content-center'}
+            />}
             </Modal.Body>
             <Modal.Footer>
             <Button className='cancelbtn' variant="secondary" onClick={handleClose}>

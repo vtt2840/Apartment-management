@@ -21,8 +21,8 @@ const createNewAccount = (data) => {
     return axios.post('/apartments/addnewaccount/', data);
 }
 
-const searchApartments = (keyword) => {
-  return axios.get(`/apartments/search/?q=${encodeURIComponent(keyword)}/`);
+const searchApartments = ({keyword, page}) => {
+  return axios.get(`/apartments/search/?q=${encodeURIComponent(keyword)}&page=${page}`);
   
 };
 
@@ -71,8 +71,8 @@ const deleteResident = (residentId) => {
 const updateResident = ({residentId, data}) => {
     return axios.put(`/residents/update/${residentId}/`, data);
 }
-const searchResidents = (keyword) => {
-    return axios.get(`/residents/search/?q=${encodeURIComponent(keyword)}/`);
+const searchResidents = ({keyword, page}) => {
+    return axios.get(`/residents/search/?q=${encodeURIComponent(keyword)}&page=${page}`);
 };
 
 //temporaryregister
@@ -109,17 +109,17 @@ const updateVehicle = ({vehicleId, data}) => {
 const deleteVehicle = (vehicleId) => {
     return axios.delete(`/vehicles/${vehicleId}/`);
 }
-const searchVehicles = (keyword) => {
-    return axios.get(`/vehicles/search/?q=${keyword}/`);
+const searchVehicles = ({keyword, page}) => {
+    return axios.get(`/vehicles/search/?q=${keyword}&page=${page}`);
 }
 
 //fee
-const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, status, dueDate}) => {
-    return axios.get(`/fee/?page=${page}&apartment_code=${apartment_code}&month=${month}&year=${year}&isRequired=${isRequired}&status=${status}&dueDate=${dueDate}`);
+const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, status, dueDate, feeName}) => {
+    return axios.get(`/apartmentfee/?page=${page}&apartment_code=${apartment_code}&month=${month}&year=${year}&isRequired=${isRequired}&status=${status}&dueDate=${dueDate}&feeName=${feeName}`);
 }
 
 const updateApartmentFee = ({apartmentFeeId, data}) => {
-    return axios.patch(`/fee/${apartmentFeeId}/`, data);
+    return axios.patch(`/apartmentfee/${apartmentFeeId}/`, data);
 }
 
 const checkFeeNameExists = (feeName) => {
@@ -130,18 +130,27 @@ const createNewFeeType = (data) => {
     return axios.post('/feetype/', data);
 }
 
-const fetchAllFeeTypes = (data) => {
-    return axios.get(`/feetype/`, data);
+const fetchAllFeeTypes = ({month, year, statistic}) => {
+    return axios.get(`/feetype/?month=${month}&year=${year}&statistic=${statistic}`);
 }
 
 const updateFeeType = ({typeId, data}) => {
     return axios.put(`/feetype/${typeId}/`, data);
 }
+const deleteFeeType = (typeId) => {
+    return axios.delete(`/feetype/${typeId}/`);
+}
+const createNewFeeCollection = (data) => {
+    return axios.post('/feecollection/create/', data);
+}
 
+const searchFee = ({keyword, page}) => {
+    return axios.get(`/apartmentfee/search/?q=${keyword}&page=${page}`);
+}
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
     updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
     updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin, fetchNewFeeCollection, updateApartmentFee, checkFeeNameExists,
-    createNewFeeType, fetchAllFeeTypes, updateFeeType
+    createNewFeeType, fetchAllFeeTypes, updateFeeType, deleteFeeType, createNewFeeCollection, searchFee
 }

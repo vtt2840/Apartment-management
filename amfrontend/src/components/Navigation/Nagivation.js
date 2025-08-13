@@ -42,7 +42,6 @@ const Navigation = (props) => {
     const handleLogout = async () => {
         try{
             await logoutUser();
-            toast.success("Đăng xuất thành công!");
             dispatch(logout());
             navigate('/login');
         }catch(err){
@@ -59,9 +58,18 @@ const Navigation = (props) => {
             await changePassword(data);
             toast.success("Đổi mật khẩu thành công!");
             setShowChangePassword(false);
+            handleLogout();
         }catch(err){
-            if(err.response.status === 400){
-                toast.error("Mật khẩu cũ không đúng!");
+            if(err.response?.status === 400) {
+                const error = err.response?.data?.error;
+                if(error === "Wrong password"){
+                    toast.error("Vui lòng kiểm tra lại mật khẩu cũ!");
+                    return false;
+                }
+                if(error === "Wrong confirmpassword"){
+                    toast.error("Mật khẩu không trùng khớp!");
+                    return false;
+                }
             }
             else{
                 toast.error("Có lỗi xảy ra, vui lòng thử lại!")

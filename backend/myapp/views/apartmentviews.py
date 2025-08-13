@@ -36,24 +36,18 @@ class ApartmentListAPIView(generics.ListAPIView):
         #role == admin
         if user.id == ADMIN_ID or not apartment_code:
             queryset = Apartment.objects.all()
-            #decrease floor
             if floor in ["true", "1"]:
                 queryset = queryset.order_by("-apartmentCode") 
             if status == 'sold':
                 queryset = queryset.filter(status='active')
-                return queryset
-            else:
-                if status == 'unsold':
-                    queryset = queryset.filter(status='inactive')
-                    return queryset
+            if status == 'unsold':
+                queryset = queryset.filter(status='inactive')
             return queryset
         else:
             queryset = Apartment.objects.filter(apartmentCode=apartment_code)
             return queryset
         
-
 #add account exist in database to another apartment
-
 class AddAccountExistToApartment(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -80,19 +74,19 @@ class UpdateApartment(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class SearchApartmentView(APIView):
-    def get(self, request):
-        keyword = request.query_params.get('q', '')
+class SearchApartmentView(generics.ListAPIView):
+    serializer_class = ApartmentSerializer
+    pagination_class = CustomPageNumberPagination
+
+    def get_queryset(self):
+        keyword = self.request.query_params.get('q', '')
         if not keyword:
-            return Response([])
-        queryset = Apartment.objects.annotate(
+            return Apartment.objects.none()
+
+        return Apartment.objects.annotate(
             similarity=Greatest(
                 TrigramSimilarity('apartmentCode', keyword),
                 TrigramSimilarity('account__username', keyword),
                 TrigramSimilarity('account__email', keyword),
             )
         ).filter(similarity__gt=0.5).order_by('-similarity')
-
-        serializer = ApartmentSerializer(queryset, many=True)
-        return Response(serializer.data)
-    

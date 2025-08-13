@@ -5,11 +5,14 @@ import ReactPaginate from 'react-paginate';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from '../../setup/axios';
 import { checkFeeNameExists } from '../../services/userService';
-import { getNewFeeCollection, editApartmentFee, addNewFeeType, getAllFeeTypes, editFeeType } from '../../store/slices/feeSlice';
+import { getNewFeeCollection, editApartmentFee, addNewFeeType, getAllFeeTypes, editFeeType, deleteOneFeeType, addNewFeeCollection } from '../../store/slices/feeSlice';
 import SearchFeeModal from './SearchFeeModal';
 import UpdateApartmentFeeModal from './UpdateApartmentFeeModal';
 import CreateNewFeeTypeModal from './CreateNewFeeTypeModal';
 import UpdateFeeTypeModal from './UpdateFeeTypeModal';
+import DeleteFeeTypeModal from './DeleteFeeTypeModal';
+import CreateNewFeeCollectionModal from './CreateNewFeeCollectionModal';
+import StatisticModal from './StatisticModal';
 
 const Fee = (props) => {
     const dispatch = useDispatch();
@@ -34,6 +37,8 @@ const Fee = (props) => {
     const [showFilterStatusMenu, setShowFilterStatusMenu] = useState(false);
     const [filterDueDate, setFilterDueDate] = useState('all');
     const [showFilterDueDateMenu, setShowFilterDueDateMenu] = useState(false);
+    const [filterFeeName, setFilterFeeName] = useState(null);
+    const [showFilterFeeName, setShowFilterFeeName] = useState(false);
 
     const [showUpdateApartmentFeeModal, setShowUpdateApartmentFeeModal] = useState(false);
     const [showUpdateFeeTypeModal, setShowUpdateFeeTypeModal] = useState(false);
@@ -59,18 +64,20 @@ const Fee = (props) => {
             isRequired: filterIsRequired !== 'all' ? filterIsRequired : null,
             status: filterStatus !== 'all' ? filterStatus : null,
             dueDate: filterDueDate !== 'all' ? filterDueDate : null,
+            feeName: filterFeeName ? filterFeeName : null,
         }));
-    }, [dispatch, reloadTrigger, , currentPage, month, year, currentPage, selectedApartmentCode, filterIsRequired, filterStatus, filterDueDate]);
+    }, [dispatch, reloadTrigger, , currentPage, month, year, selectedApartmentCode, filterIsRequired, filterStatus, filterDueDate, filterFeeName]);
     
+    //get feetype list
     useEffect(() => {
         dispatch(getAllFeeTypes({
             page_size: 1000,
         }));
-    }, [showUpdateFeeTypeModal]);
+    }, [showUpdateFeeTypeModal, showDeleteFeeTypeModal]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterStatus])
+    }, [filterStatus, filterFeeName])
 
     //get apartment active
     useEffect(() => {
@@ -94,11 +101,17 @@ const Fee = (props) => {
         fetchApartments();
     }, [showCreateNewFeeTypeModal]);
     
-        //handle page change
+    //handle page change
     const handlePageChange= (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1);
     }
     
+    //filter feename
+    const handleFeeNameFilter = () => {
+        setFilterFeeName(null);
+        setShowFilterFeeName(false);
+    }
+
     //filter date
     const handleDateFilter = () => {
         setMonth(null); 
@@ -141,12 +154,22 @@ const Fee = (props) => {
         }
     }
 
-    const handlePayment = () => {};
-
     //add new fee collection
-    const handleAddNewFeeCollection = () => {};
+    const handleAddNewFeeCollection = () => {
+        setShowCreateNewFeeCollectionModal(true);
+    };
 
-    const handleSubmitAddNewFeeCollection = () => {};
+    const handleSubmitAddNewFeeCollection = async(formData) => {
+        try{
+            console.log(formData);
+            await dispatch(addNewFeeCollection(formData));
+            setReloadTrigger(prev => !prev);
+            toast.success("Tạo bảng thu phí thành công!");
+            setShowCreateNewFeeCollectionModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    };
 
     //add new feetype
     const handleAddNewFeeType = () => {
@@ -191,9 +214,20 @@ const Fee = (props) => {
     };
 
     //delete feetype
-    const handleDeleteFeeType = () => {};
+    const handleDeleteFeeType = () => {
+        setShowDeleteFeeTypeModal(true);
+    };
 
-    const handleSubmitDeleteFeeType = () => {};
+    const handleSubmitDeleteFeeType = async(typeId) => {
+        try{
+            await dispatch(deleteOneFeeType(typeId));
+            setReloadTrigger(prev => !prev);
+            toast.success("Xóa khoản phí thành công!");
+            setShowDeleteFeeTypeModal(false);
+        }catch(err){
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    };
 
     //update feetype
     const handleUpdateFeeType = () => {
@@ -210,7 +244,6 @@ const Fee = (props) => {
                 amountDefault: formData?.amountDefault === '' ? '0' : formData?.amountDefault,
                 applicableApartments: formData?.applicableApartments || [],
             }
-            console.log(data);
             await dispatch(editFeeType({ typeId: formData.typeId, data: data }));
             setReloadTrigger(prev => !prev);
             toast.success("Chỉnh sửa khoản phí thành công!");
@@ -220,9 +253,11 @@ const Fee = (props) => {
         }
     };
 
+    const handlePayment = () => {};
     const handleStatistics = () => {
-
+        setShowStatisticModal(true);
     };
+    const handleSubmitStatisticModal = () => {};
     
     return (
         <>
@@ -237,7 +272,31 @@ const Fee = (props) => {
                         <tr>
                             <th className='text-center align-middle' scope='col'>STT</th>
                             {role === 'admin' && (<th className='text-center align-middle' scope='col'>Mã căn hộ</th>)}
-                            <th className='text-center align-middle' scope='col'>Tên khoản phí</th>
+                            <th className='text-center align-middle' scope='col'>Tên khoản phí
+                                {role === 'admin' && (
+                                <div className="d-inline-block position-relative">
+                                <button
+                                    onClick={() => setShowFilterFeeName(!showFilterFeeName)}
+                                    className="btn"
+                                    title="Lọc khoản phí"
+                                >
+                                    <i className='fa fa-filter'></i>
+                                </button>
+                                {showFilterFeeName && (
+                                    <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
+                                        <input 
+                                            type="text" 
+                                            name="filterFeeName" 
+                                            value={filterFeeName} 
+                                            placeholder="Khoản phí" 
+                                            style={{ maxWidth: '150px', marginLeft: '10px', marginRight: '10px', marginTop: '10px' }}
+                                            onChange={(e) => setFilterFeeName(e.target.value)}
+                                        />
+                                        <button className="dropdown-item" onClick={() => handleFeeNameFilter()}>Bỏ lọc</button>
+                                    </div>
+                                )}
+                                </div>)}
+                            </th>
                             <th className='text-center align-middle' scope='col'>Tháng/Năm
                                 <div className="d-inline-block position-relative">
                                 <button
@@ -265,7 +324,7 @@ const Fee = (props) => {
                                             style={{ maxWidth: '70px', marginLeft: '10px', marginRight: '10px', marginTop: '10px' }}
                                             onChange={(e) => setYear(e.target.value)}
                                         />
-                                        <button className="dropdown-item" onClick={() => handleDateFilter('all')}>Bỏ lọc</button>
+                                        <button className="dropdown-item" onClick={() => handleDateFilter()}>Bỏ lọc</button>
                                     </div>
                                 )}
                             </div>
@@ -431,6 +490,22 @@ const Fee = (props) => {
             onSubmit={handleSubmitUpdateFeeType}
             feeTypeList={feeTypeList}
             apartmentList={apartmentList}
+        />
+        <DeleteFeeTypeModal
+            show={showDeleteFeeTypeModal}
+            onClose={() => setShowDeleteFeeTypeModal(false)}
+            onSubmit={handleSubmitDeleteFeeType}
+            feeTypeList={feeTypeList}
+        />
+        <CreateNewFeeCollectionModal
+            show={showCreateNewFeeCollectionModal}
+            onClose={() => setShowCreateNewFeeCollectionModal(false)}
+            onSubmit={handleSubmitAddNewFeeCollection}
+        />
+        <StatisticModal
+            show={showStatisticModal}
+            onClose={() => setShowStatisticModal(false)}
+            onSubmit={handleSubmitStatisticModal}
         />
         {totalPages > 1 && <ReactPaginate
             nextLabel="Sau >"

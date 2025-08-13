@@ -8,6 +8,11 @@ from uuid import UUID
 from django.db.models.functions import Cast
 from rest_framework.views import APIView
 from django.db.models import IntegerField
+from rest_framework.decorators import action
+from django.contrib.postgres.search import TrigramSimilarity
+from django.db.models.functions import Greatest
+from datetime import date
+from django.db.models import Q
 import os
 from dotenv import load_dotenv
 load_dotenv()  
@@ -34,6 +39,7 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
         isRequired = self.request.query_params.get('isRequired')
         status = self.request.query_params.get('status')
         dueDate =self.request.query_params.get('dueDate')
+        feeName = self.request.query_params.get('feeName')
 
         ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
@@ -50,21 +56,24 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
         latest_month = latest.month
         latest_year = latest.year
 
-        #role == admin
         if user.id == ADMIN_ID:
             queryset = ApartmentFee.objects.all()
-            if month != 'latest' and year != 'latest':
-                queryset = queryset.filter(feeCollection__month=month, feeCollection__year=year)
-            elif month != 'latest':
-                queryset = queryset.filter(feeCollection__month=month)
-            elif year != 'latest':
-                queryset = queryset.filter(feeCollection__year=year)
-            elif month == 'latest' and year == 'latest':
-                queryset = queryset.filter(feeCollection__month=latest_month)
-                queryset = queryset.filter(feeCollection__year=latest_year)
-            else:
-                return queryset.none()
-            
+        elif apartment_code:
+            queryset = ApartmentFee.objects.filter(apartment__apartmentCode=apartment_code)
+        
+        if month != 'latest' and year != 'latest':
+            queryset = queryset.filter(feeCollection__month=month, feeCollection__year=year)
+        elif month != 'latest':
+            queryset = queryset.filter(feeCollection__month=month)
+        elif year != 'latest':
+            queryset = queryset.filter(feeCollection__year=year)
+        elif month == 'latest' and year == 'latest':
+            queryset = queryset.filter(feeCollection__month=latest_month)
+            queryset = queryset.filter(feeCollection__year=latest_year)
+        else:
+            return queryset.none()
+        
+        if user.id == ADMIN_ID:          
             if isRequired in ['True', 'False']:
                 queryset = queryset.filter(feeCollection__feeType__isRequired=isRequired)
             if status in ['paid', 'unpaid']:
@@ -73,28 +82,14 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.order_by('feeCollection__dueDate')
             if dueDate == 'decrease':
                 queryset = queryset.order_by('-feeCollection__dueDate')
+            if feeName not in ['null']:
+                queryset = queryset.filter(feeCollection__feeType__feeName__iexact=feeName)
 
             apartmentFeeId = self.kwargs.get('apartmentFeeId')
             if apartmentFeeId:
                 queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
-            return queryset
-        
-        #role == resident
-        if apartment_code:
-            queryset = ApartmentFee.objects.filter(apartment__apartmentCode=apartment_code)
-            if month != 'latest' and year != 'latest':
-                queryset = queryset.filter(feeCollection__month=month, feeCollection__year=year)
-            elif month != 'latest':
-                queryset = queryset.filter(feeCollection__month=month)
-            elif year != 'latest':
-                queryset = queryset.filter(feeCollection__year=year)
-            elif month == 'latest' and year == 'latest':
-                queryset = queryset.filter(feeCollection__month=latest_month)
-                queryset = queryset.filter(feeCollection__year=latest_year)
-            else:
-                return queryset.none()
-            return queryset
-        
+        return queryset
+
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -103,13 +98,51 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_200_OK)
         else: return Response({ "errors": serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], url_path='search')
+    def search_fee(self, request):
+        keyword = request.query_params.get('q', '')
+        if not keyword:
+            return Response({"count": 0, "results": []})
+
+        keywords = keyword.split()
+
+        queryset = ApartmentFee.objects.all()
+        for kw in keywords:
+            queryset = queryset.filter(
+                Q(apartment__apartmentCode__icontains=kw) |
+                Q(feeCollection__feeType__feeName__icontains=kw)
+            )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 #feetype viewset
 class FeeTypeViewSet(viewsets.ModelViewSet):
-    queryset = FeeType.objects.all()
     serializer_class = FeeTypeSerializer
     permission_classes = [IsAuthenticated,]
     pagination_class = CustomPageNumberPagination
 
+    def get_queryset(self):
+        user = self.request.user
+        month = self.request.query_params.get('month')
+        year = self.request.query_params.get('year')
+        statistic = self.request.query_params.get('statistic')
+        ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
+
+        if user.id == ADMIN_ID:
+            queryset = FeeType.objects.filter(status='active')
+            if year and month:
+                fee_collection = FeeCollection.objects.filter(month=month, year=year)
+                listFeeCollectionExist = fee_collection.values_list('feeType__typeId', flat=True)
+                if statistic in ['true', 'True']:
+                    queryset=queryset.filter(typeId__in=listFeeCollectionExist)
+                    return queryset
+                queryset = queryset.exclude(typeId__in=listFeeCollectionExist)
+            return queryset
 
     def create(self, request, *args, **kwargs):
         scope = request.data.get('appliedScope')
@@ -125,6 +158,9 @@ class FeeTypeViewSet(viewsets.ModelViewSet):
         if scope == FeeType.Scope.some:
             apartments = Apartment.objects.filter(apartmentCode__in=applicableApartments)
             instance.applicableApartments.set(apartments)
+        if scope == FeeType.Scope.all:
+            apartments = Apartment.objects.filter(status='active')
+            instance.applicableApartments.set(apartments)
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -139,6 +175,12 @@ class FeeTypeViewSet(viewsets.ModelViewSet):
             print(serializer.errors)
             return Response({ "errors": serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
         
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.status = 'inactive'
+        instance.save()
+        return Response(status=status.HTTP_200_OK)
+        
 #Check feeName exist
 class CheckFeeNameExist(APIView):
     permission_classes = [IsAuthenticated,]
@@ -149,5 +191,46 @@ class CheckFeeNameExist(APIView):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
 
+class CreateFeeCollection(APIView):
+    permission_classes = [IsAuthenticated,]
 
-        
+    def post(self, request):
+        month = request.data.get('month')
+        year = request.data.get('year')
+        feeCollection = request.data.get('feeCollection', [])
+
+        try: 
+            for fee in feeCollection:
+                feeTypeId = fee.get('typeId')
+                dueDate = fee.get('dueDate')
+                apartments = fee.get('apartments', [])
+                if not feeTypeId or not dueDate or not apartments:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                
+                feeType = FeeType.objects.get(typeId=feeTypeId)
+
+                #create new fee collection
+                fee_collection = FeeCollection.objects.create(
+                    month=month,
+                    year=year,
+                    createdDate=date.today(),
+                    dueDate=dueDate,
+                    feeType=feeType
+                )
+                #create apartmentfee
+                apartment_fees = [
+                    ApartmentFee(
+                        amount=a['amount'],
+                        apartment_id=a['apartmentCode'],
+                        feeCollection=fee_collection
+                    )
+                    for a in apartments
+                ]
+                ApartmentFee.objects.bulk_create(apartment_fees)
+            return Response(status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+

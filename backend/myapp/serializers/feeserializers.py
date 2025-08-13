@@ -37,12 +37,18 @@ class FeeTypeSerializer(serializers.ModelSerializer):
         validated_data['status'] = 'active' 
         return super().create(validated_data)
     
+class FeeCollectionSerializer(serializers.ModelSerializer):
+    feeType = serializers.CharField(source='feeType.feeName')
+    class Meta:
+        model = FeeCollection
+        fields = ['collectionId', 'month', 'year', 'createdDate', 'dueDate', 'status', 'feeType']
+
 class CheckFeeNameSerializer(serializers.Serializer):
     feeName = serializers.CharField()
 
     def validate_feeName(self, value):
         try:
-            feeType = FeeType.objects.get(feeName=value)
+            feeType = FeeType.objects.get(feeName=value, status='active')
         except FeeType.DoesNotExist:
             raise serializers.ValidationError("FeeType not found")
         self.feeType = feeType 

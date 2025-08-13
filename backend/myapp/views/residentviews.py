@@ -45,12 +45,8 @@ class ResidentListAPIView(generics.ListAPIView):
 
             if status == 'notleft':
                 queryset = queryset.filter(isMember=True)
-            elif status == 'living':
-                queryset = queryset.filter(resident__status='living', isMember=True)
-            elif status == 'temporaryresidence':
-                queryset = queryset.filter(resident__status='temporaryresidence')
-            elif status == 'temporaryabsence':
-                queryset = queryset.filter(resident__status='temporaryabsence')
+            elif status in ['living', 'temporaryresidence', 'temporaryabsence']:
+                queryset = queryset.filter(resident__status=status, isMember=True)
             elif status == 'left':
                 queryset = queryset.filter(isMember=False)
             else:
@@ -144,13 +140,16 @@ class UpdateResident(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #search resident
-class SearchResidentView(APIView):
-    def get(self, request):
-        keyword = request.query_params.get('q', '')
-        if not keyword:
-            return Response([])
+class SearchResidentView(generics.ListAPIView):
+    serializer_class = ResidentSerializer
+    pagination_class = CustomPageNumberPagination
 
-        queryset = Resident.objects.annotate(
+    def get_queryset(self):
+        keyword = self.request.query_params.get('q', '')
+        if not keyword:
+            return Resident.objects.none()
+
+        return Resident.objects.annotate(
             similarity=Greatest(
                 TrigramSimilarity('fullName', keyword),
                 TrigramSimilarity('email', keyword),
@@ -159,10 +158,8 @@ class SearchResidentView(APIView):
                 TrigramSimilarity('idNumber', keyword),
             )
         ).filter(similarity__gt=0.4).order_by('-similarity')
-
-        serializer = ResidentSerializer(queryset, many=True)
-        return Response(serializer.data)
     
+
 #get temporary residence detail
 class TemporaryResidenceDetailView(APIView):
     def get(self, request, pk):

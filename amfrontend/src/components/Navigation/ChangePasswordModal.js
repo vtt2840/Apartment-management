@@ -59,6 +59,11 @@ const ChangePasswordModal = ({ show, onClose, onSubmit }) => {
             setObjCheckInput({...defaultValidInput, isValidConfirmPassword: false });
             return false;
         }        
+        if(oldPassword === newPassword){
+            toast.error("Mật khẩu mới trùng với mật khẩu cũ!");
+            setObjCheckInput({...defaultValidInput, isValidNewPassword: false});
+            return false;
+        }
         return true;
     }
 
@@ -67,7 +72,8 @@ const ChangePasswordModal = ({ show, onClose, onSubmit }) => {
         if(check === true){
             const data = {
                 oldPassword: oldPassword,
-                newPassword: newPassword
+                newPassword: newPassword,
+                confirmNewPassword: confirmPassword
             }
             onSubmit(data);
         }

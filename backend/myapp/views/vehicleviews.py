@@ -92,7 +92,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
     def search_vehicle(self, request):
         keyword = request.query_params.get('q', '')
         if not keyword:
-            return Response([])
+            return Response({"count": 0, "results": []})
 
         queryset = Vehicle.objects.annotate(
             similarity=Greatest(
@@ -101,6 +101,11 @@ class VehicleViewSet(viewsets.ModelViewSet):
                 TrigramSimilarity('color', keyword)
             )
         ).filter(similarity__gt=0.5).order_by('-similarity')
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

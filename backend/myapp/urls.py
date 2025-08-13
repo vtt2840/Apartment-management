@@ -5,14 +5,14 @@ from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartme
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
                                   CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
                                   ResidentCountView)
-from .views.feeviews import (ApartmentFeeViewSet, FeeTypeViewSet, CheckFeeNameExist)
+from .views.feeviews import (ApartmentFeeViewSet, FeeTypeViewSet, CheckFeeNameExist, CreateFeeCollection)
 from .views.vehicleviews import (VehicleViewSet)
 from rest_framework.routers import SimpleRouter
 
 
 router = SimpleRouter()
 router.register(r'vehicles', VehicleViewSet, basename='vehicle')
-router.register(r'fee', ApartmentFeeViewSet, basename='fee')
+router.register(r'apartmentfee', ApartmentFeeViewSet, basename='apartmentfee')
 router.register(r'feetype', FeeTypeViewSet, basename='feetype')
 
 
@@ -51,6 +51,7 @@ urlpatterns = [
     path('temporary-residence/<int:pk>/', TemporaryResidenceDetailView.as_view(), name='temporary-residence-detail'),
 
     path('feetype/check-feename-exists/', CheckFeeNameExist.as_view(), name='check-feename-exists'),
+    path('feecollection/create/', CreateFeeCollection.as_view(), name='create-new-fee-collection'),
 
 ] + router.urls
 
