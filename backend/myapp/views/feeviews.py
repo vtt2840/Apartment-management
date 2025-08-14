@@ -9,13 +9,17 @@ from django.db.models.functions import Cast
 from rest_framework.views import APIView
 from django.db.models import IntegerField
 from rest_framework.decorators import action
-from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models.functions import Greatest
 from datetime import date
 from django.db.models import Q
 import os
 from dotenv import load_dotenv
 load_dotenv()  
+import pandas as pd
+from django.http import HttpResponse
+from io import BytesIO
+import json
+from django.views.decorators.csrf import csrf_exempt
+
 
 #custom page number pagination
 class CustomPageNumberPagination(PageNumberPagination):
@@ -234,3 +238,45 @@ class CreateFeeCollection(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+@csrf_exempt
+def export_data_to_excel(request):
+    if request.method == "POST":
+        body_unicode = request.body.decode('utf-8')
+        body_data = json.loads(body_unicode)
+
+        allowed_fields = ["amount", "apartmentCode", "dueDate", "feeName", "isRequired", "month", "status"]
+        filtered_data = []
+        for item in body_data:
+            row = {}
+            for field in allowed_fields:
+                row[field] = item.get(field)
+            filtered_data.append(row)
+
+        translated_data = []
+        for item in filtered_data:
+            translated_data.append({
+                "Mã căn hộ": item.get("apartmentCode"),
+                "Tên khoản phí": item.get("feeName"),
+                "Tháng/Năm": item.get("month"),
+                "Số tiền": item.get("amount"),
+                "Bắt buộc": "Có" if item.get("isRequired") else "Không",                
+                "Hạn nộp": item.get("dueDate"),
+                "Trạng thái": "Chưa thanh toán" if item.get("status") == "unpaid" else "Đã thanh toán"
+            })
+            print(translated_data)
+
+        df = pd.DataFrame(translated_data)
+        df.insert(0, 'STT', range(1, len(df) + 1))
+
+        buffer = BytesIO()
+        df.to_excel(buffer, index=False)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="export.xlsx"'
+        return response
+    
+    

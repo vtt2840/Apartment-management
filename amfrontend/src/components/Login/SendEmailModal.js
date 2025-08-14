@@ -41,6 +41,11 @@ const SendEmailModal = ({ show, onClose, onSubmit }) => {
         }
     };
 
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            handleSubmit();
+        }
+    }
 
     return (
       <>
@@ -52,6 +57,7 @@ const SendEmailModal = ({ show, onClose, onSubmit }) => {
                 <div className='col-12 form-group pt-3 pb-3'>
                     <input type="text" className={objCheckInput.isValidEmail ? 'form-control' : 'form-control is-invalid'} 
                         name="email" value={email} placeholder="Email" onChange={(event)=> setEmail(event.target.value)}
+                        onKeyDown={(event) => handlePressEnter(event)}
                     />
                 </div>
             </Modal.Body>

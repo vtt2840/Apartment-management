@@ -38,6 +38,13 @@ const SearchFeeModal = () => {
 
     const handleClose = () => setShow(false);
 
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
+
     return (
         <>
         <div className="input-group mb-3">
@@ -47,6 +54,7 @@ const SearchFeeModal = () => {
             placeholder="Nhập từ khóa (Mã căn hộ, tên khoản phí)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(event) => handlePressEnter(event)}
             />
             <button className="btn btn-success" onClick={() => {setCurrentPage(1); handleSearch(1);}}>
             <i className='fa fa-search'></i>

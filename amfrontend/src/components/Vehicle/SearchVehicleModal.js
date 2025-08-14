@@ -39,6 +39,13 @@ const SearchVehicleModal = () => {
 
     const handleClose = () => setShow(false);
 
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
+
     return(
         <>
         <div className="input-group">
@@ -48,6 +55,7 @@ const SearchVehicleModal = () => {
                 placeholder="Nhập từ khóa (Biển số, hãng, màu sắc)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(event) => handlePressEnter(event)}
             />
             <button className="btn btn-success" onClick={() => {setCurrentPage(1); handleSearch(1);}}>
                 <i className='fa fa-search'></i>

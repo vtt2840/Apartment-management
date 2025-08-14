@@ -37,6 +37,13 @@ const SearchApartmentModal = () => {
     };
     
     const handleClose = () => setShow(false);
+    
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
 
     return (
         <>
@@ -47,6 +54,7 @@ const SearchApartmentModal = () => {
             placeholder="Nhập từ khóa (Mã căn hộ, chủ hộ, email)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(event) => handlePressEnter(event)}
             />
             <button className="btn btn-success" onClick={() => { setCurrentPage(1); handleSearch(1);}}>
             <i className='fa fa-search'></i>

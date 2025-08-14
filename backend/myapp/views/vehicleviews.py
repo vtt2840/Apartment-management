@@ -1,5 +1,5 @@
 from ..serializers.vehicleserializers import VehicleSerializer
-from ..models import Vehicle
+from ..models import Vehicle, FeeType
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets, status
@@ -67,8 +67,14 @@ class VehicleViewSet(viewsets.ModelViewSet):
     #create new vehicle
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
+        apartment_code = request.data.get('apartment')
         if serializer.is_valid():
             serializer.save()
+
+            #add apartment to phi gui xe
+            feeVehicle = FeeType.objects.filter(typeId='23')
+            for fee in feeVehicle:
+                fee.applicableApartments.add(apartment_code)
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response({ "errors": serializer.errors }, status=status.HTTP_400_BAD_REQUEST)

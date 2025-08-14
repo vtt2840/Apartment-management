@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer
-from ..models import Role, Account, Apartment, Resident, Member
+from ..models import Role, Account, Apartment, Resident, Member, FeeType
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .apartmentserializers import ApartmentSerializer
 from django.contrib.auth.tokens import default_token_generator
@@ -43,9 +43,7 @@ class CreateAccountSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         role = Role.objects.get(pk=2)  # role resident
-
         apartment_code = validated_data.pop("apartment_code", None)
-        
 
         if not apartment_code:
             raise serializers.ValidationError("Thiếu mã căn hộ.")
@@ -53,7 +51,7 @@ class CreateAccountSerializer(serializers.ModelSerializer):
         apartment = Apartment.objects.get(apartmentCode=apartment_code)
         if apartment.account:
             raise serializers.ValidationError("Căn hộ đã có tài khoản!")
-
+        
         #create new resident
         resident, created = Resident.objects.get_or_create(
             email=validated_data["email"],
@@ -82,6 +80,11 @@ class CreateAccountSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
             role=role,
         )
+
+        #add apartment to feetypelist
+        feeTypeList = FeeType.objects.filter(appliedScope='all')
+        for fee in feeTypeList:
+            fee.applicableApartments.add(apartment_code)
         
         apartment.account = account
         apartment.status = "active" #update status active
@@ -151,6 +154,12 @@ class DeactiveAccountSerializer(serializers.Serializer):
 
         # delete all members belong to apartment
         Member.objects.filter(apartment=apartment).update(isOwner=0, isMember=0)
+
+        #add apartment to feetypelist
+        feeTypeList = FeeType.objects.all()
+        for fee in feeTypeList:
+            fee.applicableApartments.remove(apartmentCode)
+
         # update apartment.status='inactive'
         apartment.status = Apartment.Status.inactive
         apartment.account = None

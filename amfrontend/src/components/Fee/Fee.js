@@ -253,11 +253,35 @@ const Fee = (props) => {
         }
     };
 
-    const handlePayment = () => {};
+    //statistics
     const handleStatistics = () => {
         setShowStatisticModal(true);
     };
-    const handleSubmitStatisticModal = () => {};
+
+    const handleSubmitStatisticModal = async (data) => {
+        try {
+            const res = await axios.post(
+                "http://localhost:8000/export/",
+                data,
+                { responseType: "blob" }
+            );
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "Thongke.xlsx");
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            setShowStatisticModal(false);
+        } catch (err) {
+            console.error("Export Excel failed:", err);
+            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+        }
+    };
+
+    //payment
+    const handlePayment = () => {};
+
     
     return (
         <>

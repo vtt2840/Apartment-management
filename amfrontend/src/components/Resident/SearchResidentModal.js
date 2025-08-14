@@ -53,6 +53,13 @@ const SearchResidentModal = () => {
 
     const handleClose = () => setShow(false);
 
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
+
     return(
         <>
         <div className="input-group">
@@ -62,6 +69,7 @@ const SearchResidentModal = () => {
             placeholder="Nhập từ khóa (Họ tên, email, quê quán, SĐT, CCCD)"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(event) => handlePressEnter(event)}
             />
             <button className="btn btn-success" onClick={() => {setCurrentPage(1); handleSearch(1);}}>
             <i className='fa fa-search'></i>
