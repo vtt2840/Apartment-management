@@ -5,7 +5,8 @@ from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartme
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
                                   CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
                                   ResidentCountView)
-from .views.feeviews import (ApartmentFeeViewSet, FeeTypeViewSet, CheckFeeNameExist, CreateFeeCollection, export_data_to_excel)
+from .views.feeviews import (ApartmentFeeViewSet, FeeTypeViewSet, CheckFeeNameExist, CreateFeeCollection, export_data_to_excel, PaymentTransactionViewSet,
+                             check_payment_status, sepay_webhook)
 from .views.vehicleviews import (VehicleViewSet)
 from rest_framework.routers import SimpleRouter
 
@@ -14,6 +15,7 @@ router = SimpleRouter()
 router.register(r'vehicles', VehicleViewSet, basename='vehicle')
 router.register(r'apartmentfee', ApartmentFeeViewSet, basename='apartmentfee')
 router.register(r'feetype', FeeTypeViewSet, basename='feetype')
+router.register(r'payment', PaymentTransactionViewSet, basename='payment')
 
 
 
@@ -54,6 +56,8 @@ urlpatterns = [
     path('feecollection/create/', CreateFeeCollection.as_view(), name='create-new-fee-collection'),
    
     path('export/', export_data_to_excel, name='export_data_to_excel'),
+    path('check-payment-status/', check_payment_status, name='check_payment_status'),
+    path("sepay-webhook/", sepay_webhook, name="sepay-webhook"),
 
 
 ] + router.urls

@@ -1,14 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from ..models import ApartmentFee, FeeCollection, FeeType, Apartment
-from ..serializers.feeserializers import ApartmentFeeSerializer, FeeTypeSerializer, CheckFeeNameSerializer
+from ..models import ApartmentFee, FeeCollection, FeeType, Apartment, PaymentTransaction
+from ..serializers.feeserializers import ApartmentFeeSerializer, FeeTypeSerializer, CheckFeeNameSerializer, PaymentTransactionSerializer
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from uuid import UUID
 from django.db.models.functions import Cast
 from rest_framework.views import APIView
 from django.db.models import IntegerField
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from datetime import date
 from django.db.models import Q
 import os
@@ -19,6 +19,10 @@ from django.http import HttpResponse
 from io import BytesIO
 import json
 from django.views.decorators.csrf import csrf_exempt
+import re
+from datetime import datetime
+from django.utils.dateparse import parse_datetime
+
 
 
 #custom page number pagination
@@ -44,8 +48,13 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
         status = self.request.query_params.get('status')
         dueDate =self.request.query_params.get('dueDate')
         feeName = self.request.query_params.get('feeName')
+        apartmentFeeId = self.request.query_params.get('apartmentFeeId')
 
         ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
+
+        if apartmentFeeId:
+            queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
+            return queryset
 
         #get latest feeCollection date
         latest = (
@@ -279,4 +288,78 @@ def export_data_to_excel(request):
         response['Content-Disposition'] = 'attachment; filename="export.xlsx"'
         return response
     
-    
+class PaymentTransactionViewSet(viewsets.ModelViewSet):
+    serializer_class = PaymentTransactionSerializer
+    permission_classes = [IsAuthenticated,]
+
+    def get_queryset(self):
+        apartmentFee = self.request.query_params.get('apartmentFee')
+        queryset = PaymentTransaction.objects.filter(apartmentFee=apartmentFee)
+        return queryset
+
+@csrf_exempt
+@api_view(["POST"])
+def check_payment_status(request):
+    apartmentFeeId = request.data.get('apartmentFee')  
+
+    if not apartmentFeeId:
+        return Response({'payment_status': 'access_denied'}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        apartmentFee = ApartmentFee.objects.get(apartmentFeeId=apartmentFeeId)
+    except ApartmentFee.DoesNotExist:
+        return Response({'payment_status': 'order_not_found'}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({'payment_status': apartmentFee.status})
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny]) 
+def sepay_webhook(request):
+    data = request.data
+    print(request.data) 
+
+    transfer_type = data.get('transferType')
+    transfer_amount = float(data.get('transferAmount', 0))
+    transaction_content = data.get('content', '')
+    transaction_id = data.get('referenceCode', '')
+    transaction_date_str = data.get('transactionDate')
+
+    if transfer_type != "in":
+        return Response({'success': False, 'message': 'Not an incoming payment'}, status=200)
+
+    payment_date = None
+    if transaction_date_str:
+        try:
+            payment_date = parse_datetime(transaction_date_str) or datetime.strptime(transaction_date_str, "%Y-%m-%d %H:%M:%S")
+        except Exception:
+            payment_date = datetime.now()
+
+    match = re.search(r'KhoanPhi(\d+)', transaction_content)
+    if not match:
+        return Response({'success': False, 'message': 'ApartmentFee ID not found'}, status=400)
+
+    apartment_fee_id = match.group(1)
+
+    try:
+        apartment_fee = ApartmentFee.objects.get(
+            apartmentFeeId=apartment_fee_id,
+            amount=transfer_amount,
+            status=ApartmentFee.Status.unpaid
+        )
+    except ApartmentFee.DoesNotExist:
+        return Response({'success': False, 'message': 'No matching unpaid ApartmentFee'}, status=404)
+
+    PaymentTransaction.objects.create(
+        transactionId=transaction_id,
+        apartmentFee=apartment_fee,
+        amount=transfer_amount,
+        paymentDate=payment_date.date(),
+        status=PaymentTransaction.Status.successful
+    )
+
+    apartment_fee.status = ApartmentFee.Status.paid
+    apartment_fee.save()
+
+    return Response({'success': True, 'message': 'Payment recorded'})

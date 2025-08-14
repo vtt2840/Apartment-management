@@ -54,3 +54,23 @@ class CheckFeeNameSerializer(serializers.Serializer):
         self.feeType = feeType 
         return value
     
+class PaymentTransactionSerializer(serializers.ModelSerializer):
+    feeName = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PaymentTransaction
+        fields = ['transactionId', 'apartmentFee', 'amount', 'paymentDate', 'status', 'feeName']
+        extra_kwargs = {
+            'status': {'read_only': True},
+            'transactionId': {'read_only': True},
+            'amount': {'read_only': True},
+            'paymentDate': {'read_only': True},
+        }
+
+    def get_feeName(self, obj):
+        apartment_code = obj.apartmentFee.apartment.apartmentCode
+        fee_type_name = obj.apartmentFee.feeCollection.feeType.feeName
+        month = obj.apartmentFee.feeCollection.month
+        year = obj.apartmentFee.feeCollection.year
+        return f"{apartment_code} {fee_type_name} {month}/{year}"
+

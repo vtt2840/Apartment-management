@@ -147,10 +147,15 @@ const createNewFeeCollection = (data) => {
 const searchFee = ({keyword, page}) => {
     return axios.get(`/apartmentfee/search/?q=${keyword}&page=${page}`);
 }
+
+//payment
+const fetchPaymentTransaction = (id) => {
+    return axios.get(`/payment/?apartmentFee=${id}`);
+}
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
     updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
     updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin, fetchNewFeeCollection, updateApartmentFee, checkFeeNameExists,
-    createNewFeeType, fetchAllFeeTypes, updateFeeType, deleteFeeType, createNewFeeCollection, searchFee
+    createNewFeeType, fetchAllFeeTypes, updateFeeType, deleteFeeType, createNewFeeCollection, searchFee, fetchPaymentTransaction
 }

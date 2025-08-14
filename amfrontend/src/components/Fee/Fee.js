@@ -13,6 +13,8 @@ import UpdateFeeTypeModal from './UpdateFeeTypeModal';
 import DeleteFeeTypeModal from './DeleteFeeTypeModal';
 import CreateNewFeeCollectionModal from './CreateNewFeeCollectionModal';
 import StatisticModal from './StatisticModal';
+import PaymentTransactionModal from './PaymentTransactionModal';
+import { useNavigate} from 'react-router-dom';
 
 const Fee = (props) => {
     const dispatch = useDispatch();
@@ -27,6 +29,7 @@ const Fee = (props) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedFee, setSelectedFee] = useState(null);
+    const [apartmentFee, setApartmentFee] = useState(null);
 
     const [showFilterDateMenu, setShowFilterDateMenu] = useState(false);
     const [month, setMonth] = useState(null);
@@ -46,6 +49,7 @@ const Fee = (props) => {
     const [showDeleteFeeTypeModal, setShowDeleteFeeTypeModal] = useState(false);
     const [showCreateNewFeeTypeModal, setShowCreateNewFeeTypeModal] = useState(false);
     const [showCreateNewFeeCollectionModal, setShowCreateNewFeeCollectionModal] = useState(false);
+    const [showPaymentTransactionModal, setShowPaymentTransactionModal] = useState(false);
 
 
      useEffect(() => {
@@ -66,7 +70,7 @@ const Fee = (props) => {
             dueDate: filterDueDate !== 'all' ? filterDueDate : null,
             feeName: filterFeeName ? filterFeeName : null,
         }));
-    }, [dispatch, reloadTrigger, , currentPage, month, year, selectedApartmentCode, filterIsRequired, filterStatus, filterDueDate, filterFeeName]);
+    }, [dispatch, reloadTrigger, currentPage, month, year, selectedApartmentCode, filterIsRequired, filterStatus, filterDueDate, filterFeeName]);
     
     //get feetype list
     useEffect(() => {
@@ -279,10 +283,18 @@ const Fee = (props) => {
         }
     };
 
+    const navigate = useNavigate();
     //payment
-    const handlePayment = () => {};
+    const handlePayment = (item) => {
+        let paymentApartmentFee = item.apartmentFeeId;
+        navigate(`/payment/?apartmentFee=${paymentApartmentFee}`);
+    };
 
-    
+    const handleShowPaymentTransaction = (item) => {
+        setApartmentFee(item);
+        setShowPaymentTransactionModal(true);
+    }
+
     return (
         <>
         <div className='container'>
@@ -429,7 +441,7 @@ const Fee = (props) => {
                             <td className='text-center'>{item.amount || ''}</td>
                             <td className='text-center'>{item.isRequired ? 'Có' : 'Không'}</td>
                             <td className='text-center'>{item.dueDate}</td>
-                            <td className='text-center'>{item.status == 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
+                            <td className='text-center'>{item.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
                             <td className='text-center'>
                                 <>
                                 {role === 'admin' && (<span
@@ -438,10 +450,10 @@ const Fee = (props) => {
                                     onClick={()=> hanldeEditApartmentFee(item)}
                                 ><i className='fa fa-edit'></i></span>)}
                                 <span
-                                    title='Thanh toán'
+                                    title={item.status === 'unpaid' ? 'Thanh toán' : 'Xem thông tin thanh toán'}
                                     className='payment'
-                                    onClick={()=> handlePayment(item)}
-                                ><i className={item.status == 'unpaid' ? 'fa fa-usd' : 'fa fa-check'}></i></span>
+                                    onClick={()=> {item.status === 'unpaid' ? handlePayment(item) : handleShowPaymentTransaction(item)}}
+                                ><i className={item.status === 'unpaid' ? 'fa fa-usd' : 'fa fa-check'}></i></span>
                                 </>    
                             </td>
                         </tr>)))
@@ -530,6 +542,11 @@ const Fee = (props) => {
             show={showStatisticModal}
             onClose={() => setShowStatisticModal(false)}
             onSubmit={handleSubmitStatisticModal}
+        />
+        <PaymentTransactionModal
+            show={showPaymentTransactionModal}
+            onClose={() => setShowPaymentTransactionModal(false)}
+            apartmentFee={apartmentFee}
         />
         {totalPages > 1 && <ReactPaginate
             nextLabel="Sau >"
