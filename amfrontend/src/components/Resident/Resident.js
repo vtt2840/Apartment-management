@@ -56,7 +56,7 @@ const Resident = (props) => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterStatus])
+    }, [filterStatus, selectedApartmentCode])
     
 
     //get resident list

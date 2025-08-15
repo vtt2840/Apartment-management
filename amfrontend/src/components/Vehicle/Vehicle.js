@@ -57,7 +57,7 @@ const Vehicle = (props) => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [showStatus])
+    }, [showStatus, selectedApartmentCode])
 
     //handle page change
     const handlePageChange= (selectedItem) => {
