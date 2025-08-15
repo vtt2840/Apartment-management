@@ -123,7 +123,7 @@ const updateApartmentFee = ({apartmentFeeId, data}) => {
 }
 
 const checkFeeNameExists = (feeName) => {
-    return axios.post('/feetype/check-feename-exists/', feeName);
+    return axios.post('/feetype/check-feename-exists/', {feeName});
 }
 
 const createNewFeeType = (data) => {

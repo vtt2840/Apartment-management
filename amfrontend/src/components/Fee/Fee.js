@@ -15,6 +15,7 @@ import CreateNewFeeCollectionModal from './CreateNewFeeCollectionModal';
 import StatisticModal from './StatisticModal';
 import PaymentTransactionModal from './PaymentTransactionModal';
 import { useNavigate} from 'react-router-dom';
+import { useClickAway } from '@uidotdev/usehooks';
 
 const Fee = (props) => {
     const dispatch = useDispatch();
@@ -51,8 +52,7 @@ const Fee = (props) => {
     const [showCreateNewFeeCollectionModal, setShowCreateNewFeeCollectionModal] = useState(false);
     const [showPaymentTransactionModal, setShowPaymentTransactionModal] = useState(false);
 
-
-     useEffect(() => {
+    useEffect(() => {
             if(totalCount){
                 setTotalPages(Math.ceil(totalCount/10)); //totalpages
             }
@@ -115,6 +115,11 @@ const Fee = (props) => {
         setFilterFeeName(null);
         setShowFilterFeeName(false);
     }
+    const feeNameRef = useClickAway(() => {
+        if(!filterFeeName){
+            setShowFilterFeeName(false);
+        }
+    });
 
     //filter date
     const handleDateFilter = () => {
@@ -122,24 +127,38 @@ const Fee = (props) => {
         setYear(null);
         setShowFilterDateMenu(false);
     };
+    const dateRef = useClickAway(() => {
+        if(!month && !year){
+            setShowFilterDateMenu(false);
+        }
+    });
 
     //filter isRequired
     const handleIsRequiredFilter = (isRequired) => {
         setFilterIsRequired(isRequired);
         setShowFilterIsRequiredMenu(false); 
     };
+     const isRequiredRef = useClickAway(() => {
+        setShowFilterIsRequiredMenu(false);
+    });
 
     //filter status
     const handleStatusFilter = (status) => {
         setFilterStatus(status);
         setShowFilterStatusMenu(false); 
     };
+    const statusRef = useClickAway(() => {
+        setShowFilterStatusMenu(false); 
+    });
 
     //filter duedate
     const handleDueDateFilter = (duedate) => {
         setFilterDueDate(duedate);
         setShowFilterDueDateMenu(false);
     }
+    const dueDateRef = useClickAway(() => {
+        setShowFilterDueDateMenu(false);
+    });
 
     //edit apartmentfee
     const hanldeEditApartmentFee = (item) => {
@@ -188,7 +207,7 @@ const Fee = (props) => {
             }
         }catch (err) {
             let temp = 'not found'; //new account
-            if(err.response?.status === 404){
+            if(err.response?.status === 400){
                 return temp; 
             }
             toast.error("Lỗi hệ thống, vui lòng thử lại sau!");
@@ -310,13 +329,12 @@ const Fee = (props) => {
                             {role === 'admin' && (<th className='text-center align-middle' scope='col'>Mã căn hộ</th>)}
                             <th className='text-center align-middle' scope='col'>Tên khoản phí
                                 {role === 'admin' && (
-                                <div className="d-inline-block position-relative">
+                                <div className="d-inline-block position-relative" ref={feeNameRef}>
                                 <button
                                     onClick={() => setShowFilterFeeName(!showFilterFeeName)}
                                     className="btn"
                                     title="Lọc khoản phí"
-                                >
-                                    <i className='fa fa-filter'></i>
+                                ><i className='fa fa-filter'></i>
                                 </button>
                                 {showFilterFeeName && (
                                     <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
@@ -334,13 +352,12 @@ const Fee = (props) => {
                                 </div>)}
                             </th>
                             <th className='text-center align-middle' scope='col'>Tháng/Năm
-                                <div className="d-inline-block position-relative">
+                                <div className="d-inline-block position-relative" ref={dateRef}>
                                 <button
                                     onClick={() => setShowFilterDateMenu(!showFilterDateMenu)}
                                     className="btn"
                                     title="Lọc tháng năm"
-                                >
-                                    <i className='fa fa-filter'></i>
+                                ><i className='fa fa-filter'></i>
                                 </button>
                                 {showFilterDateMenu && (
                                     <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
@@ -368,13 +385,12 @@ const Fee = (props) => {
                             <th className='text-center align-middle' scope='col'>Số tiền (VNĐ)</th>
                             <th className='text-center align-middle' scope='col'>Bắt buộc
                                 {role === 'admin' && (
-                                    <div className="d-inline-block position-relative">
+                                    <div className="d-inline-block position-relative" ref={isRequiredRef}>
                                         <button
                                             onClick={() => setShowFilterIsRequiredMenu(!showFilterIsRequiredMenu)}
                                             className="btn"
                                             title="Lọc bắt buộc hoặc không"
-                                        >
-                                            <i className='fa fa-filter'></i>
+                                        ><i className='fa fa-filter'></i>
                                         </button>
                                         {showFilterIsRequiredMenu && (
                                             <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
@@ -388,13 +404,12 @@ const Fee = (props) => {
                             </th>
                             <th className='text-center align-middle' scope='col'>Hạn nộp
                                 {role === 'admin' && (
-                                    <div className="d-inline-block position-relative">
+                                    <div className="d-inline-block position-relative" ref={dueDateRef}>
                                         <button
                                             onClick={() => setShowFilterDueDateMenu(!showFilterDueDateMenu)}
                                             className="btn"
                                             title="Lọc hạn nộp"
-                                        >
-                                            <i className='fa fa-filter'></i>
+                                        ><i className='fa fa-filter'></i>
                                         </button>
                                         {showFilterDueDateMenu && (
                                             <div className="dropdown-menu show" style={{ display: 'block', position: 'absolute', top: '100%', left: 0, zIndex: 1000 }}>
@@ -408,7 +423,7 @@ const Fee = (props) => {
                             </th>
                             <th className='text-center align-middle' scope='col'>Trạng thái
                                 {role === 'admin' && (
-                                    <div className="d-inline-block position-relative">
+                                    <div className="d-inline-block position-relative" ref={statusRef}>
                                         <button
                                             onClick={() => setShowFilterStatusMenu(!showFilterStatusMenu)}
                                             className="btn"

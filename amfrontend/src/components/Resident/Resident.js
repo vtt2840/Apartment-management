@@ -14,6 +14,7 @@ import ReactPaginate from 'react-paginate';
 import TemporaryAbsenceDetailModal from './TemporaryAbsenceDetailModal';
 import TemporaryResidenceDetailModal from './TemporaryResidenceDetailModal';
 import { getTemporaryAbsenceDetail, getTemporaryResidenceDetail } from '../../services/userService';
+import { useClickAway } from '@uidotdev/usehooks';
 
 const Resident = (props) => {
     const dispatch = useDispatch();
@@ -46,7 +47,7 @@ const Resident = (props) => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-  
+
     useEffect(() => {
         if(totalCount){
             setTotalPages(Math.ceil(totalCount/10)); //total pages
@@ -81,18 +82,31 @@ const Resident = (props) => {
         setFilterStatus(status);
         setShowFilterStatusMenu(false); 
     };
+    const statusRef = useClickAway(() => {
+        setShowFilterStatusMenu(false); 
+    });    
+  
     //filter gender
     const handleGenderFilter = (gender) => {
         setFilterGender(gender);
         setShowFilterGenderMenu(false);
     }
+    const genderRef = useClickAway(() => {
+        setShowFilterGenderMenu(false);
+    });    
+  
     //filter dateofbirth
     const handleDateOfBirthFilter = (sortOrder) => {
         setDateOfBirth(null); 
         setShowDecreaseBirth(sortOrder);
         setShowFilterBirthMenu(false);
     };
-
+    const dateOfBirthRef = useClickAway(() => {
+        if(!dateOfBirth){
+            setShowFilterBirthMenu(false);
+        }
+    });    
+  
     //add new resident
     const handleAddResident = () => {
         setShowAddModal(true);
@@ -258,7 +272,7 @@ const Resident = (props) => {
                     <th className='text-center align-middle' scope="col">Email</th>
                     <th className='text-center align-middle' scope="col">Ngày sinh
                         {role === 'admin' && (
-                            <div className="d-inline-block position-relative">
+                            <div className="d-inline-block position-relative" ref={dateOfBirthRef}>
                                 <button
                                     onClick={() => setShowFilterBirthMenu(!showFilterBithMenu)}
                                     className="btn"
@@ -286,7 +300,7 @@ const Resident = (props) => {
                     </th>
                     <th className='text-center' scope="col">Giới tính
                         {role === 'admin' && (
-                            <div className="d-inline-block position-relative">
+                            <div className="d-inline-block position-relative" ref={genderRef}>
                                 <button
                                     onClick={() => setShowFilterGenderMenu(!showFilterGenderMenu)}
                                     className="btn"
@@ -309,7 +323,7 @@ const Resident = (props) => {
                     <th className='text-center align-middle' scope="col">CCCD</th>
                     <th className='text-center align-middle' scope="col">Trạng thái
                         {role === 'admin' && (
-                            <div className="d-inline-block position-relative">
+                            <div className="d-inline-block position-relative" ref={statusRef}>
                                 <button
                                     onClick={() => setShowFilterStatusMenu(!showFilterStatusMenu)}
                                     className="btn"

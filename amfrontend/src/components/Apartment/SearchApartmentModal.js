@@ -55,7 +55,9 @@ const SearchApartmentModal = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(event) => handlePressEnter(event)}
+            style={{borderColor: 'white'}}
             />
+            <button type="button"onClick={() => setQuery("")} className="btn"><i className='fa fa-times'></i></button>
             <button className="btn btn-success" onClick={() => { setCurrentPage(1); handleSearch(1);}}>
             <i className='fa fa-search'></i>
             </button>

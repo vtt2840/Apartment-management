@@ -10,6 +10,7 @@ import UpdateVehicleModal from './UpdateVehicleModal';
 import DeleteVehicleModal from './DeleteVehicleModal';
 import SearchVehicleModal from './SearchVehicleModal';
 import axios from '../../setup/axios';
+import { useClickAway } from '@uidotdev/usehooks';
 
 const Vehicle = (props) => {
     const dispatch = useDispatch();
@@ -34,6 +35,7 @@ const Vehicle = (props) => {
     const [dateRegister, setDateRegister] = useState('all');
     const [showFilterDateRegisterMenu, setShowFilterDateRegisterMenu] = useState(false);
     const [showStatus, setShowStatus] = useState(false);
+ 
 
     useEffect(() => {
         if(totalCount){
@@ -68,11 +70,20 @@ const Vehicle = (props) => {
         setShowFilterTypeMenu(false); 
     };
 
+    const typeRef = useClickAway(() => {
+        setShowFilterTypeMenu(false);
+    });
+
     //filter date register
     const handleDateRegisterFilter = (date) => {
         setDateRegister(date);
         setShowFilterDateRegisterMenu(false);
     }
+      
+    const dateRef = useClickAway(() => {
+        setShowFilterDateRegisterMenu(false);
+    });
+
 
     //get resident list to create/update vehicle
     useEffect(() => {
@@ -155,6 +166,7 @@ const Vehicle = (props) => {
         }
     }
 
+
     return (
     <>
     <div className='container mt-4'>
@@ -187,7 +199,7 @@ const Vehicle = (props) => {
                     <th className='text-center align-middle' scope="col">Biển số</th>
                     <th className='text-center' scope="col">Loại xe
                         {role === 'admin' && (
-                            <div className="d-inline-block position-relative">
+                            <div className="d-inline-block position-relative" ref={typeRef}>
                                 <button
                                     onClick={() => setShowFilterTypeMenu(!showFilterTypeMenu)}
                                     className="btn"
@@ -211,11 +223,11 @@ const Vehicle = (props) => {
                     <th className='text-center align-middle' scope="col">Màu sắc</th>
                     <th className='text-center' scope="col">Ngày đăng ký
                         {role === 'admin' && (
-                            <div className="d-inline-block position-relative">
+                            <div className="d-inline-block position-relative" ref={dateRef}>
                                 <button
                                     onClick={() => setShowFilterDateRegisterMenu(!showFilterDateRegisterMenu)}
                                     className="btn"
-                                    title="Lọc loại xe"
+                                    title="Lọc ngày đăng ký"
                                 >
                                     <i className='fa fa-filter'></i>
                                 </button>

@@ -78,6 +78,11 @@ const ChangePasswordModal = ({ show, onClose, onSubmit }) => {
             onSubmit(data);
         }
     };
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            handleSubmit();
+        }
+    }
 
     return (
       <>
@@ -122,6 +127,7 @@ const ChangePasswordModal = ({ show, onClose, onSubmit }) => {
                         <label>Nhập lại mật khẩu mới(<span className='redC'>*</span>):</label>
                         <input type={showConfirmPassword ? "text" : "password"} className={objCheckInput.isValidConfirmPassword ? 'form-control' : 'form-control is-invalid'} 
                             name="confirmpassword" value={confirmPassword} placeholder="Nhập lại mật khẩu" onChange={(event)=> setConfirmPassword(event.target.value)}
+                            onKeyDown={(event) => handlePressEnter(event)}
                         />
                         <i className={`fa ${showConfirmPassword ? 'fa fa-eye-slash' : 'fa fa-eye'}`} 
                             onClick={showConfirmPasswordVisiblity}

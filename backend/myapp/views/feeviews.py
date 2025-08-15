@@ -202,7 +202,7 @@ class CheckFeeNameExist(APIView):
         serializer = CheckFeeNameSerializer(data=request.data)
         if serializer.is_valid():
             return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateFeeCollection(APIView):
     permission_classes = [IsAuthenticated,]

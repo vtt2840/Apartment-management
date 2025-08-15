@@ -9,6 +9,7 @@ import UpdateApartmentModal from './UpdateApartmentModal';
 import SearchApartmentModal from './SearchApartmentModal';
 import { checkAccountExists } from '../../services/userService';
 import ReactPaginate from "react-paginate";
+import { useClickAway } from '@uidotdev/usehooks';
 
 const Apartment = (props) => {
     const dispatch = useDispatch();
@@ -29,6 +30,10 @@ const Apartment = (props) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [reloadTrigger, setReloadTrigger] = useState(false);
+
+    const ref = useClickAway(() => {
+        setShowFilterMenu(false);
+    });
 
     useEffect(() => {
         if(totalCount){
@@ -187,7 +192,7 @@ const Apartment = (props) => {
                     <th className='text-center align-middle' scope="col">Diện tích (m2)</th>
                     <th className='text-center align-middle' scope="col">Trạng thái
                         {role === 'admin' && (
-                            <div className="d-inline-block position-relative">
+                            <div className="d-inline-block position-relative" ref={ref}>
                                 <button
                                     onClick={() => setShowFilterMenu(!showFilterMenu)}
                                     className="btn"

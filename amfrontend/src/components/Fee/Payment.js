@@ -93,6 +93,7 @@ const Payment = () => {
                 {/* Thông tin thanh toán */}
                 <div className="col-12 col-md-3 px-5 py-4 bg-white shadow rounded ms-md-4 mt-4 mt-md-0">
                     <h4 className="mb-4 bold">Thông tin thanh toán</h4>
+                    <p><strong>Căn hộ:</strong> {fee?.apartmentCode}</p>
                     <p><strong>Tên khoản phí:</strong> {fee?.feeName}</p>
                     <p><strong>Tháng/Năm:</strong> {fee?.month}</p>
                     <p><strong>Số tiền:</strong> {fee?.amount} VNĐ</p>
