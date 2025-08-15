@@ -35,13 +35,22 @@ class MemberSerializer(serializers.ModelSerializer):
             "residence_id",
         ]
 
-    def get_absence_id(self, obj):
-        absence = obj.resident.temporaryabsence_set.first()
-        return absence.pk if absence else None
+    # def get_absence_id(self, obj):
+    #     absence = obj.resident.temporaryabsence_set.first()
+    #     return absence.pk if absence else None
     
+    # def get_residence_id(self, obj):
+    #     residence = obj.resident.temporaryresidence_set.first()
+    #     return residence.pk if residence else None
+    
+    def get_absence_id(self, obj):
+        absence = obj.resident.temporaryabsence_set.order_by('-absenceId').first()
+        return absence.pk if absence else None
+
     def get_residence_id(self, obj):
-        residence = obj.resident.temporaryresidence_set.first()
+        residence = obj.resident.temporaryresidence_set.order_by('-residenceId').first()
         return residence.pk if residence else None
+
 
 class ResidentSerializer(serializers.ModelSerializer):
     apartment = MemberSerializer(source="member_set", many=True)
@@ -91,13 +100,13 @@ class CreateResidentSerializer(serializers.ModelSerializer):
 
         return resident
     
-
 class RegisterTemporaryResidenceSerializer(serializers.ModelSerializer):
     resident_id = serializers.IntegerField()
 
     class Meta:
         model = TemporaryResidence
         fields = ("resident_id", "startDate", "endDate", "reason")
+        read_only_fields = ("residenceId",)
     
     def create(self, validated_data):
         resident_id = validated_data.pop("resident_id")
@@ -113,13 +122,15 @@ class RegisterTemporaryResidenceSerializer(serializers.ModelSerializer):
         resident.status = 'temporaryresidence'
         resident.save()
         return temporaryResidence
+    
 
 class RegisterTemporaryAbsenceSerializer(serializers.ModelSerializer):
     resident_id = serializers.IntegerField()
 
     class Meta:
         model = TemporaryAbsence
-        fields = ("absenceId", "resident_id", "startDate", "endDate", "reason", "destination")
+        fields = ("resident_id", "startDate", "endDate", "reason", "destination")
+        read_only_fields = ("absenceId",)
     
     def create(self, validated_data):
         resident_id = validated_data.pop("resident_id")
