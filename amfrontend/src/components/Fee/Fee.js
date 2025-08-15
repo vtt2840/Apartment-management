@@ -460,9 +460,9 @@ const Fee = (props) => {
                             <td className='text-center'>
                                 <>
                                 {role === 'admin' && (<span
-                                    title='Chỉnh sửa'
+                                    title={item.status === 'unpaid' ? 'Chỉnh sửa' : 'Đã thanh toán không thể sửa'}
                                     className='edit'
-                                    onClick={()=> hanldeEditApartmentFee(item)}
+                                    onClick={()=> {item.status === 'unpaid' && hanldeEditApartmentFee(item) }}
                                 ><i className='fa fa-edit'></i></span>)}
                                 <span
                                     title={item.status === 'unpaid' ? 'Thanh toán' : 'Xem thông tin thanh toán'}
