@@ -53,7 +53,6 @@ const Payment = () => {
     return (
         <div className="container mt-5">
             <div className="row justify-content-center">
-                {/* QR + Thông tin ngân hàng */}
                 <div className="col-12 col-md-5 px-5 py-4 bg-white shadow rounded">
                     <div className='text-center'>
                     <img
@@ -90,7 +89,6 @@ const Payment = () => {
                     <p className="text-danger">Lưu ý: Nhập đúng nội dung chuyển khoản để xác nhận giao dịch thành công.</p>
                 </div>
 
-                {/* Thông tin thanh toán */}
                 <div className="col-12 col-md-3 px-5 py-4 bg-white shadow rounded ms-md-4 mt-4 mt-md-0">
                     <h4 className="mb-4 bold">Thông tin thanh toán</h4>
                     <p><strong>Căn hộ:</strong> {fee?.apartmentCode}</p>
