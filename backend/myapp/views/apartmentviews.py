@@ -64,13 +64,15 @@ class UpdateApartment(APIView):
 
     def put(self, request, apartmentCode):
         try:
-            apartmentCode = Apartment.objects.get(apartmentCode=apartmentCode)
+            apartment = Apartment.objects.get(apartmentCode=apartmentCode)
         except Apartment.DoesNotExist:
             return Response({"error": "Apartment not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UpdateApartmentSerializer(instance=apartmentCode, data=request.data, partial=True)
+        serializer = UpdateApartmentSerializer(instance=apartment, data=request.data, partial=True)
+        
         if serializer.is_valid():
             serializer.save()
+            print(serializer.data)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

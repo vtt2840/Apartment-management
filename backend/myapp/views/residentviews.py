@@ -1,7 +1,7 @@
 from ..serializers.residentserializers import (ResidentSerializer, CreateResidentSerializer, RegisterTemporaryResidenceSerializer,
                                                 RegisterTemporaryAbsenceSerializer, CancelRegisterTempSerializer, UpdateResidentSerializer,
                                                 MemberSerializer)
-from ..models import Resident, TemporaryResidence, TemporaryAbsence, Member
+from ..models import Resident, TemporaryResidence, TemporaryAbsence, Member, Vehicle
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -21,9 +21,7 @@ class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'page_size' 
     max_page_size = 1000
 
-
 # get resident list
-       
 class ResidentListAPIView(generics.ListAPIView):
     serializer_class = MemberSerializer
     permission_classes = [IsAuthenticated]
@@ -98,6 +96,11 @@ class DeleteResident(APIView):
         resident.status = 'left'
         resident.save()
         Member.objects.filter(resident=resident).update(isOwner=False, isMember=False)
+        vehicleList = Vehicle.objects.filter(resident=resident)
+        
+        for vehicle in vehicleList:
+            vehicle.status = 'deleted'
+            vehicle.save()
 
         return Response({"message": "Resident marked as left"}, status=status.HTTP_200_OK)
     

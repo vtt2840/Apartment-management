@@ -42,10 +42,21 @@ class AssignAccountToApartmentSerializer(serializers.Serializer):
                 isMember=True
             )
 
-
         apartment.status = Apartment.Status.active
         apartment.account = account
         apartment.save()
+        
+        #if account is inactive before
+        if account.is_active == False:
+            account.is_active = True
+            account.save()
+            resident.status = Resident.Status.living
+            resident.save()
+            member = Member.objects.filter(resident=resident, apartment=apartment)
+            for mem in member:
+                mem.isMember = True
+                mem.isOwner = True
+                mem.save()
         return apartment
 
  

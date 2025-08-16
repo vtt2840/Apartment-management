@@ -23,8 +23,6 @@ import re
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
 
-
-
 #custom page number pagination
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10 
@@ -101,7 +99,8 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
             apartmentFeeId = self.kwargs.get('apartmentFeeId')
             if apartmentFeeId:
                 queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
-        return queryset
+        return queryset.order_by('-feeCollection__collectionId', 'apartment__apartmentCode')
+
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -301,10 +300,8 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
 @api_view(["POST"])
 def check_payment_status(request):
     apartmentFeeId = request.data.get('apartmentFee')  
-
     if not apartmentFeeId:
         return Response({'payment_status': 'access_denied'}, status=status.HTTP_403_FORBIDDEN)
-
     try:
         apartmentFee = ApartmentFee.objects.get(apartmentFeeId=apartmentFeeId)
     except ApartmentFee.DoesNotExist:
@@ -318,7 +315,6 @@ def check_payment_status(request):
 @permission_classes([AllowAny]) 
 def sepay_webhook(request):
     data = request.data
-    print(request.data) 
 
     transfer_type = data.get('transferType')
     transfer_amount = float(data.get('transferAmount', 0))

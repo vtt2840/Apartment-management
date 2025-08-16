@@ -200,7 +200,7 @@ class FeeType(models.Model):
     isRequired = models.BooleanField(default=True)
     appliedScope = models.CharField(max_length=4, choices=Scope.choices, default='all')
     status = models.CharField(max_length=8, choices=Status.choices, default='active')
-    amountDefault = models.FloatField(null=True, blank=True)
+    amountDefault = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     applicableApartments = models.ManyToManyField('Apartment', blank=True)
 
     def __str__(self):
@@ -230,7 +230,7 @@ class ApartmentFee(models.Model):
         unpaid = 'unpaid'
 
     apartmentFeeId = models.AutoField(primary_key=True)
-    amount = models.FloatField()
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=6, choices=Status.choices, default='unpaid')
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     feeCollection = models.ForeignKey(FeeCollection, on_delete=models.CASCADE)
@@ -249,7 +249,7 @@ class PaymentTransaction(models.Model):
 
     transactionId = models.CharField(max_length=200, primary_key=True)
     apartmentFee = models.ForeignKey(ApartmentFee, on_delete=models.CASCADE)
-    amount = models.FloatField()
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
     paymentDate = models.DateField()
     status = models.CharField(max_length=10, choices=Status.choices, default='successful')
 

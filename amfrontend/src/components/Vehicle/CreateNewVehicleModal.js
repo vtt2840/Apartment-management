@@ -109,7 +109,7 @@ const CreateNewVehicleModal = ({ show, onClose, onSubmit, apartmentCode, residen
                             onChange={handleChange}
                         >
                             <option>Tùy chọn</option>
-                            <option defaultValue="car">Ô tô</option>
+                            <option value="car">Ô tô</option>
                             <option value="bike">Xe đạp</option>
                             <option value="motorbike">Mô tô</option>
                             <option value="other">Khác</option>

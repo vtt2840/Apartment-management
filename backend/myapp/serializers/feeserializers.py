@@ -10,7 +10,7 @@ class ApartmentFeeSerializer(serializers.ModelSerializer):
     dueDate = serializers.DateField(source='feeCollection.dueDate')
     class Meta:
         model = ApartmentFee
-        fields = ['apartmentFeeId', 'apartmentCode', 'feeName', 'month', 'amount', 'isRequired', 'dueDate', 'status'] 
+        fields = ['apartmentFeeId', 'apartmentCode', 'feeName', 'month', 'amount', 'isRequired', 'dueDate', 'status', 'feeCollection'] 
 
     def get_month(self, obj):
         return f"{obj.feeCollection.month}/{obj.feeCollection.year}"

@@ -70,13 +70,13 @@ class VehicleViewSet(viewsets.ModelViewSet):
         apartment_code = request.data.get('apartment')
         if serializer.is_valid():
             serializer.save()
-
             #add apartment to phi gui xe
             feeVehicle = FeeType.objects.filter(typeId='23')
             for fee in feeVehicle:
                 fee.applicableApartments.add(apartment_code)
             return Response(status=status.HTTP_201_CREATED)
         else:
+            print(serializer.errors)
             return Response({ "errors": serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
         
     def update(self, request, *args, **kwargs):
@@ -90,8 +90,15 @@ class VehicleViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        apartment = instance.apartment
         instance.status = 'deleted' 
         instance.save()
+        #if no vehicle exist, remove apartment from phi gui xe
+        vehicleList = Vehicle.objects.filter(apartment=apartment, status='inuse')
+        if not vehicleList:
+            feeVehicle = FeeType.objects.filter(typeId='23')
+            for fee in feeVehicle:
+                fee.applicableApartments.remove(apartment)
         return Response(status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['get'], url_path='search')

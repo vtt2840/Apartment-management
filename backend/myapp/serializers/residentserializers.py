@@ -35,7 +35,6 @@ class MemberSerializer(serializers.ModelSerializer):
             "residence_id",
         ]
 
-    
     def get_absence_id(self, obj):
         absence = obj.resident.temporaryabsence_set.order_by('-absenceId').first()
         return absence.pk if absence else None

@@ -14,7 +14,7 @@ const fetchAllApartments = ({apartmentCode, page, floor, status}) => {
 };
 
 const updateApartment = ({apartmentCode, data}) => {
-    return axios.put(`/apartments/updateinfo/${apartmentCode}`, data);
+    return axios.put(`/apartments/updateinfo/${apartmentCode}/`, data);
 }
 
 const createNewAccount = (data) => {

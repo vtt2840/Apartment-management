@@ -26,7 +26,7 @@ urlpatterns = [
 
     path('apartments/', ApartmentListAPIView.as_view(), name='apartment-list'),
     path('apartments/addaccount/', AddAccountExistToApartment.as_view(), name='add-account-exist-to-apartment'),
-    path('apartments/updateinfo/<int:apartmentCode>/', UpdateApartment.as_view(), name='update-apartment'),
+    path('apartments/updateinfo/<str:apartmentCode>/', UpdateApartment.as_view(), name='update-apartment'),
     path('apartments/search/', SearchApartmentView.as_view(), name='search-apartments'),
 
     path('apartments/addnewaccount/', CreateAccountAPIView.as_view(), name='add-new-account'),

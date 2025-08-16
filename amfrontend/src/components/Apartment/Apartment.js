@@ -157,7 +157,7 @@ const Apartment = (props) => {
 
     const handleSubmitEditApartment = async(formData) => {
         try{
-            await dispatch(editApartment(formData));
+            await dispatch(editApartment({apartmentCode: formData.apartmentCode, data: formData}));
             setReloadTrigger(prev => !prev);
             await dispatch(getAllApartments());
             toast.success("Chỉnh sửa thông tin căn hộ thành công!");

@@ -29,11 +29,6 @@ const UpdateApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
     //check input valid
     const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);
-        if(!formData.apartmentCode){
-            toast.error("Mã căn hộ không được để trống!");
-            setObjCheckInput({...defaultValidInput, isValidFullname: false });
-            return false;
-        }
         if(!formData.floor){
             toast.error("Số tầng không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidDateOfBirth: false });
@@ -63,16 +58,10 @@ const UpdateApartmentModal = ({ show, onClose, onSubmit, apartment }) => {
       <>
         <Modal show={show} onHide={onClose} className='modal-user' centered>
             <Modal.Header closeButton>
-                <Modal.Title>Chỉnh sửa thông tin căn hộ </Modal.Title>
+                <Modal.Title>Chỉnh sửa thông tin căn hộ {apartment?.apartmentCode} </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <div className='content-body row'>
-                    <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
-                        <label>Mã căn hộ(<span className='redC'>*</span>):</label>
-                        <input type="text" className={objCheckInput.isValidApartmentCode ? 'form-control' : 'form-control is-invalid'} 
-                            name="apartmentCode" value={formData.apartmentCode} placeholder="Mã căn hộ" onChange={handleChange}
-                        />
-                    </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Tầng(<span className='redC'>*</span>):</label>
                         <input type="number" className={objCheckInput.isValidFloor ? 'form-control' : 'form-control is-invalid'} 
