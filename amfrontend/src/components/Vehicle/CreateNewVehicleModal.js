@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 
 const CreateNewVehicleModal = ({ show, onClose, onSubmit, apartmentCode, residentList }) => {
     const [formData, setFormData] = useState({
-        resident: '',
+        member: '',
         licensePlate: '',
         vehicleType: '',
         brand: '',
@@ -15,7 +15,7 @@ const CreateNewVehicleModal = ({ show, onClose, onSubmit, apartmentCode, residen
     useEffect(() => {
         if(show){
             setFormData({
-                resident: '',
+                member: '',
                 licensePlate: '',
                 vehicleType: '',
                 brand: '',
@@ -36,7 +36,7 @@ const CreateNewVehicleModal = ({ show, onClose, onSubmit, apartmentCode, residen
     //check input valid
     const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);
-        if(!formData.resident){
+        if(!formData.member){
             toast.error("Chủ xe không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidResident: false});
             return false;
@@ -82,14 +82,14 @@ const CreateNewVehicleModal = ({ show, onClose, onSubmit, apartmentCode, residen
                         <label>Chủ xe(<span className='redC'>*</span>):</label>
                         <select 
                             className='form-select'
-                            name='resident'
-                            value={formData.resident} 
+                            name='member'
+                            value={formData.member} 
                             onChange={handleChange}
                         >
                             <option>Tùy chọn</option>
-                            {residentList.map((resident) => (
-                                <option key={resident.residentId} value={resident.residentId}>
-                                {resident.fullName} ({resident.phoneNumber})
+                            {residentList.map((member) => (
+                                <option key={member.memberId} value={member.memberId}>
+                                {member.fullName} ({member.phoneNumber})
                                 </option>
                             ))}
                         </select>

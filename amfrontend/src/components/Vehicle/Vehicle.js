@@ -114,12 +114,8 @@ const Vehicle = (props) => {
     }
 
     const handleSubmitAddVehicle = async(formData) => {
-        const data = {
-            ...formData,
-            apartment: selectedApartmentCode
-        };
         try{
-            await dispatch(addNewVehicle(data));
+            await dispatch(addNewVehicle(formData));
             setReloadTrigger(prev => !prev);
             toast.success("Thêm phương tiện thành công!");
             setShowAddModal(false);
@@ -135,12 +131,8 @@ const Vehicle = (props) => {
     }
 
     const handleSubmitEditVehicle = async(formData) => {
-        const data = {
-            ...formData,
-            apartment: selectedApartmentCode
-        };
         try{
-            await dispatch(editVehicle({vehicleId: selectedVehicle.vehicleId, data: data}));
+            await dispatch(editVehicle({vehicleId: selectedVehicle.vehicleId, data: formData}));
             setReloadTrigger(prev => !prev);
             toast.success("Chỉnh sửa phương tiện thành công!");
             setShowEditModal(false);

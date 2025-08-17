@@ -178,14 +178,13 @@ class Vehicle(models.Model):
     color = models.CharField(max_length=20)
     timeregister = models.DateField(null=True)
     status = models.CharField(max_length=7, choices=Status.choices, default='inuse')
-    apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
-    resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
-        ordering = ["apartment", "resident", "vehicleId"]
+        ordering = ["member", "vehicleId"]
 
     def __str__(self):
-        return f"{self.vehicleType}: {self.resident.fullName} - {self.apartment.apartmentCode}"
+        return f"{self.vehicleType}: {self.member.resident.fullName} - {self.member.apartment.apartmentCode}"
     
 class FeeType(models.Model):
     class Scope(models.TextChoices):
@@ -219,7 +218,7 @@ class FeeCollection(models.Model):
     feeType = models.ForeignKey(FeeType, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ['year', 'month', 'feeType']
+        ordering = ['year', 'month', '-createdDate', 'feeType']
 
     def __str__(self):
         return f"{self.feeType} {self.month}/{self.year}"
@@ -228,10 +227,11 @@ class ApartmentFee(models.Model):
     class Status(models.TextChoices):
         paid = 'paid'
         unpaid = 'unpaid'
+        deleted = 'deleted'
 
     apartmentFeeId = models.AutoField(primary_key=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    status = models.CharField(max_length=6, choices=Status.choices, default='unpaid')
+    status = models.CharField(max_length=7, choices=Status.choices, default='unpaid')
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     feeCollection = models.ForeignKey(FeeCollection, on_delete=models.CASCADE)
 

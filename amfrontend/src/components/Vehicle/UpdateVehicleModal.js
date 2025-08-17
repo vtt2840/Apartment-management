@@ -5,7 +5,7 @@ import Select from 'react-select';
 
 const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) => {
     const [formData, setFormData] = useState({
-        resident: '',
+        member: '',
         licensePlate: '',
         vehicleType: '',
         brand: '',
@@ -15,7 +15,7 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) 
     useEffect(() => {
         if(show && vehicle){
             setFormData({
-                resident: vehicle.resident,
+                member: vehicle.member,
                 licensePlate: vehicle.licensePlate || '',
                 vehicleType: vehicle.vehicleType,
                 brand: vehicle.brand,
@@ -36,7 +36,7 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) 
     //check input valid
     const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);
-        if(!formData.resident){
+        if(!formData.member){
             toast.error("Chủ xe không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidResident: false});
             return false;
@@ -88,14 +88,14 @@ const UpdateVehicleModal = ({ show, onClose, onSubmit, vehicle, residentList }) 
                         <label>Chủ xe(<span className='redC'>*</span>):</label>
                         <select 
                             className='form-select'
-                            name='resident'
-                            value={formData.resident} 
+                            name='member'
+                            value={formData.member} 
                             onChange={handleChange}
                         >
                             <option>Tùy chọn</option>
-                            {residentList.map((resident) => (
-                                <option key={resident.residentId} value={resident.residentId}>
-                                {resident.fullName} ({resident.phoneNumber})
+                            {residentList.map((member) => (
+                                <option key={member.memberId} value={member.memberId}>
+                                {member.fullName} ({member.phoneNumber})
                                 </option>
                             ))}
                         </select>

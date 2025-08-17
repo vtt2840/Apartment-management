@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer
-from ..models import Role, Account, Apartment, Resident, Member, FeeType, Vehicle
+from ..models import Role, Account, Apartment, Resident, Member, FeeType, Vehicle, ApartmentFee
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .apartmentserializers import ApartmentSerializer
 from django.contrib.auth.tokens import default_token_generator
@@ -155,7 +155,7 @@ class DeactiveAccountSerializer(serializers.Serializer):
         Member.objects.filter(apartment=apartment).update(isOwner=0, isMember=0)
 
         #delete all vehicles belong to apartment
-        vehicleList = Vehicle.objects.filter(apartment=apartment)
+        vehicleList = Vehicle.objects.filter(member__apartment=apartment)
         
         for vehicle in vehicleList:
             vehicle.status = 'deleted'
@@ -165,6 +165,13 @@ class DeactiveAccountSerializer(serializers.Serializer):
         feeTypeList = FeeType.objects.all()
         for fee in feeTypeList:
             fee.applicableApartments.remove(apartmentCode)
+
+        #delete all apartmentfee
+        apartmentFeeList = ApartmentFee.objects.filter(apartment=apartment)
+        print(apartmentFeeList)
+        for fee in apartmentFeeList:
+            fee.status = ApartmentFee.Status.deleted
+            fee.save()
 
         # update apartment.status='inactive'
         apartment.status = Apartment.Status.inactive

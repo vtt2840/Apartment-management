@@ -52,7 +52,7 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
 
         if apartmentFeeId:
             queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
-            return queryset
+            return queryset.exclude(status='deleted')
 
         #get latest feeCollection date
         latest = (
@@ -90,16 +90,16 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
             if status in ['paid', 'unpaid']:
                 queryset = queryset.filter(status=status)
             if dueDate == 'increase':
-                queryset = queryset.order_by('feeCollection__dueDate')
+                queryset = queryset.order_by('feeCollection__dueDate', 'feeCollection__feeType', 'apartment__apartmentCode')
             if dueDate == 'decrease':
-                queryset = queryset.order_by('-feeCollection__dueDate')
+                queryset = queryset.order_by('-feeCollection__dueDate', 'feeCollection__feeType', 'apartment__apartmentCode')
             if feeName not in ['null']:
                 queryset = queryset.filter(feeCollection__feeType__feeName__iexact=feeName)
 
             apartmentFeeId = self.kwargs.get('apartmentFeeId')
             if apartmentFeeId:
                 queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
-        return queryset.order_by('-feeCollection__collectionId', 'apartment__apartmentCode')
+        return queryset.exclude(status='deleted')
 
 
     def partial_update(self, request, *args, **kwargs):
