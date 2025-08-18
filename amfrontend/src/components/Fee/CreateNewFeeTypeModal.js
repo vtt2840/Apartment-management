@@ -29,6 +29,7 @@ const CreateNewFeeTypeModal = ({show, onClose, onSubmit, apartmentList}) => {
         isValidFeeName: true,
         isValidIsRequired: true,
         isValidAppliedScope: true,
+        isValidApplicableApartments: true,
     }
     const [objCheckInput, setObjCheckInput] = useState(defaultValidInput);
 
@@ -48,6 +49,13 @@ const CreateNewFeeTypeModal = ({show, onClose, onSubmit, apartmentList}) => {
             toast.error("Phạm vi áp dụng không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidAppliedScope: false});
             return false;
+        }
+        if(formData.appliedScope === 'some'){
+            if(formData.applicableApartments.length === 0){
+                toast.error("Danh sách căn hộ áp dụng không được để trống!");
+                setObjCheckInput({...defaultValidInput, isValidApplicableApartments: false});
+                return false;
+            }
         }
         return true;
     }
@@ -126,7 +134,7 @@ const CreateNewFeeTypeModal = ({show, onClose, onSubmit, apartmentList}) => {
                         />
                     </div>
                     {formData.appliedScope == 'some' && <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
-                        <label>Căn hộ áp dụng:</label>
+                        <label>Căn hộ áp dụng(<span className='redC'>*</span>):</label>
                         <Select
                             isMulti
                             name="applicableApartments"
