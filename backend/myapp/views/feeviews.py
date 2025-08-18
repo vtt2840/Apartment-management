@@ -269,9 +269,13 @@ def export_data_to_excel(request):
             "Số tiền": item.get("amount"),
             "Bắt buộc": "Có" if item.get("isRequired") else "Không",                
             "Hạn nộp": item.get("dueDate"),
-            "Trạng thái": "Chưa thanh toán" if item.get("status") == "unpaid" else "Đã thanh toán"
+            "Trạng thái": (
+            "Chưa thanh toán" if item.get("status") == "unpaid"
+            else "Đã thanh toán" if item.get("status") == "paid"
+            else "Đã xóa" if item.get("status") == "deleted"
+            else "Không xác định"
+        )
         })
-        print(translated_data)
 
     df = pd.DataFrame(translated_data)
     df.insert(0, 'STT', range(1, len(df) + 1))

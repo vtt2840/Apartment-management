@@ -92,7 +92,7 @@ const SearchFeeModal = () => {
                         <td className='text-center'>{item.amount}</td>
                         <td className='text-center'>{item.isRequired ? 'Có' : 'Không'}</td>
                         <td>{item.dueDate}</td>
-                        <td className='text-center'>{item.status == 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
+                        <td className='text-center'>{item.status == 'paid' ? 'Đã thanh toán' : item.status == 'unpaid' ? 'Chưa thanh toán' : 'Đã xóa'}</td>
                     </tr>
                     ))}
                 </tbody>
