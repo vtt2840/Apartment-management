@@ -107,7 +107,6 @@ class VehicleViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
-    
     @action(detail=False, methods=['get'], url_path='search')
     def search_vehicle(self, request):
         keyword = request.query_params.get('q', '')

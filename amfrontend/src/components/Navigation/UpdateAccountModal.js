@@ -13,7 +13,7 @@ const UpdateAccountModal = ({ show, onClose, onSubmit, username, email, apartmen
     });
 
     useEffect(() => {
-        if (show) {
+        if(show){
             setFormData({
                 username: username || '',
                 email: email || '',
@@ -44,21 +44,13 @@ const UpdateAccountModal = ({ show, onClose, onSubmit, username, email, apartmen
     
     const isValidInputs = async () => {
         setObjCheckInput(defaultValidInput);
-        if (role === 'resident') {
-            if (!formData.username) {
-                toast.error("Chủ hộ không được để trống!");
-                setObjCheckInput({ ...defaultValidInput, isValidUsername: false });
-                return false;
-            }
-        }
-
-        if (role === 'admin') {
-            if (!formData.username) {
+        if(role === 'admin'){
+            if(!formData.username){
                 toast.error("Tên tài khoản không được để trống!");
                 setObjCheckInput({ ...defaultValidInput, isValidUsername: false });
                 return false;
             }
-            if (!formData.email) {
+            if(!formData.email){
                 toast.error("Email không được để trống!");
                 setObjCheckInput({ ...defaultValidInput, isValidEmail: false });
                 return false;

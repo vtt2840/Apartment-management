@@ -33,6 +33,15 @@ class FeeTypeSerializer(serializers.ModelSerializer):
         model = FeeType
         fields = ['typeId', 'feeName', 'typeDescription', 'isRequired', 'appliedScope', 'amountDefault', 'applicableApartments', 'status']
 
+    def validate(self, attrs):
+        if not attrs.get("feeName"):
+            raise serializers.ValidationError({"feeName": "Tên khoản phí không được để trống!"})
+        if not attrs.get("isRequired"):
+            raise serializers.ValidationError({"isRequired": "Bắt buộc không được để trống!"})
+        if not attrs.get("appliedScope"):
+            raise serializers.ValidationError({"appliedScope": "Phạm vi áp dụng không được để trống!"})
+        return attrs
+
     def create(self, validated_data):
         validated_data['status'] = 'active' 
         return super().create(validated_data)

@@ -61,6 +61,12 @@ const ResidentTempModal = ({ show, onClose, onSubmit, resident, name }) => {
             setObjCheckInput({...defaultValidInput, isValidEndDate: false });
             return false;
         }
+
+        if(new Date(formData.endDate) < new Date(formData.startDate)){
+            toast.error("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
+            setObjCheckInput({...defaultValidInput, isValidStartDate: false, isValidEndDate: false });
+            return false;
+        }
         if(!formData.reason){
             toast.error("Lý do không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidReason: false });

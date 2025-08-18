@@ -10,6 +10,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail import send_mail
 from django.conf import settings
+import re
 
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,6 +41,43 @@ class CreateAccountSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True},
         }
+
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("Email không được để trống.")
+        regex = r"\S+@\S+\.\S+"
+        if not re.match(regex, value):
+            raise serializers.ValidationError("Email không đúng định dạng.")
+        if Account.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email đã tồn tại.")
+        return value
+
+    def validate_username(self, value):
+        if not value:
+            raise serializers.ValidationError("Tên chủ hộ không được để trống.")
+        return value
+
+    def validate_password(self, value):
+        if not value:
+            raise serializers.ValidationError("Mật khẩu không được để trống.")
+        if len(value) < 8:
+            raise serializers.ValidationError("Mật khẩu phải chứa ít nhất 8 ký tự.")
+        return value
+
+    def validate(self, data):
+        apartment_code = data.get("apartment_code")
+        if not apartment_code:
+            raise serializers.ValidationError({"apartment_code": "Thiếu mã căn hộ."})
+
+        try:
+            apartment = Apartment.objects.get(apartmentCode=apartment_code)
+        except Apartment.DoesNotExist:
+            raise serializers.ValidationError({"apartment_code": "Mã căn hộ không tồn tại."})
+
+        if apartment.account:
+            raise serializers.ValidationError({"apartment_code": "Căn hộ đã có tài khoản."})
+
+        return data
 
     def create(self, validated_data):
         role = Role.objects.get(pk=2)  # role resident
@@ -212,6 +250,12 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     new_password = serializers.CharField(write_only=True, min_length=8)
 
+    def validate_new_password(self, value):
+        if not value:
+            raise serializers.ValidationError("Mật khẩu không được để trống.")
+        if len(value) < 8:
+            raise serializers.ValidationError("Mật khẩu phải chứa ít nhất 8 ký tự.")
+        return value
 
     def validate(self, attrs):
         try:

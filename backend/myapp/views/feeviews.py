@@ -241,10 +241,7 @@ class CreateFeeCollection(APIView):
                 ApartmentFee.objects.bulk_create(apartment_fees)
             return Response(status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @csrf_exempt
 @api_view(["POST"])

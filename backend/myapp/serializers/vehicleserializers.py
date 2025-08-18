@@ -16,6 +16,17 @@ class VehicleSerializer(serializers.ModelSerializer):
             'timeregister': {'read_only': True},
         }
 
+    def validate(self, attrs):
+        if not attrs.get("member"):
+            raise serializers.ValidationError({"member": "Chủ xe không được để trống."})
+        if not attrs.get("vehicleType"):
+            raise serializers.ValidationError({"vehicleType": "Loại xe không được để trống."})
+        if not attrs.get("brand"):
+            raise serializers.ValidationError({"brand": "Hãng xe không được để trống."})
+        if not attrs.get("color"):
+            raise serializers.ValidationError({"color": "Màu sắc xe không được để trống."})
+        return attrs
+
     def create(self, validated_data):
         validated_data['status'] = 'inuse' 
         validated_data['timeregister'] = date.today()

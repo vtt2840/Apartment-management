@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models import Resident, Member, Apartment, TemporaryResidence, TemporaryAbsence
+import re
 
 class MemberSerializer(serializers.ModelSerializer):
     residentId = serializers.IntegerField(source='resident.residentId')
@@ -68,6 +69,55 @@ class CreateResidentSerializer(serializers.ModelSerializer):
         model = Resident
         fields = ("residentId", "email", "fullName", "dateOfBirth", "gender", "hometown", "phoneNumber", "idNumber", "apartment_code")
 
+    def validate_fullName(self, value):
+        if not value:
+            raise serializers.ValidationError("Họ tên không được để trống.")
+        return value
+
+    def validate_email(self, value):
+        if value:
+            regex = r"\S+@\S+\.\S+"
+            if not re.match(regex, value):
+                raise serializers.ValidationError("Email không đúng định dạng.")
+        return value
+
+    def validate_dateOfBirth(self, value):
+        if not value:
+            raise serializers.ValidationError("Ngày sinh không được để trống.")
+        return value
+
+    def validate_gender(self, value):
+        if not value:
+            raise serializers.ValidationError("Giới tính không được để trống.")
+        return value
+
+    def validate_hometown(self, value):
+        if not value:
+            raise serializers.ValidationError("Quê quán không được để trống.")
+        return value
+
+    def validate_phoneNumber(self, value):
+        if value: 
+            if not re.match(r"^\d{10}$", value):
+                raise serializers.ValidationError("Số điện thoại phải có 10 chữ số.")
+        return value
+
+    def validate_idNumber(self, value):
+        if value: 
+            if not re.match(r"^\d{12}$", value):
+                raise serializers.ValidationError("Số căn cước công dân phải có 12 chữ số.")
+        return value
+
+    def validate(self, data):
+        apartment_code = data.get("apartment_code")
+        if not apartment_code:
+            raise serializers.ValidationError({"apartment_code": "Thiếu mã căn hộ."})
+        try:
+            Apartment.objects.get(apartmentCode=apartment_code)
+        except Apartment.DoesNotExist:
+            raise serializers.ValidationError({"apartment_code": "Mã căn hộ không tồn tại."})
+        return data
+
     def create(self, validated_data):
         apartment_code = validated_data.pop("apartment_code")
         apartment = Apartment.objects.get(apartmentCode=apartment_code)
@@ -91,7 +141,7 @@ class CreateResidentSerializer(serializers.ModelSerializer):
         )
 
         return resident
-    
+
 class RegisterTemporaryResidenceSerializer(serializers.ModelSerializer):
     resident_id = serializers.IntegerField()
 
@@ -100,6 +150,35 @@ class RegisterTemporaryResidenceSerializer(serializers.ModelSerializer):
         fields = ("resident_id", "startDate", "endDate", "reason")
         read_only_fields = ("residenceId",)
     
+    def validate_resident_id(self, value):
+        try:
+            resident = Resident.objects.get(residentId=value)
+        except Resident.DoesNotExist:
+            raise serializers.ValidationError("Cư dân không tồn tại.")
+        return value
+
+    def validate_startDate(self, value):
+        if not value:
+            raise serializers.ValidationError("Ngày bắt đầu không được để trống!")
+        return value
+    
+    def validate_endDate(self, value):
+        if not value:
+            raise serializers.ValidationError("Ngày kết thúc không được để trống!")
+        return value
+    
+    def validate_reason(self, value):
+        if not value:
+            raise serializers.ValidationError("Lý do không được để trống!")
+        return value
+    
+    def validate(self, data):
+        start = data.get("startDate")
+        end = data.get("endDate")
+        if start and end and end < start:
+            raise serializers.ValidationError("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.")
+        return data
+
     def create(self, validated_data):
         resident_id = validated_data.pop("resident_id")
         resident = Resident.objects.get(residentId=resident_id)
@@ -123,6 +202,40 @@ class RegisterTemporaryAbsenceSerializer(serializers.ModelSerializer):
         model = TemporaryAbsence
         fields = ("resident_id", "startDate", "endDate", "reason", "destination")
         read_only_fields = ("absenceId",)
+
+    def validate_resident_id(self, value):
+        try:
+            resident = Resident.objects.get(residentId=value)
+        except Resident.DoesNotExist:
+            raise serializers.ValidationError("Cư dân không tồn tại.")
+        return value
+
+    def validate_startDate(self, value):
+        if not value:
+            raise serializers.ValidationError("Ngày bắt đầu không được để trống!")
+        return value
+    
+    def validate_endDate(self, value):
+        if not value:
+            raise serializers.ValidationError("Ngày kết thúc không được để trống!")
+        return value
+    
+    def validate_reason(self, value):
+        if not value:
+            raise serializers.ValidationError("Lý do không được để trống!")
+        return value
+    
+    def validate_destination(self, value):
+        if not value:
+            raise serializers.ValidationError("Địa điểm di chuyển không được để trống!")
+        return value
+    
+    def validate(self, data):
+        start = data.get("startDate")
+        end = data.get("endDate")
+        if start and end and end < start:
+            raise serializers.ValidationError("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.")
+        return data
     
     def create(self, validated_data):
         resident_id = validated_data.pop("resident_id")
@@ -161,6 +274,45 @@ class UpdateResidentSerializer(serializers.ModelSerializer):
         model = Resident
         fields = ("residentId", "fullName", "email", "dateOfBirth", "gender", "hometown", "phoneNumber", "idNumber")
         read_only_fields = ("residentId",) 
+
+    def validate_fullName(self, value):
+        if not value:
+            raise serializers.ValidationError("Họ tên không được để trống.")
+        return value
+
+    def validate_email(self, value):
+        if value:
+            regex = r"\S+@\S+\.\S+"
+            if not re.match(regex, value):
+                raise serializers.ValidationError("Email không đúng định dạng.")
+        return value
+
+    def validate_dateOfBirth(self, value):
+        if not value:
+            raise serializers.ValidationError("Ngày sinh không được để trống.")
+        return value
+
+    def validate_gender(self, value):
+        if not value:
+            raise serializers.ValidationError("Giới tính không được để trống.")
+        return value
+
+    def validate_hometown(self, value):
+        if not value:
+            raise serializers.ValidationError("Quê quán không được để trống.")
+        return value
+
+    def validate_phoneNumber(self, value):
+        if value: 
+            if not re.match(r"^\d{10}$", value):
+                raise serializers.ValidationError("Số điện thoại phải có 10 chữ số.")
+        return value
+
+    def validate_idNumber(self, value):
+        if value: 
+            if not re.match(r"^\d{12}$", value):
+                raise serializers.ValidationError("Số căn cước công dân phải có 12 chữ số.")
+        return value
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():

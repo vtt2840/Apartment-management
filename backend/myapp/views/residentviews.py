@@ -96,7 +96,8 @@ class DeleteResident(APIView):
         resident.status = 'left'
         resident.save()
         Member.objects.filter(resident=resident).update(isOwner=False, isMember=False)
-        vehicleList = Vehicle.objects.filter(resident=resident)
+        vehicleList = Vehicle.objects.filter(member__resident=resident)
+
         
         for vehicle in vehicleList:
             vehicle.status = 'deleted'

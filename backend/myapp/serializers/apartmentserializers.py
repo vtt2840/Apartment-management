@@ -65,6 +65,16 @@ class UpdateApartmentSerializer(serializers.ModelSerializer):
         model = Apartment
         fields = ("apartmentCode", "floor", "area")
 
+    def validate_floor(self, value):
+        if value is None or value == "":
+            raise serializers.ValidationError("Tầng không được để trống.")
+        return value
+
+    def validate_area(self, value):
+        if value is None or value == "":
+            raise serializers.ValidationError("Diện tích không được để trống.")
+        return value
+
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)

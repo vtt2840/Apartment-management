@@ -179,8 +179,8 @@ class ChangePasswordView(APIView):
         new_password = request.data.get('newPassword')
         confirm_new_password = request.data.get('confirmNewPassword')
 
-        print(new_password)
-        print(confirm_new_password)
+        if old_password == new_password:
+            return Response({"error": "New password is the same as the old password"}, status=status.HTTP_400_BAD_REQUEST)
         
         if not user.check_password(old_password):
             return Response({"error": "Wrong password"}, status=status.HTTP_400_BAD_REQUEST)
@@ -197,6 +197,11 @@ class UpdateAccountAdmin(APIView):
         user = request.user
         username = request.data.get('username')
         email = request.data.get('email')
+
+        if not username:
+            return Response({"error": "Tên tài khoản không được để trống!"}, status=status.HTTP_400_BAD_REQUEST)
+        if not email:
+            return Response({"error": "Email không được để trống!"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.username = username
         user.email = email
