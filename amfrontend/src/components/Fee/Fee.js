@@ -456,11 +456,11 @@ const Fee = (props) => {
                             <td className='text-center'>{item.amount || ''}</td>
                             <td className='text-center'>{item.isRequired ? 'Có' : 'Không'}</td>
                             <td className='text-center'>{item.dueDate}</td>
-                            <td className='text-center'>{item.status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
+                            <td className='text-center'>{item.status === 'paid' ? 'Đã thanh toán' : item.status === 'unpaid' ? 'Chưa thanh toán' : 'Đã xóa'}</td>
                             <td className='text-center'>
                                 <>
-                                {role === 'admin' && (<span
-                                    title={item.status === 'unpaid' ? 'Chỉnh sửa' : 'Đã thanh toán không thể sửa'}
+                                {role === 'admin' && item.status !== 'deleted' && (<span
+                                    title='Chỉnh sửa'
                                     className='edit'
                                     onClick={()=> {item.status === 'unpaid' && hanldeEditApartmentFee(item) }}
                                 ><i className='fa fa-edit'></i></span>)}

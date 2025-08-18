@@ -52,7 +52,7 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
 
         if apartmentFeeId:
             queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
-            return queryset.exclude(status='deleted')
+            return queryset
 
         #get latest feeCollection date
         latest = (
@@ -84,6 +84,9 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
         else:
             return queryset.none()
         
+        if user.id != ADMIN_ID:
+            return queryset.exclude(status='deleted')
+        
         if user.id == ADMIN_ID:          
             if isRequired in ['True', 'False']:
                 queryset = queryset.filter(feeCollection__feeType__isRequired=isRequired)
@@ -99,7 +102,7 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
             apartmentFeeId = self.kwargs.get('apartmentFeeId')
             if apartmentFeeId:
                 queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
-        return queryset.exclude(status='deleted')
+        return queryset
 
 
     def partial_update(self, request, *args, **kwargs):
