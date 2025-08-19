@@ -6,7 +6,6 @@ import { getAllApartments, addNewAccount, deactiveAccount, assignAccount, editAp
 import CreateNewAccountModal from './CreateNewAccountModal';
 import LockAccountModal from './LockAccountModal';
 import UpdateApartmentModal from './UpdateApartmentModal';
-import SearchApartmentModal from './SearchApartmentModal';
 import { checkAccountExists } from '../../services/userService';
 import ReactPaginate from "react-paginate";
 import { useClickAway } from '@uidotdev/usehooks';
@@ -18,6 +17,7 @@ const Apartment = (props) => {
     const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
     const totalCount = useSelector(state => state.apartment.totalCount);
 
+    const [query, setQuery] = useState(null);
     const [selectedApartment, setSelectedApartment] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showLockModal, setShowLockModal] = useState(false);
@@ -42,13 +42,44 @@ const Apartment = (props) => {
     }, [totalCount]);
 
     useEffect(() => {
-        dispatch(getAllApartments({
-            apartmentCode: selectedApartmentCode,
-            page: currentPage,
-            floor: showDecreaseFloor,
-            status: filterStatus !== 'all' ? filterStatus : null, //filter status if not all
-        }));
-    }, [dispatch, reloadTrigger, selectedApartmentCode, currentPage, filterStatus, showDecreaseFloor])
+        if(query === null || query === ''){
+            dispatch(getAllApartments({
+                apartmentCode: selectedApartmentCode,
+                page: currentPage,
+                floor: showDecreaseFloor,
+                status: filterStatus !== 'all' ? filterStatus : null, //filter status if not all
+                query: null,
+            }));
+        }
+    }, [dispatch, reloadTrigger, selectedApartmentCode, currentPage, filterStatus, showDecreaseFloor, query===''])
+
+    const handleSearch = async () => {
+        if(!query.trim()) return;
+        try{
+            dispatch(getAllApartments({
+                apartmentCode: null,
+                page: currentPage,
+                floor: false,
+                status: null,
+                query: query,
+            }));
+        }catch(error){
+            toast.error("Lỗi khi tìm kiếm căn hộ.");
+        }
+    };
+
+    useEffect(() => {
+        if(query !== null && query !== ''){
+            handleSearch();
+        }
+    }, [currentPage, reloadTrigger])
+    
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
@@ -171,7 +202,23 @@ const Apartment = (props) => {
         <>
         <div className='container mt-4'>
         <div className='content-top row mx-auto mt-3'>
-            {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchApartmentModal/></div>)}
+            {role === 'admin' && (<div className='col-10 mx-auto text-center'>
+                <div className="input-group mb-3">
+                    <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nhập từ khóa (Mã căn hộ, chủ hộ, email)"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(event) => handlePressEnter(event)}
+                    style={{borderColor: 'white'}}
+                    />
+                    <button type="button"onClick={() => {setQuery('');  setReloadTrigger(prev => !prev);}} className="btn"><i className='fa fa-times'></i></button>
+                    <button className="btn btn-success" onClick={() => { setCurrentPage(1); handleSearch();}}>
+                    <i className='fa fa-search'></i>
+                    </button>
+                </div>
+            </div>)}
         </div>
         <table className="table table-bordered table-striped table-hover">
             <thead>
@@ -181,7 +228,7 @@ const Apartment = (props) => {
                     <th className='text-center align-middle' scope="col">Chủ hộ</th>
                     <th className='text-center align-middle' scope="col">Email</th>
                     <th className='text-center align-middle' scope="col">Tầng
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <button
                                 onClick={() => setShowDecreaseFloor(prev => !prev)}
                                 className="btn"
@@ -191,7 +238,7 @@ const Apartment = (props) => {
                     </th>
                     <th className='text-center align-middle' scope="col">Diện tích (m2)</th>
                     <th className='text-center align-middle' scope="col">Trạng thái
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <div className="d-inline-block position-relative" ref={ref}>
                                 <button
                                     onClick={() => setShowFilterMenu(!showFilterMenu)}
@@ -215,7 +262,8 @@ const Apartment = (props) => {
             </thead>
             <tbody>
                 <>
-                    {apartmentList.map((item, index) => (
+                {apartmentList && apartmentList.length > 0 ?(
+                    apartmentList.map((item, index) => (
                         <tr key={`row-${index}`}>
                             <td className='text-center'>{(currentPage - 1) * 10 + index + 1}</td>
                             <td className='text-center'>{item.apartmentCode}</td>
@@ -244,7 +292,11 @@ const Apartment = (props) => {
                                     </>
                             </td>)}
                         </tr>
-                    ))}
+                    )))
+                    : 
+                    (
+                        <tr><td colSpan={10} className="text-center">Không có dữ liệu</td></tr>
+                    )}
                 </>
             </tbody>
         </table>
@@ -267,7 +319,7 @@ const Apartment = (props) => {
             apartment={selectedApartment}
         />
         </div>
-        {role === 'admin' && (<ReactPaginate
+        {role === 'admin' && totalPages > 1 && (<ReactPaginate
             nextLabel="Sau >"
             onPageChange={handlePageChange}
             pageRangeDisplayed={3}

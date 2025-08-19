@@ -9,8 +9,8 @@ const logoutUser = () => {
 }
 
 //apartment and account
-const fetchAllApartments = ({apartmentCode, page, floor, status}) => {
-    return axios.get(`/apartments/?apartmentCode=${apartmentCode}&page=${page}&floor=${floor}&status=${status}`);
+const fetchAllApartments = ({apartmentCode, page, floor, status, query}) => {
+    return axios.get(`/apartments/?apartmentCode=${apartmentCode}&page=${page}&floor=${floor}&status=${status}&query=${query}`);
 };
 
 const updateApartment = ({apartmentCode, data}) => {
@@ -57,8 +57,8 @@ const updateAccountAdmin = (data) => {
     return axios.put('/update-account-admin/', data);
 }
 //resident
-const fetchAllResidents = ({apartmentCode, status, page, gender, showDecreaseApartmentCode, dateOfBirth, orderBirth}) => {
-    return axios.get(`/residents/?apartmentCode=${apartmentCode}&page=${page}&status=${status}&gender=${gender}&showDecreaseApartmentCode=${showDecreaseApartmentCode}&dateOfBirth=${dateOfBirth}&orderBirth=${orderBirth}`);
+const fetchAllResidents = ({apartmentCode, status, page, gender, showDecreaseApartmentCode, dateOfBirth, orderBirth, query}) => {
+    return axios.get(`/residents/?apartmentCode=${apartmentCode}&page=${page}&status=${status}&gender=${gender}&showDecreaseApartmentCode=${showDecreaseApartmentCode}&dateOfBirth=${dateOfBirth}&orderBirth=${orderBirth}&query=${query}`);
 }
 
 const createNewResident = (data) => {
@@ -97,8 +97,8 @@ const getTemporaryResidenceDetail = (absenceId) => {
 }
 
 //vehicle
-const fetchAllVehicles = ({apartmentCode, status, page, showDecreaseApartmentCode, showType, dateRegister}) => {
-    return axios.get(`/vehicles/?apartmentCode=${apartmentCode}&status=${status}&page=${page}&showDecreaseApartmentCode=${showDecreaseApartmentCode}&showType=${showType}&dateRegister=${dateRegister}`);
+const fetchAllVehicles = ({apartmentCode, status, page, showDecreaseApartmentCode, showType, dateRegister, query}) => {
+    return axios.get(`/vehicles/?apartmentCode=${apartmentCode}&status=${status}&page=${page}&showDecreaseApartmentCode=${showDecreaseApartmentCode}&showType=${showType}&dateRegister=${dateRegister}&query=${query}`);
 }
 const createNewVehicle = (data) => {
     return axios.post('/vehicles/', data);
@@ -114,8 +114,8 @@ const searchVehicles = ({keyword, page}) => {
 }
 
 //fee
-const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, status, dueDate, feeName}) => {
-    return axios.get(`/apartmentfee/?page=${page}&apartment_code=${apartment_code}&month=${month}&year=${year}&isRequired=${isRequired}&status=${status}&dueDate=${dueDate}&feeName=${feeName}`);
+const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, status, dueDate, feeName, query}) => {
+    return axios.get(`/apartmentfee/?page=${page}&apartment_code=${apartment_code}&month=${month}&year=${year}&isRequired=${isRequired}&status=${status}&dueDate=${dueDate}&feeName=${feeName}&query=${query}`);
 }
 
 const updateApartmentFee = ({apartmentFeeId, data}) => {
@@ -130,8 +130,8 @@ const createNewFeeType = (data) => {
     return axios.post('/feetype/', data);
 }
 
-const fetchAllFeeTypes = ({month, year, statistic}) => {
-    return axios.get(`/feetype/?month=${month}&year=${year}&statistic=${statistic}`);
+const fetchAllFeeTypes = ({month, year, statistic, page}) => {
+    return axios.get(`/feetype/?page=${page}&month=${month}&year=${year}&statistic=${statistic}`);
 }
 
 const updateFeeType = ({typeId, data}) => {

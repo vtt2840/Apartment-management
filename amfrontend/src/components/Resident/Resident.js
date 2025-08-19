@@ -9,7 +9,6 @@ import DeleteResidentModal from './DeleteResidentModal';
 import RegisterTempModal from './RegisterTempModal';
 import CancelRegisterTempModal from './CancelRegisterTempModal';
 import UpdateResidentModal from './UpdateResidentModal';
-import SearchResidentModal from './SearchResidentModal';
 import ReactPaginate from 'react-paginate';
 import TemporaryAbsenceDetailModal from './TemporaryAbsenceDetailModal';
 import TemporaryResidenceDetailModal from './TemporaryResidenceDetailModal';
@@ -23,6 +22,7 @@ const Resident = (props) => {
     const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
     const totalCount = useSelector(state => state.resident.totalCount);
 
+    const [query, setQuery] = useState(null);
     const [selectedResident, setSelectedResident] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -61,17 +61,50 @@ const Resident = (props) => {
 
     //get resident list
     useEffect(() => {
-        dispatch(getAllResidents({
-            apartmentCode: selectedApartmentCode, 
-            page: currentPage,
-            status: filterStatus, 
-            gender: filterGender !== 'all' ? filterGender : null,
-            showDecreaseApartmentCode: showDecreaseApartmentCode,
-            dateOfBirth: dateOfBirth ? dateOfBirth : null,
-            orderBirth: !dateOfBirth && showDecreaseBirth !== 'all' ? showDecreaseBirth : null,
-        }));
-    }, [dispatch, reloadTrigger, selectedApartmentCode,  currentPage, filterStatus, filterGender, showDecreaseApartmentCode, showDecreaseBirth, dateOfBirth]);
+        if(query === null || query === ''){
+            dispatch(getAllResidents({
+                apartmentCode: selectedApartmentCode, 
+                page: currentPage,
+                status: filterStatus, 
+                gender: filterGender !== 'all' ? filterGender : null,
+                showDecreaseApartmentCode: showDecreaseApartmentCode,
+                dateOfBirth: dateOfBirth ? dateOfBirth : null,
+                orderBirth: !dateOfBirth && showDecreaseBirth !== 'all' ? showDecreaseBirth : null,
+                query: null,
+            }));
+        }
+    }, [dispatch, reloadTrigger, selectedApartmentCode,  currentPage, filterStatus, filterGender, showDecreaseApartmentCode, showDecreaseBirth, dateOfBirth, query==='']);
 
+    const handleSearch = async () => {
+        if(!query.trim()) return;
+        try{
+            dispatch(getAllResidents({
+                apartmentCode: null, 
+                page: currentPage,
+                status: 'notleft', 
+                gender: null,
+                showDecreaseApartmentCode: false,
+                dateOfBirth: null,
+                orderBirth: null,
+                query: query,
+            }));
+        }catch(error){
+            toast.error("Lỗi khi tìm kiếm cư dân.");
+        }
+    };
+    
+    useEffect(() => {
+        if(query !== null && query !== ''){
+            handleSearch();
+        }
+    }, [currentPage, reloadTrigger])
+        
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
 
     const handlePageChange = (selectedItem) => {
         setCurrentPage(selectedItem.selected + 1); 
@@ -245,7 +278,23 @@ const Resident = (props) => {
         <>
         <div className='container mt-4'>
         <div className='content-top row mx-auto my-3'>
-            {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchResidentModal/></div>)}
+            {role === 'admin' && (<div className='col-10 mx-auto text-center'>
+                <div className="input-group mb-3">
+                    <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nhập từ khóa (Họ tên, email, quê quán, SĐT, CCCD)"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(event) => handlePressEnter(event)}
+                    style={{borderColor: 'white'}}
+                    />
+                    <button type="button"onClick={() => {setQuery('');  setReloadTrigger(prev => !prev);}} className="btn"><i className='fa fa-times'></i></button>
+                    <button className="btn btn-success" onClick={() => { setCurrentPage(1); handleSearch(1);}}>
+                    <i className='fa fa-search'></i>
+                    </button>
+                </div>
+            </div>)}
             {role === 'resident' && (<div className='col-12 mx-auto text-end'>
                 <button className='btn' onClick={()=> handleAddResident()}>
                     <img
@@ -260,18 +309,19 @@ const Resident = (props) => {
             <thead>
                 <tr>
                     <th className='text-center align-middle' scope="col">STT</th>
-                    {role === 'admin' && (<th className='text-center' scope="col">Mã căn hộ
+                    {role === 'admin' &&  (<th className='text-center' scope="col">Mã căn hộ
+                        {(query === null || query === '') &&(
                         <button
                             onClick={() => setShowDecreaseApartmentCode(prev => !prev)}
                             className="btn"
                             title={showDecreaseApartmentCode ? 'Giảm dần' : 'Tăng dần'}
                         ><i className={`fa ${showDecreaseApartmentCode ? 'fa fa-caret-down' : 'fa fa-caret-up'}`}></i>
-                        </button>
+                        </button>)}
                     </th>)}
                     <th className='text-center align-middle' scope="col">Họ tên</th>
                     <th className='text-center align-middle' scope="col">Email</th>
                     <th className='text-center align-middle' scope="col">Ngày sinh
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <div className="d-inline-block position-relative" ref={dateOfBirthRef}>
                                 <button
                                     onClick={() => setShowFilterBirthMenu(!showFilterBithMenu)}
@@ -299,7 +349,7 @@ const Resident = (props) => {
                         )}
                     </th>
                     <th className='text-center' scope="col">Giới tính
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <div className="d-inline-block position-relative" ref={genderRef}>
                                 <button
                                     onClick={() => setShowFilterGenderMenu(!showFilterGenderMenu)}
@@ -322,7 +372,7 @@ const Resident = (props) => {
                     <th className='text-center align-middle' scope="col">Số điện thoại</th>
                     <th className='text-center align-middle' scope="col">CCCD</th>
                     <th className='text-center align-middle' scope="col">Trạng thái
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <div className="d-inline-block position-relative" ref={statusRef}>
                                 <button
                                     onClick={() => setShowFilterStatusMenu(!showFilterStatusMenu)}

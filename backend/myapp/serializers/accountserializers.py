@@ -218,7 +218,6 @@ class DeactiveAccountSerializer(serializers.Serializer):
 
         return account
    
-
 #password reset serializer
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()

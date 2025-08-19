@@ -35,6 +35,7 @@ class ResidentListAPIView(generics.ListAPIView):
         showDecreaseApartmentCode = self.request.query_params.get('showDecreaseApartmentCode')
         dateOfBirth = self.request.query_params.get('dateOfBirth')
         orderBirth = self.request.query_params.get('orderBirth')
+        query = self.request.query_params.get('query')
         
         ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
@@ -60,9 +61,19 @@ class ResidentListAPIView(generics.ListAPIView):
                 queryset = queryset.order_by('-resident__dateOfBirth')
             elif dateOfBirth not in ['null']:
                 queryset = queryset.filter(resident__dateOfBirth__year=dateOfBirth)
+            if query not in ['null', '', None]:
+                queryset = Member.objects.annotate(
+                    similarity=Greatest(
+                        TrigramSimilarity('resident__fullName', query),
+                        TrigramSimilarity('resident__email', query),
+                        TrigramSimilarity('resident__phoneNumber', query),
+                        TrigramSimilarity('resident__hometown', query),
+                        TrigramSimilarity('resident__idNumber', query),
+                    )
+                ).filter(similarity__gt=0.4).order_by('-similarity')
             return queryset
 
-        # Resident (not admin)
+        # Resident
         return Member.objects.filter(
             apartment__apartmentCode=apartment_code,
             isMember=True
@@ -98,7 +109,6 @@ class DeleteResident(APIView):
         Member.objects.filter(resident=resident).update(isOwner=False, isMember=False)
         vehicleList = Vehicle.objects.filter(member__resident=resident)
 
-        
         for vehicle in vehicleList:
             vehicle.status = 'deleted'
             vehicle.save()
@@ -142,27 +152,6 @@ class UpdateResident(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#search resident
-class SearchResidentView(generics.ListAPIView):
-    serializer_class = ResidentSerializer
-    pagination_class = CustomPageNumberPagination
-
-    def get_queryset(self):
-        keyword = self.request.query_params.get('q', '')
-        if not keyword:
-            return Resident.objects.none()
-
-        return Resident.objects.annotate(
-            similarity=Greatest(
-                TrigramSimilarity('fullName', keyword),
-                TrigramSimilarity('email', keyword),
-                TrigramSimilarity('phoneNumber', keyword),
-                TrigramSimilarity('hometown', keyword),
-                TrigramSimilarity('idNumber', keyword),
-            )
-        ).filter(similarity__gt=0.4).order_by('-similarity')
-    
 
 #get temporary residence detail
 class TemporaryResidenceDetailView(APIView):

@@ -33,6 +33,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
         showDecreaseApartmentCode = self.request.query_params.get('showDecreaseApartmentCode')
         showType = self.request.query_params.get('showType')
         dateRegister = self.request.query_params.get('dateRegister')
+        query = self.request.query_params.get('query')
         
         ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
@@ -51,6 +52,14 @@ class VehicleViewSet(viewsets.ModelViewSet):
                 queryset = queryset.order_by('timeregister')
             if dateRegister == 'decrease':
                 queryset = queryset.order_by('-timeregister')
+            if query not in ['null', '', None]:
+                queryset = Vehicle.objects.annotate(
+                    similarity=Greatest(
+                        TrigramSimilarity('licensePlate', query),
+                        TrigramSimilarity('brand', query),
+                        TrigramSimilarity('color', query)
+                    )
+                ).filter(similarity__gt=0.5).order_by('-similarity')
             return queryset
         
         #role = resident
@@ -106,26 +115,3 @@ class VehicleViewSet(viewsets.ModelViewSet):
                 fee.applicableApartments.remove(apartment)
 
         return Response(status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=['get'], url_path='search')
-    def search_vehicle(self, request):
-        keyword = request.query_params.get('q', '')
-        if not keyword:
-            return Response({"count": 0, "results": []})
-
-        queryset = Vehicle.objects.annotate(
-            similarity=Greatest(
-                TrigramSimilarity('licensePlate', keyword),
-                TrigramSimilarity('brand', keyword),
-                TrigramSimilarity('color', keyword)
-            )
-        ).filter(similarity__gt=0.5).order_by('-similarity')
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-

@@ -3,11 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
 
-const UpdateFeeTypeModal = ({show, onClose, onSubmit, feeTypeList, apartmentList}) => {
-    const [step, setStep] = useState(1);
-    const [selectedFeeType, setSelectedFeeType] = useState(null);
-    const [selectedFeeName, setSelectedFeeName] = useState(null);
-
+const UpdateFeeTypeModal = ({show, onClose, onSubmit, selectedFeeType, apartmentList}) => {
     const [formData, setFormData] = useState({
         feeName: '',
         typeDescription: '',
@@ -26,18 +22,9 @@ const UpdateFeeTypeModal = ({show, onClose, onSubmit, feeTypeList, apartmentList
                 amountDefault: selectedFeeType?.amountDefault || '',
                 applicableApartments: selectedFeeType?.applicableApartments,
             })
-            setSelectedFeeName(null);
+            console.log(selectedFeeType)
         }
-        setStep(1);
-    }, [show, selectedFeeType, selectedFeeName]);
-
-    const handleNextStep = () => {
-        if(!selectedFeeType){
-            toast.error("Vui lòng chọn khoản phí để chỉnh sửa!");
-            return;
-        }
-        setStep(2);
-    }
+    }, [show, selectedFeeType]);
 
     const defaultValidInput = {
         isValidFeeName: true,
@@ -53,7 +40,7 @@ const UpdateFeeTypeModal = ({show, onClose, onSubmit, feeTypeList, apartmentList
             setObjCheckInput({...defaultValidInput, isValidFeeName: false});
             return false;
         }
-        if(!formData.isRequired){
+        if(formData.isRequired === null || formData.isRequired === undefined){
             toast.error("Bắt buộc không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidIsRequired: false});
             return false;
@@ -76,13 +63,9 @@ const UpdateFeeTypeModal = ({show, onClose, onSubmit, feeTypeList, apartmentList
                 ...formData,
                 typeId: selectedFeeType.typeId,
             }
+            console.log(formData);
             onSubmit(data);
         }
-    }
-    const handleClose = () => {
-        setStep(1);
-        setSelectedFeeType(null);
-        onClose();
     }
 
     const isRequiredOption = [
@@ -96,35 +79,11 @@ const UpdateFeeTypeModal = ({show, onClose, onSubmit, feeTypeList, apartmentList
 
     return(
         <>
-        <Modal size={`${step === 2 ? 'lg' : 'md'}`} show={show} onHide={onClose} centered>
+        <Modal size='lg' show={show} onHide={onClose} centered>
             <Modal.Header closeButton>
                 <Modal.Title>Chỉnh sửa khoản phí </Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                {step === 1 &&(
-                    <div className='col-12 form-group pt-3 pb-3'>
-                        <label>Chọn khoản phí(<span className='redC'>*</span>):</label>
-                        <select
-                            className='form-select'
-                            name='selectedFeeName'
-                            value={selectedFeeName} 
-                            onChange={(event) => {
-                                setSelectedFeeName(event.target.value);
-                                const selected = event.target.value;
-                                const typeObj = feeTypeList.find(t => t.feeName === selected);
-                                setSelectedFeeType(typeObj);
-                            }}
-                        >
-                            <option>Tùy chọn</option>
-                            {feeTypeList?.map((type) => (
-                                <option key={type.typeId} value={type.feeName}>
-                                {type.feeName}
-                                </option>
-                            ))}
-                        </select>
-
-                    </div>)}
-                {step === 2 && (
                 <div className='content-body row'>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Tên khoản phí(<span className='redC'>*</span>):</label>
@@ -197,16 +156,10 @@ const UpdateFeeTypeModal = ({show, onClose, onSubmit, feeTypeList, apartmentList
                         />
                     </div>}
                 </div>
-                )}
             </Modal.Body>
             <Modal.Footer>
-                <Button className='cancelbtn'  variant="secondary" onClick={handleClose}>Hủy</Button>
-                {step === 1 && (
-                    <Button className='savebtn' variant="primary" onClick={handleNextStep}>Tiếp tục</Button>
-                )}
-                {step === 2 && (
-                    <Button className='savebtn' variant="success" onClick={handleSubmit}>Xác nhận</Button>
-                )}
+                <Button className='cancelbtn'  variant="secondary" onClick={onClose}>Hủy</Button>
+                <Button className='savebtn' variant="success" onClick={handleSubmit}>Lưu</Button>
             </Modal.Footer>
         </Modal>
         </>

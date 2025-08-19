@@ -146,6 +146,7 @@ const feeSlice = createSlice({
         .addCase(getAllFeeTypes.fulfilled, (state, action) => {
             state.loading = false;
             state.feeTypeList = action.payload.results;
+            state.totalTypes = action.payload.count;
         })
         .addCase(getAllFeeTypes.rejected, (state, action) => {
             state.loading = false;

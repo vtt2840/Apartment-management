@@ -1,9 +1,9 @@
 from django.urls import path
 from .views.accountviews import (CustomTokenObtainPairAPIView, CustomTokenRefreshAPIView, LogoutAPIView, CreateAccountAPIView, UpdateAccountAdmin,
                                  DeactivateAccount, AccountByApartment, PasswordResetConfirm, ResetPassword, CheckAccount, ChangePasswordView)
-from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartment, UpdateApartment, SearchApartmentView
+from .views.apartmentviews import ApartmentListAPIView, AddAccountExistToApartment, UpdateApartment
 from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, DeleteResident, RegisterTemporaryResidence, RegisterTemporaryAbsence, 
-                                  CancelRegisterTemp, UpdateResident, SearchResidentView, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
+                                  CancelRegisterTemp, UpdateResident, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
                                   ResidentCountView)
 from .views.feeviews import (ApartmentFeeViewSet, FeeTypeViewSet, CheckFeeNameExist, CreateFeeCollection, export_data_to_excel, PaymentTransactionViewSet,
                              check_payment_status, sepay_webhook)
@@ -27,7 +27,6 @@ urlpatterns = [
     path('apartments/', ApartmentListAPIView.as_view(), name='apartment-list'),
     path('apartments/addaccount/', AddAccountExistToApartment.as_view(), name='add-account-exist-to-apartment'),
     path('apartments/updateinfo/<str:apartmentCode>/', UpdateApartment.as_view(), name='update-apartment'),
-    path('apartments/search/', SearchApartmentView.as_view(), name='search-apartments'),
 
     path('apartments/addnewaccount/', CreateAccountAPIView.as_view(), name='add-new-account'),
     path('apartments/lockaccount/', DeactivateAccount.as_view(), name='lock-account'),
@@ -43,7 +42,6 @@ urlpatterns = [
     path('residents/addnewresident/', CreateResidentAPIView.as_view(), name='add-new-resident'),
     path('residents/delete/<int:residentId>/', DeleteResident.as_view(), name='delete-resident'),
     path('residents/update/<int:residentId>/', UpdateResident.as_view(), name='update-resident'),
-    path('residents/search/', SearchResidentView.as_view(), name='search-residents'),
 
 
     path('temporary-residence/register/', RegisterTemporaryResidence.as_view(), name='register-temp-residence'),

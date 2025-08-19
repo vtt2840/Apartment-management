@@ -17,6 +17,18 @@
             padding-right: 10px;
             cursor: pointer;
         }
+        .custombtn{
+            margin-bottom: 15px;
+            border-radius: 20px;
+            width: 230px;
+            box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+            text-align: center;
+            background-color: #498765;
+            .btn{
+                width: 230px;
+                color: white !important;
+            }
+        }
     }
     .content-right{
         margin-top: 2.5rem;
@@ -66,4 +78,14 @@
 
 .input-group{
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+.editfeetype{
+    padding-left: 5px;
+    padding-right: 10px;
+    cursor: pointer;
+}
+.deletefeetype{
+    padding-left: 10px;
+    padding-right: 5px;
+    cursor: pointer;
 }

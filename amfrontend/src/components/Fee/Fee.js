@@ -3,16 +3,9 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import ReactPaginate from 'react-paginate';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from '../../setup/axios';
-import { checkFeeNameExists } from '../../services/userService';
-import { getNewFeeCollection, editApartmentFee, addNewFeeType, getAllFeeTypes, editFeeType, deleteOneFeeType, addNewFeeCollection } from '../../store/slices/feeSlice';
-import SearchFeeModal from './SearchFeeModal';
+import { getNewFeeCollection, editApartmentFee, addNewFeeCollection } from '../../store/slices/feeSlice';
 import UpdateApartmentFeeModal from './UpdateApartmentFeeModal';
-import CreateNewFeeTypeModal from './CreateNewFeeTypeModal';
-import UpdateFeeTypeModal from './UpdateFeeTypeModal';
-import DeleteFeeTypeModal from './DeleteFeeTypeModal';
 import CreateNewFeeCollectionModal from './CreateNewFeeCollectionModal';
-import StatisticModal from './StatisticModal';
 import PaymentTransactionModal from './PaymentTransactionModal';
 import { useNavigate} from 'react-router-dom';
 import { useClickAway } from '@uidotdev/usehooks';
@@ -23,9 +16,8 @@ const Fee = (props) => {
     const role = useSelector(state => state.auth.role);
     const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
     const totalCount = useSelector(state => state.fee.totalCount);
-    const feeTypeList = useSelector(state => state.fee.feeTypeList);
 
-    const [apartmentList, setApartmentList] = useState([]);
+    const [query, setQuery] = useState(null);
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -45,65 +37,68 @@ const Fee = (props) => {
     const [showFilterFeeName, setShowFilterFeeName] = useState(false);
 
     const [showUpdateApartmentFeeModal, setShowUpdateApartmentFeeModal] = useState(false);
-    const [showUpdateFeeTypeModal, setShowUpdateFeeTypeModal] = useState(false);
-    const [showStatisticModal, setShowStatisticModal] = useState(false);
-    const [showDeleteFeeTypeModal, setShowDeleteFeeTypeModal] = useState(false);
-    const [showCreateNewFeeTypeModal, setShowCreateNewFeeTypeModal] = useState(false);
     const [showCreateNewFeeCollectionModal, setShowCreateNewFeeCollectionModal] = useState(false);
     const [showPaymentTransactionModal, setShowPaymentTransactionModal] = useState(false);
 
     useEffect(() => {
-            if(totalCount){
-                setTotalPages(Math.ceil(totalCount/10)); //totalpages
-            }
-        }, [totalCount]);
+        if(totalCount){
+            setTotalPages(Math.ceil(totalCount/10)); //totalpages
+        }
+    }, [totalCount]);
     
     //get fee list
     useEffect(() => {
-        dispatch(getNewFeeCollection({
-            page: currentPage,
-            apartment_code: selectedApartmentCode,
-            month: month ? month : 'latest',
-            year: year ? year : 'latest',
-            isRequired: filterIsRequired !== 'all' ? filterIsRequired : null,
-            status: filterStatus !== 'all' ? filterStatus : null,
-            dueDate: filterDueDate !== 'all' ? filterDueDate : null,
-            feeName: filterFeeName ? filterFeeName : null,
-        }));
-    }, [dispatch, reloadTrigger, currentPage, month, year, selectedApartmentCode, filterIsRequired, filterStatus, filterDueDate, filterFeeName]);
+        if(query === null || query === ''){
+            dispatch(getNewFeeCollection({
+                page: currentPage,
+                apartment_code: selectedApartmentCode,
+                month: month ? month : 'latest',
+                year: year ? year : 'latest',
+                isRequired: filterIsRequired !== 'all' ? filterIsRequired : null,
+                status: filterStatus !== 'all' ? filterStatus : null,
+                dueDate: filterDueDate !== 'all' ? filterDueDate : null,
+                feeName: filterFeeName ? filterFeeName : null,
+                query: null,
+            }));
+        }
+    }, [dispatch, reloadTrigger, currentPage, month, year, selectedApartmentCode, filterIsRequired, filterStatus, filterDueDate, filterFeeName, query==='']);
     
-    //get feetype list
+    const handleSearch = async () => {
+        if(!query.trim()) return;
+        try{
+            dispatch(getNewFeeCollection({
+                page: currentPage,
+                apartment_code: null,
+                month: 'latest',
+                year: 'latest',
+                isRequired: null,
+                status: null,
+                dueDate: null,
+                feeName: null,
+                query: query,
+            }));
+        }catch(error){
+            toast.error("Lỗi khi tìm kiếm khoản phí.");
+        }
+    };
+
     useEffect(() => {
-        dispatch(getAllFeeTypes({
-            page_size: 1000,
-        }));
-    }, [showUpdateFeeTypeModal, showDeleteFeeTypeModal]);
+        if(query !== null && query !== ''){
+            handleSearch();
+        }
+    }, [currentPage, reloadTrigger])
+    
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
 
     useEffect(() => {
         setCurrentPage(1);
     }, [filterStatus, filterFeeName])
 
-    //get apartment active
-    useEffect(() => {
-        const fetchApartments = async () => {
-            try{
-                const res = await axios.get('/apartments/', {
-                    params:{
-                        apartmentCode: null,
-                        showLeftResidents: false,
-                        status: 'sold',
-                        page_size: 1000,
-                    }
-                });
-                const data = res.data;
-                const apartments = Array.isArray(data.results) ? data.results : data;
-                setApartmentList(apartments);
-            }catch(error){
-                toast.error("Không thể tải danh sách căn hộ");
-            }
-        };
-        fetchApartments();
-    }, [showCreateNewFeeTypeModal]);
     
     //handle page change
     const handlePageChange= (selectedItem) => {
@@ -194,115 +189,15 @@ const Fee = (props) => {
         }
     };
 
-    //add new feetype
-    const handleAddNewFeeType = () => {
-        setShowCreateNewFeeTypeModal(true);
-    };
-
-    const checkFeeName = async (feeName) => {
-        try{
-            const res = await checkFeeNameExists(feeName);
-            if(res.status === 200){
-                return res.status;
-            }
-        }catch (err) {
-            let temp = 'not found'; //new account
-            if(err.response?.status === 400){
-                return temp; 
-            }
-            toast.error("Lỗi hệ thống, vui lòng thử lại sau!");
-            return false;
-        }
+    const navigate = useNavigate();
+    const handleManageFeeType = () => {
+        navigate('/feetype');
     }
 
-    const handleSubmitCreateNewFeeType = async(formData) => {
-        try{
-            const res = await checkFeeName(formData.feeName); 
-            if(res === 200){
-                toast.error("Khoản phí đã tồn tại")
-                return;
-            }
-            if(res === 'not found'){
-                await dispatch(addNewFeeType({
-                    ...formData,
-                    amountDefault: formData.amountDefault === '' ? '0' : formData.amountDefault,
-                }));
-                setReloadTrigger(prev => !prev);
-                toast.success("Thêm khoản phí mới thành công!");
-                setShowCreateNewFeeTypeModal(false);
-            }
-        }catch(err){
-            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-        }
-    };
-
-    //delete feetype
-    const handleDeleteFeeType = () => {
-        setShowDeleteFeeTypeModal(true);
-    };
-
-    const handleSubmitDeleteFeeType = async(typeId) => {
-        try{
-            await dispatch(deleteOneFeeType(typeId));
-            setReloadTrigger(prev => !prev);
-            toast.success("Xóa khoản phí thành công!");
-            setShowDeleteFeeTypeModal(false);
-        }catch(err){
-            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-        }
-    };
-
-    //update feetype
-    const handleUpdateFeeType = () => {
-        setShowUpdateFeeTypeModal(true);
-    };
-
-    const handleSubmitUpdateFeeType = async(formData) => {
-        try{
-            const data = {
-                feeName: formData?.feeName,
-                typeDescription: formData?.typeDescription || '',
-                isRequired: formData.isRequired,
-                appliedScope: formData?.appliedScope,
-                amountDefault: formData?.amountDefault === '' ? '0' : formData?.amountDefault,
-                applicableApartments: formData?.applicableApartments || [],
-            }
-            await dispatch(editFeeType({ typeId: formData.typeId, data: data }));
-            setReloadTrigger(prev => !prev);
-            toast.success("Chỉnh sửa khoản phí thành công!");
-            setShowUpdateFeeTypeModal(false)
-        }catch(err){
-            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-        }
-    };
-
-    //statistics
     const handleStatistics = () => {
-        setShowStatisticModal(true);
-    };
+        navigate('/statistics');
+    }
 
-    const handleSubmitStatisticModal = async (data) => {
-        try {
-            const res = await axios.post(
-                "http://localhost:8000/export/",
-                data,
-                { responseType: "blob" }
-            );
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-            const link = document.createElement("a");
-            link.href = url;
-            link.setAttribute("download", "Thongke.xlsx");
-            document.body.appendChild(link);
-            link.click();
-            window.URL.revokeObjectURL(url);
-            setShowStatisticModal(false);
-        } catch (err) {
-            console.error("Export Excel failed:", err);
-            toast.error("Có lỗi xảy ra, vui lòng thử lại!");
-        }
-    };
-
-    const navigate = useNavigate();
     //payment
     const handlePayment = (item) => {
         let paymentApartmentFee = item.apartmentFeeId;
@@ -320,7 +215,32 @@ const Fee = (props) => {
             <div className='row mx-auto mt-0'>
                 <div className={`content-left mx-auto ${role === 'admin' ? 'col-12 col-md-10' : 'col-12'}`}>
                 <div className='mx-auto'>
-                    {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchFeeModal/></div>)}
+                    {role === 'admin' && (<div className='col-10 mx-auto text-center'>
+                        <div className="input-group mb-3">
+                            <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Nhập từ khóa (Mã căn hộ, tên khoản phí)"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(event) => handlePressEnter(event)}
+                            style={{borderColor: 'white'}}
+                            />
+                            <button type="button"onClick={() => {setQuery('');  setReloadTrigger(prev => !prev);}} className="btn"><i className='fa fa-times'></i></button>
+                            <button className="btn btn-success" onClick={() => { setCurrentPage(1); handleSearch();}}>
+                            <i className='fa fa-search'></i>
+                            </button>
+                        </div>
+                    </div>)}
+                    {role === 'resident' && (
+                        <div className='custombtn'>
+                            <button
+                                onClick={() => handleManageFeeType()}
+                                className="btn"
+                            >Thông tin các khoản phí
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <table className='table table-bordered table-striped table-hover'>
                     <thead>
@@ -328,7 +248,7 @@ const Fee = (props) => {
                             <th className='text-center align-middle' scope='col'>STT</th>
                             {role === 'admin' && (<th className='text-center align-middle' scope='col'>Mã căn hộ</th>)}
                             <th className='text-center align-middle' scope='col'>Tên khoản phí
-                                {role === 'admin' && (
+                                {role === 'admin' && (query === null || query === '') && (
                                 <div className="d-inline-block position-relative" ref={feeNameRef}>
                                 <button
                                     onClick={() => setShowFilterFeeName(!showFilterFeeName)}
@@ -352,6 +272,7 @@ const Fee = (props) => {
                                 </div>)}
                             </th>
                             <th className='text-center align-middle' scope='col'>Tháng/Năm
+                                {(query === null || query === '') &&(
                                 <div className="d-inline-block position-relative" ref={dateRef}>
                                 <button
                                     onClick={() => setShowFilterDateMenu(!showFilterDateMenu)}
@@ -380,11 +301,11 @@ const Fee = (props) => {
                                         <button className="dropdown-item" onClick={() => handleDateFilter()}>Bỏ lọc</button>
                                     </div>
                                 )}
-                            </div>
+                            </div>)}
                             </th>
                             <th className='text-center align-middle' scope='col'>Số tiền (VNĐ)</th>
                             <th className='text-center align-middle' scope='col'>Bắt buộc
-                                {role === 'admin' && (
+                                {role === 'admin' && (query === null || query === '') && (
                                     <div className="d-inline-block position-relative" ref={isRequiredRef}>
                                         <button
                                             onClick={() => setShowFilterIsRequiredMenu(!showFilterIsRequiredMenu)}
@@ -403,7 +324,7 @@ const Fee = (props) => {
                                 )}
                             </th>
                             <th className='text-center align-middle' scope='col'>Hạn nộp
-                                {role === 'admin' && (
+                                {role === 'admin' && (query === null || query === '') && (
                                     <div className="d-inline-block position-relative" ref={dueDateRef}>
                                         <button
                                             onClick={() => setShowFilterDueDateMenu(!showFilterDueDateMenu)}
@@ -422,7 +343,7 @@ const Fee = (props) => {
                                 )}
                             </th>
                             <th className='text-center align-middle' scope='col'>Trạng thái
-                                {role === 'admin' && (
+                                {role === 'admin' && (query === null || query === '') && (
                                     <div className="d-inline-block position-relative" ref={statusRef}>
                                         <button
                                             onClick={() => setShowFilterStatusMenu(!showFilterStatusMenu)}
@@ -490,30 +411,16 @@ const Fee = (props) => {
                 </div>
                 <div className='custombtn'>
                     <button
-                        onClick={() => handleAddNewFeeType()}
+                        onClick={() => handleManageFeeType()}
                         className="btn"
-                    >Thêm khoản phí mới
-                    </button>
-                </div>
-                <div className='custombtn'>
-                    <button
-                        onClick={() => handleUpdateFeeType()}
-                        className="btn"
-                    >Chỉnh sửa khoản phí
-                    </button>
-                </div>
-                <div className='custombtn'>
-                    <button
-                        onClick={() => handleDeleteFeeType()}
-                        className="btn"
-                    >Xóa khoản phí
+                    >Quản lý các khoản phí
                     </button>
                 </div>
                 <div className='custombtn'>
                     <button
                         onClick={() => handleStatistics()}
                         className="btn"
-                    >Thống kê
+                    >Thống kê khoản phí
                     </button>
                 </div>
             </div>)}
@@ -529,34 +436,10 @@ const Fee = (props) => {
             amount={selectedFee?.amount}
             dueDate={selectedFee?.dueDate}
         />
-        <CreateNewFeeTypeModal
-            show={showCreateNewFeeTypeModal}
-            onClose={() => setShowCreateNewFeeTypeModal(false)}
-            onSubmit={handleSubmitCreateNewFeeType}
-            apartmentList={apartmentList}
-        />
-        <UpdateFeeTypeModal
-            show={showUpdateFeeTypeModal}
-            onClose={() => setShowUpdateFeeTypeModal(false)}
-            onSubmit={handleSubmitUpdateFeeType}
-            feeTypeList={feeTypeList}
-            apartmentList={apartmentList}
-        />
-        <DeleteFeeTypeModal
-            show={showDeleteFeeTypeModal}
-            onClose={() => setShowDeleteFeeTypeModal(false)}
-            onSubmit={handleSubmitDeleteFeeType}
-            feeTypeList={feeTypeList}
-        />
         <CreateNewFeeCollectionModal
             show={showCreateNewFeeCollectionModal}
             onClose={() => setShowCreateNewFeeCollectionModal(false)}
             onSubmit={handleSubmitAddNewFeeCollection}
-        />
-        <StatisticModal
-            show={showStatisticModal}
-            onClose={() => setShowStatisticModal(false)}
-            onSubmit={handleSubmitStatisticModal}
         />
         <PaymentTransactionModal
             show={showPaymentTransactionModal}

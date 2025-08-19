@@ -30,6 +30,7 @@ class ApartmentListAPIView(generics.ListAPIView):
         apartment_code = self.request.query_params.get('apartmentCode')
         floor = self.request.query_params.get('floor')
         status = self.request.query_params.get('status')
+        query = self.request.query_params.get('query')
         
         ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
@@ -42,6 +43,14 @@ class ApartmentListAPIView(generics.ListAPIView):
                 queryset = queryset.filter(status='active')
             if status == 'unsold':
                 queryset = queryset.filter(status='inactive')
+            if query not in ['null', None, '']:
+                queryset = Apartment.objects.annotate(
+                    similarity=Greatest(
+                        TrigramSimilarity('apartmentCode', query),
+                        TrigramSimilarity('account__username', query),
+                        TrigramSimilarity('account__email', query),
+                    )
+                ).filter(similarity__gt=0.5).order_by('-similarity')
             return queryset
         else:
             queryset = Apartment.objects.filter(apartmentCode=apartment_code)
@@ -76,19 +85,3 @@ class UpdateApartment(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class SearchApartmentView(generics.ListAPIView):
-    serializer_class = ApartmentSerializer
-    pagination_class = CustomPageNumberPagination
-
-    def get_queryset(self):
-        keyword = self.request.query_params.get('q', '')
-        if not keyword:
-            return Apartment.objects.none()
-
-        return Apartment.objects.annotate(
-            similarity=Greatest(
-                TrigramSimilarity('apartmentCode', keyword),
-                TrigramSimilarity('account__username', keyword),
-                TrigramSimilarity('account__email', keyword),
-            )
-        ).filter(similarity__gt=0.5).order_by('-similarity')

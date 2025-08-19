@@ -40,7 +40,7 @@ const CreateNewFeeTypeModal = ({show, onClose, onSubmit, apartmentList}) => {
             setObjCheckInput({...defaultValidInput, isValidFeeName: false});
             return false;
         }
-        if(!formData.isRequired){
+        if(formData.isRequired === null || formData.isRequired === undefined){
             toast.error("Bắt buộc không được để trống!");
             setObjCheckInput({...defaultValidInput, isValidIsRequired: false});
             return false;

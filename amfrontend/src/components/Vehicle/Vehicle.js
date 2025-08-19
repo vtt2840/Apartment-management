@@ -8,7 +8,6 @@ import ReactPaginate from 'react-paginate';
 import CreateNewVehicleModal from './CreateNewVehicleModal';
 import UpdateVehicleModal from './UpdateVehicleModal';
 import DeleteVehicleModal from './DeleteVehicleModal';
-import SearchVehicleModal from './SearchVehicleModal';
 import axios from '../../setup/axios';
 import { useClickAway } from '@uidotdev/usehooks';
 
@@ -19,6 +18,7 @@ const Vehicle = (props) => {
     const selectedApartmentCode = useSelector(state => state.auth.selectedApartment);
     const totalCount = useSelector(state => state.vehicle.totalCount);
 
+    const [query, setQuery] = useState(null);
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -45,15 +45,48 @@ const Vehicle = (props) => {
 
     //get vehicle list
     useEffect(() => {
-        dispatch(getAllVehicles({
-            apartmentCode: selectedApartmentCode,
-            status: showStatus,
-            page: currentPage,
-            showDecreaseApartmentCode: showDecreaseApartmentCode,
-            showType: showType !== 'all' ? showType : null,
-            dateRegister: dateRegister !== 'all' ? dateRegister : null,
-        }))
-    }, [dispatch, reloadTrigger, selectedApartmentCode, showStatus, currentPage, showDecreaseApartmentCode, showType, dateRegister]);
+        if(query === null || query === ''){
+            dispatch(getAllVehicles({
+                apartmentCode: selectedApartmentCode,
+                status: showStatus,
+                page: currentPage,
+                showDecreaseApartmentCode: showDecreaseApartmentCode,
+                showType: showType !== 'all' ? showType : null,
+                dateRegister: dateRegister !== 'all' ? dateRegister : null,
+                query: null,
+            }))
+        }
+    }, [dispatch, reloadTrigger, selectedApartmentCode, showStatus, currentPage, showDecreaseApartmentCode, showType, dateRegister, query==='']);
+
+    const handleSearch = async () => {
+        if(!query.trim()) return;
+        try{
+            dispatch(getAllVehicles({
+                apartmentCode: null,
+                status: false,
+                page: currentPage,
+                showDecreaseApartmentCode: false,
+                showType: null,
+                dateRegister: null,
+                query: query,
+            }));
+        }catch(error){
+            toast.error("Lỗi khi tìm kiếm phương tiện.");
+        }
+    };
+    
+    useEffect(() => {
+        if(query !== null && query !== ''){
+            handleSearch();
+        }
+    }, [currentPage, reloadTrigger])
+        
+    const handlePressEnter = (event)=> {
+        if(event.code === "Enter"){
+            setCurrentPage(1);
+            handleSearch(1);
+        }
+    }
 
     useEffect(() => {
         setCurrentPage(1);
@@ -158,12 +191,27 @@ const Vehicle = (props) => {
         }
     }
 
-
     return (
     <>
     <div className='container mt-4'>
         <div className='content-top row mx-auto my-3'>
-            {role === 'admin' && (<div className='col-10 mx-auto text-center'><SearchVehicleModal/></div>)}
+            {role === 'admin' && (<div className='col-10 mx-auto text-center'>
+                <div className="input-group mb-3">
+                    <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Nhập từ khóa (Biển số, hãng xe, màu sắc)"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(event) => handlePressEnter(event)}
+                    style={{borderColor: 'white'}}
+                    />
+                    <button type="button"onClick={() => {setQuery('');  setReloadTrigger(prev => !prev);}} className="btn"><i className='fa fa-times'></i></button>
+                    <button className="btn btn-success" onClick={() => { setCurrentPage(1); handleSearch(1);}}>
+                    <i className='fa fa-search'></i>
+                    </button>
+                </div>
+            </div>)}
             {role === 'resident' && (<div className='col-12 mx-auto text-end'>
                 <button className='btn' onClick={()=> handleAddVehicle()}>
                     <img
@@ -179,18 +227,19 @@ const Vehicle = (props) => {
                 <tr>
                     <th className='text-center align-middle' scope="col">STT</th>
                     {role === 'admin' && (<th className='text-center' scope="col">Mã căn hộ
+                        {(query === null || query === '') && (
                         <button
                             onClick={() => setShowDecreaseApartmentCode(prev => !prev)}
                             className="btn"
                             title={showDecreaseApartmentCode ? 'Giảm dần' : 'Tăng dần'}
                         ><i className={`fa ${showDecreaseApartmentCode ? 'fa fa-caret-down' : 'fa fa-caret-up'}`}></i>
-                        </button>
+                        </button>)}
                     </th>)}
                     <th className='text-center align-middle' scope="col">Chủ xe</th>
                     <th className='text-center align-middle' scope="col">Số điện thoại</th>
                     <th className='text-center align-middle' scope="col">Biển số</th>
                     <th className='text-center' scope="col">Loại xe
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <div className="d-inline-block position-relative" ref={typeRef}>
                                 <button
                                     onClick={() => setShowFilterTypeMenu(!showFilterTypeMenu)}
@@ -214,7 +263,7 @@ const Vehicle = (props) => {
                     <th className='text-center align-middle' scope="col">Hãng</th>
                     <th className='text-center align-middle' scope="col">Màu sắc</th>
                     <th className='text-center' scope="col">Ngày đăng ký
-                        {role === 'admin' && (
+                        {role === 'admin' && (query === null || query === '') && (
                             <div className="d-inline-block position-relative" ref={dateRef}>
                                 <button
                                     onClick={() => setShowFilterDateRegisterMenu(!showFilterDateRegisterMenu)}
@@ -234,12 +283,13 @@ const Vehicle = (props) => {
                         )}
                     </th>
                     {role === 'admin' && (<th className='text-center' scope="col">Trạng thái
+                        {(query === null || query === '') && (
                             <button
                                 onClick={() => setShowStatus(prev => !prev)}
                                 className="btn"
                                 title={showStatus ? 'Phương tiện đang sử dụng' : 'Phương tiện đã xóa'}
                             ><i className='fa fa-filter'></i>
-                            </button>
+                            </button>)}
                     </th>)}
                     {role === 'resident' && (<th className='text-center'>Hành động</th>)}
                 </tr>

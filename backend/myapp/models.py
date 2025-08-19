@@ -202,6 +202,9 @@ class FeeType(models.Model):
     amountDefault = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     applicableApartments = models.ManyToManyField('Apartment', blank=True)
 
+    class Meta:
+        ordering = ['-typeId']
+
     def __str__(self):
         return self.feeName
 

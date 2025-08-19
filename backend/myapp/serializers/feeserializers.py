@@ -36,8 +36,6 @@ class FeeTypeSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if not attrs.get("feeName"):
             raise serializers.ValidationError({"feeName": "Tên khoản phí không được để trống!"})
-        if not attrs.get("isRequired"):
-            raise serializers.ValidationError({"isRequired": "Bắt buộc không được để trống!"})
         if not attrs.get("appliedScope"):
             raise serializers.ValidationError({"appliedScope": "Phạm vi áp dụng không được để trống!"})
         return attrs

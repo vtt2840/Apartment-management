@@ -47,6 +47,7 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
         dueDate =self.request.query_params.get('dueDate')
         feeName = self.request.query_params.get('feeName')
         apartmentFeeId = self.request.query_params.get('apartmentFeeId')
+        query = self.request.query_params.get('query')
 
         ADMIN_ID = UUID(os.getenv("ADMIN_ID"))
 
@@ -102,8 +103,15 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
             apartmentFeeId = self.kwargs.get('apartmentFeeId')
             if apartmentFeeId:
                 queryset = ApartmentFee.objects.filter(apartmentFeeId=apartmentFeeId)
+            if query not in ['null', '', None]:
+                querys = query.split()
+                queryset = ApartmentFee.objects.all()
+                for q in querys:
+                    queryset = queryset.filter(
+                        Q(apartment__apartmentCode__icontains=q) |
+                        Q(feeCollection__feeType__feeName__icontains=q)
+                    )
         return queryset
-
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -112,28 +120,6 @@ class ApartmentFeeViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(status=status.HTTP_200_OK)
         else: return Response({ "errors": serializer.errors }, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=False, methods=['get'], url_path='search')
-    def search_fee(self, request):
-        keyword = request.query_params.get('q', '')
-        if not keyword:
-            return Response({"count": 0, "results": []})
-
-        keywords = keyword.split()
-
-        queryset = ApartmentFee.objects.all()
-        for kw in keywords:
-            queryset = queryset.filter(
-                Q(apartment__apartmentCode__icontains=kw) |
-                Q(feeCollection__feeType__feeName__icontains=kw)
-            )
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
 #feetype viewset
 class FeeTypeViewSet(viewsets.ModelViewSet):
@@ -158,6 +144,8 @@ class FeeTypeViewSet(viewsets.ModelViewSet):
                     return queryset
                 queryset = queryset.exclude(typeId__in=listFeeCollectionExist)
             return queryset
+        else:
+            return FeeType.objects.filter(status='active')
 
     def create(self, request, *args, **kwargs):
         scope = request.data.get('appliedScope')
@@ -297,7 +285,9 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         apartmentFee = self.request.query_params.get('apartmentFee')
-        queryset = PaymentTransaction.objects.filter(apartmentFee=apartmentFee)
+        if apartmentFee:
+            queryset = PaymentTransaction.objects.filter(apartmentFee=apartmentFee)
+        queryset = PaymentTransaction.objects.order_by('-paymentDate')[:5]
         return queryset
 
 @csrf_exempt
