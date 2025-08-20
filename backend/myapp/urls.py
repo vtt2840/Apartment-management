@@ -6,7 +6,7 @@ from .views.residentviews import (ResidentListAPIView, CreateResidentAPIView, De
                                   CancelRegisterTemp, UpdateResident, TemporaryAbsenceDetailView, TemporaryResidenceDetailView,
                                   ResidentCountView)
 from .views.feeviews import (ApartmentFeeViewSet, FeeTypeViewSet, CheckFeeNameExist, CreateFeeCollection, export_data_to_excel, PaymentTransactionViewSet,
-                             check_payment_status, sepay_webhook)
+                             check_payment_status, sepay_webhook, GetLatestFeeCollectionDate, ChartFeeCollection, ChartBarFee)
 from .views.vehicleviews import (VehicleViewSet)
 from rest_framework.routers import SimpleRouter
 
@@ -56,6 +56,9 @@ urlpatterns = [
     path('export/', export_data_to_excel, name='export_data_to_excel'),
     path('check-payment-status/', check_payment_status, name='check_payment_status'),
     path("sepay-webhook/", sepay_webhook, name="sepay-webhook"),
+    path('get-latest-date/', GetLatestFeeCollectionDate.as_view(), name='get-latest-view'),
+    path('get-chartfee/', ChartFeeCollection.as_view(), name='get-chartfee'),
+    path('get-bar-fee/', ChartBarFee.as_view(), name='get-bar-fee'),
 
 
 ] + router.urls

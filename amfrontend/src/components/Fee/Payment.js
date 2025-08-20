@@ -76,7 +76,7 @@ const Payment = () => {
                             </tr>
                             <tr>
                                 <td>Số tiền:</td>
-                                <td><b>{fee?.amount} VNĐ</b></td>
+                                <td><b>{Number(fee?.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} VNĐ</b></td>
                             </tr>
                             <tr>
                                 <td>Nội dung CK:</td>

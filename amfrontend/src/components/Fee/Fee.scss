@@ -52,8 +52,22 @@
         box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
         padding: 20px;
     }
-    
+    .content-bottom{
+        .content-bottom-left{
+            display: inline-block;            
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+            // border: 0.5px solid rgb(228, 226, 226)
+        }
+    }
+    .content-top{
+        .content-top-left{
+            align-items: stretch;
+        }
+    }
 }
+
 .modal-create{
     font-size: 14px;
     .table-striped>tbody>tr:nth-child(odd)>td, 
@@ -79,11 +93,13 @@
 .input-group{
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
+
 .editfeetype{
     padding-left: 5px;
     padding-right: 10px;
     cursor: pointer;
 }
+
 .deletefeetype{
     padding-left: 10px;
     padding-right: 5px;

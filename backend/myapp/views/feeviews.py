@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 import re
 from datetime import datetime
 from django.utils.dateparse import parse_datetime
+from decimal import Decimal
 
 #custom page number pagination
 class CustomPageNumberPagination(PageNumberPagination):
@@ -285,9 +286,9 @@ class PaymentTransactionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         apartmentFee = self.request.query_params.get('apartmentFee')
+        
         if apartmentFee:
             queryset = PaymentTransaction.objects.filter(apartmentFee=apartmentFee)
-        queryset = PaymentTransaction.objects.order_by('-paymentDate')[:5]
         return queryset
 
 @csrf_exempt
@@ -302,7 +303,6 @@ def check_payment_status(request):
         return Response({'payment_status': 'order_not_found'}, status=status.HTTP_404_NOT_FOUND)
 
     return Response({'payment_status': apartmentFee.status})
-
 
 @csrf_exempt
 @api_view(['POST'])
@@ -353,3 +353,75 @@ def sepay_webhook(request):
     apartment_fee.save()
 
     return Response({'success': True, 'message': 'Payment recorded'})
+        
+class GetLatestFeeCollectionDate(APIView):
+    permission_classes = [IsAuthenticated,]
+
+    def get(self, request):
+        latest = (
+            FeeCollection.objects
+            .annotate(
+                year_int=Cast('year', IntegerField()),
+                month_int=Cast('month', IntegerField())
+            )
+            .order_by('-year_int', '-month_int')
+            .first()
+        )
+
+        latest_date = [latest.month, latest.year, latest.feeType.typeId, latest.feeType.feeName]
+        return Response({'latest_date': latest_date}, status=status.HTTP_200_OK)
+    
+class ChartFeeCollection(APIView):
+    permission_classes = [IsAuthenticated,]
+
+    def get(self, request):
+        month = request.query_params.get('month')
+        year = request.query_params.get('year')
+        feeName = request.query_params.get('feeName')
+        totalAmount = Decimal("0.00")
+        totalPaidAmount = Decimal("0.00")
+        totalUnpaidAmount = Decimal("0.00")
+        percent = 0
+        if feeName not in ['undefined']:
+            apartmentfees = ApartmentFee.objects.filter(feeCollection__month=month, feeCollection__year=year, feeCollection__feeType__feeName=feeName)
+
+        else:
+            latest = (
+                FeeCollection.objects
+                .annotate(
+                    year_int=Cast('year', IntegerField()),
+                    month_int=Cast('month', IntegerField())
+                )
+                .order_by('-year_int', '-month_int')
+                .first()
+            )
+            apartmentfees = ApartmentFee.objects.filter(feeCollection__month=latest.month, feeCollection__year=latest.year, feeCollection__feeType__feeName=latest.feeType.feeName)
+        for fee in apartmentfees:
+            totalAmount += fee.amount
+            if fee.status != 'unpaid':
+                totalPaidAmount += fee.amount
+        if totalAmount > 0:
+            percent = (totalPaidAmount/totalAmount)*100
+        totalUnpaidAmount = totalAmount - totalPaidAmount
+        data = [totalUnpaidAmount, totalPaidAmount, percent]
+        return Response({'data': data}, status=status.HTTP_200_OK)
+    
+class ChartBarFee(APIView):
+    permission_classes = [IsAuthenticated,]
+    def get(self, request):
+        year = request.query_params.get('year')
+        totalAmount = []
+        totalReceived = []
+        for i in range(1, 13):
+            temp = Decimal("0.00")
+            tempR = Decimal("0.00")
+            apartmentfees = ApartmentFee.objects.filter(feeCollection__year=year, feeCollection__month=i)
+            if apartmentfees:
+                for fee in apartmentfees:
+                    temp += fee.amount
+                    if fee.status != 'unpaid':
+                        tempR += fee.amount
+            totalAmount.append(temp)
+            totalReceived.append(tempR)
+        data = [totalReceived, totalAmount]
+        return Response({'data': data}, status=status.HTTP_200_OK)

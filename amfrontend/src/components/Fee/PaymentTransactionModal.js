@@ -45,7 +45,7 @@ const PaymentTransactionModal = ({show, onClose, apartmentFee}) => {
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>
                         <label>Số tiền:</label>
                         <input type='text' className='form-control'
-                            name='amount' value={formData.amount} 
+                            name='amount' value={Number(formData.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 
                         />
                     </div>
                     <div className='col-12 col-sm-6 form-group pt-3 pb-3'>

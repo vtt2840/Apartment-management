@@ -195,7 +195,7 @@ const FeeType = () => {
                                 <td className='text-center'>{(currentPage - 1)*10 + index + 1}</td>
                                 <td>{item.feeName}</td>
                                 <td className='text-center'>{item.isRequired ? 'Có' : 'Không'}</td>
-                                <td className='text-center'>{item.amountDefault > 0 ? item.amountDefault : 'Không có'}</td>
+                                <td className='text-center'>{item.amountDefault > 0 ? Number(item.amountDefault).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'Không có'}</td>
                                 <td>{item.appliedScope === 'all' ? 'Tất cả' 
                                 : role === 'resident' ? 'Một số căn hộ' 
                                 : Array.isArray(item.applicableApartments) ? item.applicableApartments.join(', ') 

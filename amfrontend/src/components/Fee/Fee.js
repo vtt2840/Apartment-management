@@ -374,7 +374,7 @@ const Fee = (props) => {
                             {role === 'admin' && (<td className='text-center'>{item.apartmentCode}</td>)}
                             <td>{item.feeName}</td>
                             <td className='text-center'>{item.month || ''}</td>
-                            <td className='text-center'>{item.amount || ''}</td>
+                            <td className='text-center'>{Number(item.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             <td className='text-center'>{item.isRequired ? 'Có' : 'Không'}</td>
                             <td className='text-center'>{item.dueDate}</td>
                             <td className='text-center'>{item.status === 'paid' ? 'Đã thanh toán' : item.status === 'unpaid' ? 'Chưa thanh toán' : 'Đã xóa'}</td>

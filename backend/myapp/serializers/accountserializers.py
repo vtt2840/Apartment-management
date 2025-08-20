@@ -206,7 +206,6 @@ class DeactiveAccountSerializer(serializers.Serializer):
 
         #delete all apartmentfee
         apartmentFeeList = ApartmentFee.objects.filter(apartment=apartment)
-        print(apartmentFeeList)
         for fee in apartmentFeeList:
             fee.status = ApartmentFee.Status.deleted
             fee.save()

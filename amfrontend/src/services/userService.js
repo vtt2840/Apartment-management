@@ -21,11 +21,6 @@ const createNewAccount = (data) => {
     return axios.post('/apartments/addnewaccount/', data);
 }
 
-const searchApartments = ({keyword, page}) => {
-  return axios.get(`/apartments/search/?q=${encodeURIComponent(keyword)}&page=${page}`);
-  
-};
-
 const accountByApartment = (data) => {
     return axios.post('/accounts/accounts-by-apartment/', {apartment_code: data});
 }
@@ -71,9 +66,6 @@ const deleteResident = (residentId) => {
 const updateResident = ({residentId, data}) => {
     return axios.put(`/residents/update/${residentId}/`, data);
 }
-const searchResidents = ({keyword, page}) => {
-    return axios.get(`/residents/search/?q=${encodeURIComponent(keyword)}&page=${page}`);
-};
 
 //temporaryregister
 const temporaryResidence = (data) => {
@@ -109,9 +101,6 @@ const updateVehicle = ({vehicleId, data}) => {
 const deleteVehicle = (vehicleId) => {
     return axios.delete(`/vehicles/${vehicleId}/`);
 }
-const searchVehicles = ({keyword, page}) => {
-    return axios.get(`/vehicles/search/?q=${keyword}&page=${page}`);
-}
 
 //fee
 const fetchNewFeeCollection = ({page, apartment_code, month, year, isRequired, status, dueDate, feeName, query}) => {
@@ -144,10 +133,17 @@ const createNewFeeCollection = (data) => {
     return axios.post('/feecollection/create/', data);
 }
 
-const searchFee = ({keyword, page}) => {
-    return axios.get(`/apartmentfee/search/?q=${keyword}&page=${page}`);
+const getLatestDate = () => {
+    return axios.get('/get-latest-date/');
 }
 
+const getChart = ({month, year, feeName}) => {
+    return axios.get(`/get-chartfee/?month=${month}&year=${year}&feeName=${feeName}`);
+}
+
+const getBarFee = (year) => {
+    return axios.get(`/get-bar-fee/?year=${year}`);
+}
 //payment
 const fetchPaymentTransaction = (id) => {
     return axios.get(`/payment/?apartmentFee=${id}`);
@@ -155,7 +151,8 @@ const fetchPaymentTransaction = (id) => {
 export {
     loginUser, logoutUser, fetchAllApartments, createNewAccount, accountByApartment, lockAccount, resetpassword, resetconfirm, checkAccountExists,
     fetchAllResidents, addAccountExist, createNewResident, deleteResident, temporaryResidence, temporaryAbsence, cancelTemporaryStatus, updateResident,
-    updateApartment, searchResidents, searchApartments, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
-    updateVehicle, deleteVehicle, searchVehicles, changePassword, updateAccountAdmin, fetchNewFeeCollection, updateApartmentFee, checkFeeNameExists,
-    createNewFeeType, fetchAllFeeTypes, updateFeeType, deleteFeeType, createNewFeeCollection, searchFee, fetchPaymentTransaction
+    updateApartment, getTemporaryAbsenceDetail, getTemporaryResidenceDetail, fetchAllVehicles, createNewVehicle,
+    updateVehicle, deleteVehicle, changePassword, updateAccountAdmin, fetchNewFeeCollection, updateApartmentFee, checkFeeNameExists,
+    createNewFeeType, fetchAllFeeTypes, updateFeeType, deleteFeeType, createNewFeeCollection, fetchPaymentTransaction, getLatestDate,
+    getChart, getBarFee
 }
